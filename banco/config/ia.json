@@ -1,0 +1,7 @@
+{
+  "provedor": "google",
+  "google_api_key": "AIzaSyCheZPgdeDk47BMiKT40lZX1upIBX03VtI",
+  "openai_api_key": "",
+  "modelo_google": "gemini-3.5-flash",
+  "modelo_openai": "gpt-4o-mini"
+}

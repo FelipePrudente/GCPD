@@ -1,0 +1,642 @@
+[
+  {
+    "id_sei": "100000448",
+    "nome": "Abaixo-assinado"
+  },
+  {
+    "id_sei": "100000675",
+    "nome": "ALESP: Procuradoria da Alesp"
+  },
+  {
+    "id_sei": "100000470",
+    "nome": "ARTESP: Atendimento a DOP GSS Acessos"
+  },
+  {
+    "id_sei": "100000690",
+    "nome": "ARTESP: Formulário - Protocolo - Teste"
+  },
+  {
+    "id_sei": "100000457",
+    "nome": "Assinatura de Ata de Registro de Preços"
+  },
+  {
+    "id_sei": "100000454",
+    "nome": "Assinatura de Convênios"
+  },
+  {
+    "id_sei": "100000456",
+    "nome": "Assinatura de Termo aditivo"
+  },
+  {
+    "id_sei": "100000455",
+    "nome": "Assinatura de Termos de Cooperação"
+  },
+  {
+    "id_sei": "100000477",
+    "nome": "Atendimento a solicitação de acesso a faixa de domínio de rodovia concedida"
+  },
+  {
+    "id_sei": "100000478",
+    "nome": "Atendimento a solicitação de ocupação de faixa de domínio de rodovia concedida"
+  },
+  {
+    "id_sei": "100000473",
+    "nome": "Atendimento de Pedido de Informações"
+  },
+  {
+    "id_sei": "100000474",
+    "nome": "Atendimento de Requisições, Ordens Judiciais ou Administrativas"
+  },
+  {
+    "id_sei": "100000547",
+    "nome": "Auxílio Aluguel para Mulheres Vítimas de Violência - Teste Romualdo"
+  },
+  {
+    "id_sei": "100000529",
+    "nome": "Cadastramento e Acompanhamento de Oficinas Metrológicas (Bombas Medidoras de Combustíveis Líquidos)"
+  },
+  {
+    "id_sei": "100000693",
+    "nome": "CEESP EDUC. BASICA: Autorização de Funcionamento de Curso Técnico Médio - EaD"
+  },
+  {
+    "id_sei": "100000607",
+    "nome": "CEESP EDUC.BASICA: Curso de Educação Profissional Técnica - Médio Experimental"
+  },
+  {
+    "id_sei": "100000427",
+    "nome": "Código"
+  },
+  {
+    "id_sei": "100000425",
+    "nome": "Decreto"
+  },
+  {
+    "id_sei": "100000426",
+    "nome": "Deliberação"
+  },
+  {
+    "id_sei": "100000542",
+    "nome": "DER: Contrarrazões de Recurso Administrativo em Licitação"
+  },
+  {
+    "id_sei": "100000539",
+    "nome": "DER: Demandas Parlamentares"
+  },
+  {
+    "id_sei": "100000543",
+    "nome": "DER: Pedido de esclarecimento, fornecimento de cópias e vistas em Edital de Licitação"
+  },
+  {
+    "id_sei": "100000540",
+    "nome": "DER: Pedido de Impugnação de Edital de Licitação"
+  },
+  {
+    "id_sei": "100000541",
+    "nome": "DER: Recurso Administrativo em Licitação"
+  },
+  {
+    "id_sei": "100000750",
+    "nome": "DETRAN - Atendimento: Supervisão do Exame Prático"
+  },
+  {
+    "id_sei": "100000715",
+    "nome": "DETRAN Administração: Entidades de Classe | Apresentar Manifestação"
+  },
+  {
+    "id_sei": "100000683",
+    "nome": "DETRAN Administração: Prontuário Funcional"
+  },
+  {
+    "id_sei": "100000751",
+    "nome": "DETRAN Atendimento: Supervisão do Atendimento"
+  },
+  {
+    "id_sei": "100000534",
+    "nome": "DETRAN Condutores: Alteração de EAR no RENACH"
+  },
+  {
+    "id_sei": "100000533",
+    "nome": "DETRAN Condutores: Alteração do tipo de RENACH"
+  },
+  {
+    "id_sei": "100000535",
+    "nome": "DETRAN Condutores: Correção de Categoria"
+  },
+  {
+    "id_sei": "100000536",
+    "nome": "DETRAN Condutores: Desistência de categoria"
+  },
+  {
+    "id_sei": "100000532",
+    "nome": "DETRAN Condutores: Exclusão de RENACH"
+  },
+  {
+    "id_sei": "100000537",
+    "nome": "DETRAN Condutores: Rebaixamento de categoria"
+  },
+  {
+    "id_sei": "100000538",
+    "nome": "DETRAN Condutores: Solicitação de Agendamento de Exame Prático por CFC"
+  },
+  {
+    "id_sei": "100000570",
+    "nome": "Detran Credenciamento: Fiscalização de Credenciados"
+  },
+  {
+    "id_sei": "100000696",
+    "nome": "DETRAN Delegados e Regulados: Credenciamento de Clínica"
+  },
+  {
+    "id_sei": "100000567",
+    "nome": "DETRAN Fiscalização: Autorização para transporte escolar - condutor"
+  },
+  {
+    "id_sei": "100000726",
+    "nome": "DETRAN Gestão Regulatória: Auditora | Solicitar o Credenciamento"
+  },
+  {
+    "id_sei": "100000725",
+    "nome": "DETRAN Gestão Regulatória: Autoescola | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000724",
+    "nome": "DETRAN Gestão Regulatória: Avaliador | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000723",
+    "nome": "DETRAN Gestão Regulatória: Comércio de peças usadas | Solicitar o Registro"
+  },
+  {
+    "id_sei": "100000735",
+    "nome": "DETRAN Gestão Regulatória: Credenciamento de Médico"
+  },
+  {
+    "id_sei": "100000736",
+    "nome": "DETRAN Gestão Regulatória: Credenciamento de Psicólogo"
+  },
+  {
+    "id_sei": "100000729",
+    "nome": "DETRAN Gestão Regulatória: Desmontes | Solicitar o Registro"
+  },
+  {
+    "id_sei": "100000727",
+    "nome": "DETRAN Gestão Regulatória: Despachante | Solicitar Cadastro"
+  },
+  {
+    "id_sei": "100000739",
+    "nome": "DETRAN Gestão Regulatória: Empresa Registradora de Contrato Especializada | Credenciamento"
+  },
+  {
+    "id_sei": "100000719",
+    "nome": "DETRAN Gestão Regulatória: Empresa registradora de contrato especializada | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000720",
+    "nome": "DETRAN Gestão Regulatória: Estampadora | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000738",
+    "nome": "DETRAN Gestão Regulatória: IEE EAD | Solicitar o Credenciamento"
+  },
+  {
+    "id_sei": "100000732",
+    "nome": "DETRAN Gestão Regulatória: Instituições ou Entidades de Ensino | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000722",
+    "nome": "DETRAN Gestão Regulatória: Instrutor de de trânsito | Solicitar autorização"
+  },
+  {
+    "id_sei": "100000733",
+    "nome": "DETRAN Gestão Regulatória: Integradora de Tecnologia | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000721",
+    "nome": "DETRAN Gestão Regulatória: Leiloeiro | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000730",
+    "nome": "DETRAN Gestão Regulatória: Reciclagem | Solicitar o Registro"
+  },
+  {
+    "id_sei": "100000734",
+    "nome": "DETRAN Gestão Regulatória: SENAT | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000728",
+    "nome": "DETRAN Gestão Regulatória: UFAA | Solicitar Credenciamento"
+  },
+  {
+    "id_sei": "100000743",
+    "nome": "DETRAN Veículos: Solicitar desbloqueio de restrição de sinistro média monta"
+  },
+  {
+    "id_sei": "100000506",
+    "nome": "Encaminhamento para análise do projeto"
+  },
+  {
+    "id_sei": "100000428",
+    "nome": "Estatuto"
+  },
+  {
+    "id_sei": "100000546",
+    "nome": "Euipe SEI: Confraternização Final de Ano"
+  },
+  {
+    "id_sei": "100000435",
+    "nome": "Expediente de Atendimento"
+  },
+  {
+    "id_sei": "100000565",
+    "nome": "GRAPROHAB: Requerimento para procedimento de reabertura"
+  },
+  {
+    "id_sei": "100000545",
+    "nome": "GRAPROHAB: Requerimento para protocolo de novo projeto de parcelamento do solo ou condomínio"
+  },
+  {
+    "id_sei": "100000429",
+    "nome": "Instrução Normativa"
+  },
+  {
+    "id_sei": "100000549",
+    "nome": "Intimação Leo teste"
+  },
+  {
+    "id_sei": "100000530",
+    "nome": "IPEM - Cadastramento e Acompanhamento de Oficinas Metrológicas (Esfigmomanômetros)"
+  },
+  {
+    "id_sei": "100000527",
+    "nome": "IPEM - Cadastramento e Acompanhamento de Oficinas Metrológicas (IPNA/Balanças)"
+  },
+  {
+    "id_sei": "100000531",
+    "nome": "IPEM - Cadastramento e acompanhamento de oficinas metrológicas (Taxímetros)"
+  },
+  {
+    "id_sei": "100000528",
+    "nome": "IPEM - Processo de cadastramento e acompanhamento de oficinas metrológicas (Inclusão de Técnicos)"
+  },
+  {
+    "id_sei": "100000577",
+    "nome": "JUCESP: Denúncias contra agentes auxiliares do comércio (Leiloeiros e Tradutores Públicos)"
+  },
+  {
+    "id_sei": "100000578",
+    "nome": "JUCESP: Outras Solicitações"
+  },
+  {
+    "id_sei": "100000575",
+    "nome": "JUCESP: Recurso ao DREI"
+  },
+  {
+    "id_sei": "100000574",
+    "nome": "JUCESP: Recurso ao Plenário"
+  },
+  {
+    "id_sei": "100000576",
+    "nome": "JUCESP: Requerimento ao Presidente - Suspensão dos Efeitos de Registro"
+  },
+  {
+    "id_sei": "100000444",
+    "nome": "Mandado de Segurança"
+  },
+  {
+    "id_sei": "100000592",
+    "nome": "Matheus"
+  },
+  {
+    "id_sei": "100000430",
+    "nome": "Norma"
+  },
+  {
+    "id_sei": "100000439",
+    "nome": "Parecer da Ouvidoria"
+  },
+  {
+    "id_sei": "100000452",
+    "nome": "Pedido de Acesso à Informação"
+  },
+  {
+    "id_sei": "100000566",
+    "nome": "Pessoal: Avaliação de Desempenho Individual"
+  },
+  {
+    "id_sei": "100000548",
+    "nome": "Peticionamento Leo Teste Pós versão 4.0.12"
+  },
+  {
+    "id_sei": "100000689",
+    "nome": "PGE: Impugnação à averbação pré-executória - Pessoa Física"
+  },
+  {
+    "id_sei": "100000581",
+    "nome": "PGE: Pedido de utilização de créditos acumulados de ICMS para fins de compensação na transação"
+  },
+  {
+    "id_sei": "100000593",
+    "nome": "PGE: Transação - Peticionamento Intermediário"
+  },
+  {
+    "id_sei": "100000594",
+    "nome": "PGE: Transação - Recurso"
+  },
+  {
+    "id_sei": "100000584",
+    "nome": "PGE: Transação de Pessoa Jurídica em Recuperação Judicial, Liquidação ou Falência"
+  },
+  {
+    "id_sei": "100000582",
+    "nome": "PGE: Transação Individual - Pessoa Física"
+  },
+  {
+    "id_sei": "100000583",
+    "nome": "PGE: Transação Individual - Pessoa Jurídica"
+  },
+  {
+    "id_sei": "100000431",
+    "nome": "Portaria"
+  },
+  {
+    "id_sei": "100000464",
+    "nome": "Processo - Peticionamento Teste"
+  },
+  {
+    "id_sei": "100000460",
+    "nome": "Processo Administrativo Disciplinar"
+  },
+  {
+    "id_sei": "100000438",
+    "nome": "Processo de Aquisição de Material de Consumo"
+  },
+  {
+    "id_sei": "100000437",
+    "nome": "Processo de Aquisição de Material Permanente"
+  },
+  {
+    "id_sei": "100000600",
+    "nome": "Processo de Concessão de Direitos e Benefícios"
+  },
+  {
+    "id_sei": "100000746",
+    "nome": "Processo de concessão e incorporação de vantagens pecuniárias"
+  },
+  {
+    "id_sei": "100000692",
+    "nome": "Processo de Contratação de Serviço Técnico Profissional Especializado"
+  },
+  {
+    "id_sei": "100000740",
+    "nome": "Processo de cálculo da Taxa de Regulação, Controle e Fiscalização (TRCF)"
+  },
+  {
+    "id_sei": "100000441",
+    "nome": "Processo de elaboração de ato normativo"
+  },
+  {
+    "id_sei": "100000475",
+    "nome": "Processo de formalização e execução de acordo bilateral"
+  },
+  {
+    "id_sei": "100000710",
+    "nome": "Processo de inscrição para consignação em folha de pagamento"
+  },
+  {
+    "id_sei": "100000476",
+    "nome": "Processo de projeto de lei"
+  },
+  {
+    "id_sei": "100000569",
+    "nome": "Processo de recadastramento presencial de servidores ativos"
+  },
+  {
+    "id_sei": "100000459",
+    "nome": "Processo de Sindicância Disciplinar"
+  },
+  {
+    "id_sei": "100000714",
+    "nome": "Processo de teste - Ponto de Controle"
+  },
+  {
+    "id_sei": "100000661",
+    "nome": "Processo Fabio Teste"
+  },
+  {
+    "id_sei": "100000489",
+    "nome": "Processo fiscalizatorio - Teste Safi"
+  },
+  {
+    "id_sei": "100000573",
+    "nome": "Processo para preenchimento de função-atividade"
+  },
+  {
+    "id_sei": "100000572",
+    "nome": "Processo para provimento de cargo"
+  },
+  {
+    "id_sei": "100000461",
+    "nome": "Processo Sancionatório"
+  },
+  {
+    "id_sei": "100000436",
+    "nome": "Prontuário Funcional"
+  },
+  {
+    "id_sei": "100000568",
+    "nome": "Recadastramento Presencial Servidores Ativos"
+  },
+  {
+    "id_sei": "100000432",
+    "nome": "Regimento"
+  },
+  {
+    "id_sei": "100000433",
+    "nome": "Regulamento"
+  },
+  {
+    "id_sei": "100000434",
+    "nome": "Resolução"
+  },
+  {
+    "id_sei": "100000463",
+    "nome": "REUNIAO 06.07.23 15:30"
+  },
+  {
+    "id_sei": "100000509",
+    "nome": "SEDUC - Protocolo Campinas Leste"
+  },
+  {
+    "id_sei": "100000510",
+    "nome": "SEDUC - Protocolo Campinas Oeste"
+  },
+  {
+    "id_sei": "100000511",
+    "nome": "SEDUC - Protocolo Centro"
+  },
+  {
+    "id_sei": "100000512",
+    "nome": "SEDUC - Protocolo Centro Oeste"
+  },
+  {
+    "id_sei": "100000513",
+    "nome": "SEDUC - Protocolo Centro Sul"
+  },
+  {
+    "id_sei": "100000514",
+    "nome": "SEDUC - Protocolo Guarulhos Norte"
+  },
+  {
+    "id_sei": "100000515",
+    "nome": "SEDUC - Protocolo Guarulhos Sul"
+  },
+  {
+    "id_sei": "100000516",
+    "nome": "SEDUC - Protocolo Leste 1"
+  },
+  {
+    "id_sei": "100000517",
+    "nome": "SEDUC - Protocolo Leste 2"
+  },
+  {
+    "id_sei": "100000518",
+    "nome": "SEDUC - Protocolo Leste 3"
+  },
+  {
+    "id_sei": "100000519",
+    "nome": "SEDUC - Protocolo Leste 4"
+  },
+  {
+    "id_sei": "100000520",
+    "nome": "SEDUC - Protocolo Leste 5"
+  },
+  {
+    "id_sei": "100000521",
+    "nome": "SEDUC - Protocolo Norte 1"
+  },
+  {
+    "id_sei": "100000522",
+    "nome": "SEDUC - Protocolo Norte 2"
+  },
+  {
+    "id_sei": "100000523",
+    "nome": "SEDUC - Protocolo Sul 1"
+  },
+  {
+    "id_sei": "100000524",
+    "nome": "SEDUC - Protocolo Sul 2"
+  },
+  {
+    "id_sei": "100000525",
+    "nome": "SEDUC - Protocolo Sul 3"
+  },
+  {
+    "id_sei": "100000708",
+    "nome": "SGGD - Processo de Petições Consignatárias Credenciadas"
+  },
+  {
+    "id_sei": "100000741",
+    "nome": "SJC: EDITAL Nº SJC FID 01/2026, DE 8 DE ABRIL DE 2026"
+  },
+  {
+    "id_sei": "100000483",
+    "nome": "Solicitação de Certificado de Reconhecimento de Instituição Cultural - CRIC"
+  },
+  {
+    "id_sei": "100000484",
+    "nome": "Solicitação de inscrição da Instituição Cultural no programa Nota Fiscal Paulista"
+  },
+  {
+    "id_sei": "100000486",
+    "nome": "Solicitação referente a demandas na área cultural"
+  },
+  {
+    "id_sei": "100000481",
+    "nome": "Solicitação referente ao Edital do Programa de Ação Cultural - PROAC"
+  },
+  {
+    "id_sei": "100000482",
+    "nome": "Solicitação referente ao fomento (ICMS) do Programa de Ação Cultural (ProAC)"
+  },
+  {
+    "id_sei": "100000485",
+    "nome": "Solicitação referente à qualificação como Organização Social da Secretaria da Cultura"
+  },
+  {
+    "id_sei": "100000480",
+    "nome": "Solicitação sobre Concursos Culturais Diversos (Lei Paulo Gustavo, Lei Aldir Blanc, etc)"
+  },
+  {
+    "id_sei": "100000479",
+    "nome": "Solicitação à Unidade de Preservação do Patrimônio Histórico/CONDEPHAAT"
+  },
+  {
+    "id_sei": "100000526",
+    "nome": "SPPREV: Emissão de Certidão Negativa de Débitos ou Declaração Remuneratória  - CND/DR"
+  },
+  {
+    "id_sei": "100000579",
+    "nome": "Teste"
+  },
+  {
+    "id_sei": "100000471",
+    "nome": "TESTE - SAFI"
+  },
+  {
+    "id_sei": "100000711",
+    "nome": "teste bene"
+  },
+  {
+    "id_sei": "100000450",
+    "nome": "TESTE GD PERFIL"
+  },
+  {
+    "id_sei": "100000468",
+    "nome": "Teste peticionamento com formulário"
+  },
+  {
+    "id_sei": "100000691",
+    "nome": "Teste PGESP - Erro Hipotese"
+  },
+  {
+    "id_sei": "100000469",
+    "nome": "Teste Processo Multiplos arquivos"
+  },
+  {
+    "id_sei": "100000467",
+    "nome": "Teste Processos Serviços GRAPROHAB"
+  },
+  {
+    "id_sei": "100000585",
+    "nome": "Teste tipo"
+  },
+  {
+    "id_sei": "100000586",
+    "nome": "Teste tipo de processo (e-Ambiente)"
+  },
+  {
+    "id_sei": "100000465",
+    "nome": "Tipo de Processo Peticionamento Leo Teste Varias Unidades"
+  },
+  {
+    "id_sei": "100000615",
+    "nome": "Tipo Peticionamento Fabio"
+  },
+  {
+    "id_sei": "100000580",
+    "nome": "Tipo Processo Teste EAmbiente"
+  },
+  {
+    "id_sei": "100000487",
+    "nome": "Tipo Processo TTT"
+  },
+  {
+    "id_sei": "100000458",
+    "nome": "TIPO TESTE 16/6"
+  },
+  {
+    "id_sei": "100000462",
+    "nome": "Tipo Teste 29/06 (Item 5)"
+  }
+]

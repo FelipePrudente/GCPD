@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <title>GCPD — PRODESP | Conectar ao SEI</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #152433;
+      background: #e8eef2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse 75% 55% at 10% -10%, #c5d8e6 0%, transparent 58%),
+        linear-gradient(180deg, #e8eef2 0%, #d5e0e8 100%);
+    }
+    .login {
+      width: min(440px, 100%);
+      padding: 36px;
+      border: 1px solid #c8d4de;
+      border-radius: 16px;
+      background: #f7fafc;
+      box-shadow: 0 18px 48px rgba(15, 42, 61, 0.14);
+    }
+    .marca {
+      margin: 0 0 10px;
+      color: #245a48;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; color: #153d54; font-size: 26px; }
+    .ajuda { margin: 10px 0 24px; color: #5a6b7a; line-height: 1.5; }
+    .campo { margin: 16px 0; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    input {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #9db0c0;
+      border-radius: 8px;
+      background: #fff;
+      color: inherit;
+      font: inherit;
+    }
+    input:focus { outline: 3px solid #b9d9ea; border-color: #1a4f6e; }
+    button {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 8px;
+      background: #1a4f6e;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: #123d57; }
+    button:disabled { cursor: wait; opacity: .7; }
+    .mensagem { margin: 14px 0 0; color: #8a2b22; }
+    .mensagem:empty { display: none; }
+    .rodape { margin: 18px 0 0; color: #5a6b7a; font-size: 13px; text-align: center; }
+    @media (max-width: 480px) { .login { padding: 26px 22px; } }
+  </style>
+</head>
+<body>
+  <main class="login">
+    <p class="marca">GCPD — PRODESP</p>
+    <h1>Conectar ao SEI</h1>
+    <p class="ajuda">Entre com seu usuário e senha do SEI de homologação para acessar o sistema.</p>
+    <form id="login-form" autocomplete="on">
+      <div class="campo">
+        <label for="usuario">Login</label>
+        <input id="usuario" name="username" autocomplete="username" required autofocus />
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input id="senha" name="password" type="password" autocomplete="current-password" required />
+      </div>
+      <button id="conectar" type="submit">Conectar SEI</button>
+      <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
+    </form>
+    <p class="rodape">Ambiente de homologação do SEI</p>
+  </main>
+  <script>
+    const form = document.getElementById("login-form");
+    const botao = document.getElementById("conectar");
+    const senha = document.getElementById("senha");
+    const mensagem = document.getElementById("mensagem");
+    let csrfToken = "";
+
+    async function obterTokenCsrf() {
+      const resposta = await fetch("/api/sei/sessao");
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível iniciar a sessão.");
+      csrfToken = dados.csrf_token || "";
+    }
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      botao.disabled = true;
+      mensagem.textContent = "Autenticando no SEI…";
+      try {
+        if (!csrfToken) await obterTokenCsrf();
+        const resposta = await fetch("/api/sei/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          body: JSON.stringify({
+            usuario: document.getElementById("usuario").value,
+            senha: senha.value,
+          }),
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível autenticar no SEI.");
+        senha.value = "";
+        window.location.replace("/");
+      } catch (erro) {
+        mensagem.textContent = erro.message;
+        senha.value = "";
+        senha.focus();
+      } finally {
+        botao.disabled = false;
+      }
+    });
+
+    obterTokenCsrf().catch((erro) => {
+      mensagem.textContent = erro.message;
+    });
+  </script>
+</body>
+</html>

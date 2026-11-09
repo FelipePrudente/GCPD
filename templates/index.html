@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCPD — Abertura de processo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=sei-login" />
+</head>
+<body>
+<header>
+  <div class="cabecalho">
+    <p class="marca">GCPD · PRODESP</p>
+    <h1>Abertura de processo</h1>
+    <p>Crie o processo diretamente no SEI de homologação pelo formulário de abertura. O GCPD salva localmente os dados e o protocolo retornado pelo SEI, sem gerar um número GCPD. A geração de documentos continua local, em Word, para revisão e posterior inclusão no processo.</p>
+    <div class="sei-conexao" aria-live="polite">
+      <span id="sei-sessao-status">Não conectado ao SEI</span>
+      <button type="button" class="acao" id="sei-logout">Desconectar</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="abas" role="tablist" aria-label="Áreas do sistema">
+    <button type="button" class="aba ativa" role="tab" id="aba-principal" aria-controls="painel-principal" aria-selected="true">Principal</button>
+    <button type="button" class="aba" role="tab" id="aba-formulario" aria-controls="painel-formulario" aria-selected="false">Formulário</button>
+    <button type="button" class="aba" role="tab" id="aba-configuracoes" aria-controls="painel-configuracoes" aria-selected="false">Configurações</button>
+  </div>
+
+  <div class="painel-aba ativa" id="painel-principal" role="tabpanel" aria-labelledby="aba-principal">
+    <section class="painel-principal">
+      <div class="secao-topo">
+        <h2>Processos</h2>
+        <div class="barra-acoes-processos">
+          <button type="button" class="acao perigo" id="excluir-processos-selecionados" disabled title="Excluir processos marcados">Excluir selecionados</button>
+          <button type="button" class="acao" id="ir-formulario">Novo cadastro</button>
+        </div>
+      </div>
+      <p class="ajuda">Os novos processos entram nesta grade após serem criados no SEI; o protocolo SEI é a identificação oficial e não é gerado código GCPD. Marque um ou mais itens para excluir, ou use o ícone de lixeira em Ações.</p>
+      <p id="mensagem-principal" class="erro oculto"></p>
+      <div class="grade-processos-wrap">
+        <table class="grade-processos" aria-label="Processos cadastrados">
+          <thead>
+            <tr>
+              <th class="col-check">
+                <input type="checkbox" id="processos-marcar-todos" title="Marcar todos" aria-label="Marcar todos os processos" />
+              </th>
+              <th>Código GCPD (legado)</th>
+              <th>Tipo de processo</th>
+              <th>Nº SEI</th>
+              <th>Assunto</th>
+              <th>Situação</th>
+              <th class="col-acoes">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-processos">
+            <tr class="vazio"><td colspan="7">Nenhum processo criado no SEI ainda. Use Novo cadastro para iniciar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="painel-aba" id="painel-formulario" role="tabpanel" aria-labelledby="aba-formulario">
+  <p class="aviso">A Pesquisa Salarial consulta o guia Robert Half na internet, no recorte de São Paulo, e só grava faixa CLT publicada. Cargo sem linha própria entra como proxy de aderência média, com a fonte e a justificativa. Sem faixa publicada, o documento registra “Dado não localizado em fontes primárias.”</p>
+  <p id="edicao-atual" class="ok oculto"></p>
+  <p id="mensagem" class="erro oculto"></p>
+  <p id="tipo-processo-atual" class="ajuda oculto" aria-live="polite"></p>
+  <form id="cadastro">
+    <section class="selecao-documentos-geracao" aria-label="Documentos a gerar">
+      <div class="secao-topo"><h2>Documentos a gerar</h2></div>
+      <p class="ajuda">Selecione um ou mais documentos. O formulário mostra só os campos necessários aos selecionados; na geração, saem apenas esses.</p>
+      <div class="multi-docs" id="multi-docs">
+        <button type="button" class="multi-docs-toggle" id="multi-docs-toggle" aria-expanded="false">
+          <span id="multi-docs-rotulo">Selecione os documentos</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+        <div id="multi-docs-painel" class="multi-docs-painel oculto" role="listbox" aria-multiselectable="true"></div>
+      </div>
+      <p id="multi-docs-ajuda" class="ajuda">Nenhum documento selecionado.</p>
+    </section>
+
+    <section data-bloco-form="Identificação">
+      <div class="secao-topo"><h2>Identificação</h2><button type="button" class="ver-doc" data-encaixe="identificacao">Ver no documento</button></div>
+      <p class="ajuda">O relatório e o termo têm códigos diferentes. Nos exemplos, o relatório era REL.GEN.054 e o termo REL.GEN.055. O assunto digitado aqui entra na capa dos documentos e na grade da Principal.</p>
+      <div class="grade">
+        <div class="campo"><label for="mes_ano">Mês e ano</label><input id="mes_ano" placeholder="Março/2026" required /></div>
+        <div class="campo" id="campo-vigencia">
+          <label for="prazo_meses" id="rotulo-prazo">Prazo em meses</label>
+          <input id="prazo_meses" value="12" />
+          <p id="ajuda-vigencia" class="ajuda destaque-ajuda oculto">Campo em destaque para Prorrogação: ajuste a vigência do contrato.</p>
+        </div>
+        <div class="campo"><label for="codigo_relatorio">Código do relatório</label><input id="codigo_relatorio" placeholder="REL.GEN.054.2026" required /></div>
+        <div class="campo"><label for="versao_relatorio">Versão do relatório</label><input id="versao_relatorio" value="V1.0" /></div>
+        <div class="campo"><label for="codigo_termo">Código do termo</label><input id="codigo_termo" placeholder="REL.GEN.055.2026" required /></div>
+        <div class="campo"><label for="versao_termo">Versão do termo</label><input id="versao_termo" value="V1.0" /></div>
+        <div class="campo largo"><label for="assunto">Assunto</label><textarea id="assunto" placeholder="CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM TECNOLOGIAS AWS" required></textarea></div>
+      </div>
+      <div class="grade campos-extra-bloco"></div>
+    </section>
+
+    <section data-bloco-form="Objeto">
+      <div class="secao-topo"><h2>Objeto</h2><button type="button" class="ver-doc" data-encaixe="objeto">Ver no documento</button></div>
+      <div class="grade">
+        <div class="campo largo"><label for="tecnologia">Tecnologia</label><select id="tecnologia" required></select></div>
+        <div class="nova-linha">
+          <input id="nome-tecnologia" placeholder="Nova tecnologia, se não estiver na lista" />
+          <button type="button" id="gravar-tecnologia">Gravar tecnologia</button>
+        </div>
+        <div class="campo largo"><label for="fatos">Fatos que o texto pode usar</label><textarea id="fatos" placeholder="Somente fatos que podem aparecer na definição, na situação atual e na justificativa. Número que não estiver aqui não entra no documento."></textarea></div>
+      </div>
+      <div class="grade campos-extra-bloco"></div>
+      <div class="secao-topo"><h3>Catálogo da tecnologia</h3><button type="button" class="ver-doc" data-encaixe="catalogo">Ver no documento</button></div>
+      <p class="ajuda">A lista fica gravada na tecnologia. Os grupos ficam fechados; abra o grupo para marcar os serviços desta contratação.</p>
+      <div id="arvore" class="arvore"></div>
+      <div class="nova-linha">
+        <input id="nome-grupo" placeholder="Novo grupo desta tecnologia" />
+        <button type="button" id="gravar-grupo">Gravar grupo</button>
+      </div>
+    </section>
+
+    <section data-bloco-form="Clientes e projetos">
+      <div class="secao-topo"><h2>Clientes e projetos</h2><button type="button" class="ver-doc" data-encaixe="clientes">Ver no documento</button></div>
+      <p class="ajuda">Entram no item 3.1.2 do Relatório de Justificativa.</p>
+      <div id="clientes" class="lista"></div>
+      <button type="button" class="adicionar" data-add="clientes">Adicionar cliente</button>
+      <div class="grade campos-extra-bloco"></div>
+    </section>
+
+    <section data-bloco-form="Perfis">
+      <div class="secao-topo"><h2>Perfis</h2><button type="button" class="ver-doc" data-encaixe="perfis">Ver no documento</button></div>
+      <p class="ajuda">O nome do perfil sai da lista da tecnologia. Item, experiência, horas e proporção são desta contratação. A proporção 1,00 marca, em geral, o perfil de referência.</p>
+      <div id="perfis" class="lista"></div>
+      <button type="button" class="adicionar" data-add="perfis">Adicionar perfil</button>
+      <p class="total" id="total-horas"></p>
+      <div class="grade campos-extra-bloco"></div>
+    </section>
+
+    <section data-bloco-form="Medição e julgamento">
+      <div class="secao-topo"><h2>Medição e julgamento</h2><button type="button" class="ver-doc" data-encaixe="medicao">Ver no documento</button></div>
+      <div class="grade">
+        <div class="campo largo"><label for="perfil_referencia">Perfil de referência do desconto</label><input id="perfil_referencia" list="perfis-conhecidos" required /></div>
+        <datalist id="perfis-conhecidos"></datalist>
+        <div class="campo"><label for="horas_por_pf">Horas por ponto de função</label><input id="horas_por_pf" placeholder="12" required /></div>
+        <div class="campo"><label for="versao_sisp">Versão do roteiro SISP</label><input id="versao_sisp" value="3.0" /></div>
+        <div class="campo largo"><label for="regra_vma">Regra do valor médio da hora</label><textarea id="regra_vma" required placeholder="Valor médio da HST dos perfis técnicos de nível pleno."></textarea></div>
+      </div>
+      <label class="campo check"><input id="incluir_snap" type="checkbox" /> Incluir SNAP entre os métodos de medição</label>
+      <div class="grade campos-extra-bloco"></div>
+    </section>
+
+    <section data-bloco-form="Habilitação da tecnologia">
+      <div class="secao-topo"><h2>Habilitação da tecnologia</h2><button type="button" class="ver-doc" data-encaixe="habilitacao">Ver no documento</button></div>
+      <div class="grade">
+        <div class="campo largo"><label for="parceria">Parceria com o fabricante</label><textarea id="parceria" placeholder="Ex.: parceiro AWS Advanced, ou carta Microsoft nas seis designações."></textarea></div>
+        <div class="campo largo"><label for="estudo_mercado">Estudo de mercado exigido</label><textarea id="estudo_mercado"></textarea></div>
+        <div class="campo largo"><label for="atestados">Atestados específicos e horas mínimas</label><textarea id="atestados"></textarea></div>
+        <div class="campo"><label for="regime_certificacao">Regime das certificações</label>
+          <select id="regime_certificacao">
+            <option>Obrigatória no ato da contratação</option>
+            <option>Exemplificativa, exigível na ordem de serviço</option>
+          </select>
+        </div>
+        <div class="campo"><label for="horas_professional">Horas mínimas de professional services</label><input id="horas_professional" placeholder="Deixe vazio se não houver" /></div>
+      </div>
+      <div class="grade campos-extra-bloco"></div>
+      <div class="secao-topo afastado"><h3>Certificações</h3><button type="button" class="ver-doc" data-encaixe="certificacoes">Ver no documento</button></div>
+      <p class="ajuda">Use “Buscar certificações” para sugerir exigências com base na tecnologia e nos perfis cadastrados (consulta à internet + acervo local). Revise antes de aplicar.</p>
+      <div id="certificacoes" class="lista"></div>
+      <div class="barra-certificacoes">
+        <button type="button" class="adicionar" data-add="certificacoes">Adicionar certificação</button>
+        <button type="button" class="acao" id="buscar-certificacoes">Buscar certificações</button>
+        <span class="total" id="estado-certificacoes"></span>
+      </div>
+    </section>
+
+    <section data-bloco-form="Elaboração e aprovação">
+      <div class="secao-topo"><h2>Elaboração e aprovação</h2><button type="button" class="ver-doc" data-encaixe="elaboracao">Ver no documento</button></div>
+      <div class="grade">
+        <div class="campo largo"><label for="area_elaboracao">Quem elabora o relatório</label><textarea id="area_elaboracao" required></textarea></div>
+        <div class="campo largo"><label for="texto_elaboracao">Quem elabora o termo</label><textarea id="texto_elaboracao" required></textarea></div>
+        <div class="campo largo"><label for="local_data">Local e data da assinatura</label><input id="local_data" placeholder="Taboão da Serra, na data da assinatura digital." /></div>
+      </div>
+      <div class="grade campos-extra-bloco"></div>
+      <h3>Aprovadores</h3>
+      <div id="aprovadores" class="lista"></div>
+      <button type="button" class="adicionar" data-add="aprovadores">Adicionar aprovador</button>
+    </section>
+
+    <div id="blocos-tags-dinamicos"></div>
+
+    <div class="barra">
+      <button type="button" class="acao" id="salvar-cadastro">Salvar</button>
+      <button class="primario" type="submit" id="gerar">Gerar documentos</button>
+      <span class="total" id="estado-gerar"></span>
+    </div>
+  </form>
+
+  <section id="resultado" class="oculto">
+    <h2>Documentos gerados</h2>
+    <p class="ajuda">Baixe o Word, corrija o que precisar e, se quiser, converta em PDF. A conversão usa o Microsoft Word instalado neste computador.</p>
+    <div id="lista-docs" class="resultado"></div>
+    <div class="barra barra-anexos">
+      <button type="button" class="primario" id="incluir-documento" disabled>Incluir documento no processo</button>
+      <span class="ajuda">Demonstração local: o documento ficará salvo no GCPD, sem envio ao SEI.</span>
+    </div>
+    <p id="documentos-anexados-mensagem" class="ok oculto" role="status" aria-live="polite"></p>
+    <div id="documentos-anexados" class="lista-documentos-anexados"></div>
+    <h3>Converter um Word já corrigido</h3>
+    <div class="barra">
+      <input id="word-corrigido" type="file" accept=".docx" />
+      <button type="button" class="acao" id="converter-corrigido">Converter para PDF</button>
+    </div>
+    <p id="pdf-corrigido" class="ok oculto"></p>
+  </section>
+  </div>
+
+  <div class="painel-aba" id="painel-configuracoes" role="tabpanel" aria-labelledby="aba-configuracoes">
+    <div class="config-cabecalho">
+      <div>
+        <h2>Documentos e formulário</h2>
+        <p class="ajuda">Em cada documento: defina os grupos/blocos, depois as tags. O formulário reúne as tags de todos os documentos.</p>
+      </div>
+      <div class="config-cabecalho-acoes">
+        <button type="button" class="acao" id="ia-config-abrir" title="Configurar chave da IA">IA / API</button>
+        <p id="config-rj-status" class="total"></p>
+      </div>
+    </div>
+    <div id="painel-ia-config" class="painel-encaixe oculto">
+      <div class="ficha-encaixe ficha-tag" role="dialog" aria-modal="true" aria-labelledby="ia-config-titulo">
+        <div class="secao-topo">
+          <h2 id="ia-config-titulo">Inteligência artificial</h2>
+          <button type="button" class="acao" id="ia-config-fechar">Fechar</button>
+        </div>
+        <p class="ajuda">Informe a chave da API do Google (Gemini) para os campos do tipo “Busca por IA na internet”. A chave fica só neste computador.</p>
+        <div class="grade">
+          <div class="campo"><label for="ia-provedor">Provedor</label>
+            <select id="ia-provedor">
+              <option value="google">Google Gemini</option>
+              <option value="openai">OpenAI</option>
+              <option value="auto">Automático (Gemini → OpenAI)</option>
+            </select>
+          </div>
+          <div class="campo"><label for="ia-modelo-google">Modelo Gemini</label>
+            <input id="ia-modelo-google" placeholder="gemini-3.5-flash" autocomplete="off" />
+          </div>
+          <div class="campo largo"><label for="ia-google-key">API Key do Google</label>
+            <input id="ia-google-key" type="password" placeholder="Cole a chave aqui" autocomplete="off" />
+            <p id="ia-google-status" class="ajuda"></p>
+          </div>
+          <div class="campo largo"><label for="ia-openai-key">API Key da OpenAI (opcional)</label>
+            <input id="ia-openai-key" type="password" placeholder="Opcional" autocomplete="off" />
+            <p id="ia-openai-status" class="ajuda"></p>
+          </div>
+        </div>
+        <p id="ia-config-erro" class="erro oculto"></p>
+        <div class="barra">
+          <button type="button" class="acao" id="ia-config-cancelar">Cancelar</button>
+          <button type="button" class="primario" id="ia-config-salvar">Salvar chave</button>
+        </div>
+      </div>
+    </div>
+    <div class="config-triplice">
+      <aside class="config-docs" aria-label="Documentos configuráveis">
+        <div class="secao-topo">
+          <h3>Documentos</h3>
+          <div class="barra-acoes-docs">
+            <button type="button" class="acao perigo" id="doc-excluir-selecionados" disabled title="Excluir documentos marcados">Excluir marcados</button>
+            <button type="button" class="acao" id="doc-novo">Novo</button>
+          </div>
+        </div>
+        <p class="ajuda">Envie um Word (.docx) já tagueado com <code>{{campo}}</code>. Para excluir, marque os itens e use <strong>Excluir marcados</strong>, o botão <strong>Excluir</strong> de cada linha, ou o Excluir do topo. Se apagar o último, o sistema cria um documento em branco.</p>
+        <div class="barra-upload-doc">
+          <input type="file" id="doc-upload" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+          <button type="button" class="acao" id="doc-upload-btn">Enviar Word tagueado</button>
+        </div>
+        <div id="lista-documentos" class="lista-documentos"></div>
+      </aside>
+      <aside class="config-tags" aria-label="Grupos e tags do documento">
+        <div class="secao-topo">
+          <h3>Grupos / blocos</h3>
+          <button type="button" class="acao" id="grupo-novo">Novo grupo</button>
+        </div>
+        <p class="ajuda">Defina os blocos deste documento antes das tags. Ex.: Identificação, Perfis, Habilitação.</p>
+        <div id="lista-grupos-doc" class="lista-grupos-doc"></div>
+        <div class="secao-topo" style="margin-top:14px">
+          <h3>Tags</h3>
+          <button type="button" class="acao" id="tag-nova">Nova tag</button>
+        </div>
+        <div class="barra-drill" aria-label="Visualização das tags por grupo">
+          <button type="button" class="acao drill" id="tags-drill-down" title="Expandir todos os grupos">Expandir</button>
+          <button type="button" class="acao drill" id="tags-drill-up" title="Recolher todos os grupos">Recolher</button>
+        </div>
+        <p class="ajuda">Tags só deste documento. Clique no grupo para abrir/fechar. Use ⋮⋮ ou ↑↓ para ordenar.</p>
+        <div id="lista-tags-rj" class="lista-tags"></div>
+      </aside>
+      <section class="config-documento" aria-label="Documento selecionado">
+        <div class="secao-topo">
+          <div class="doc-titulo-wrap">
+            <h3 id="doc-titulo-ativo">Documento</h3>
+            <input id="doc-nome-ativo" class="doc-nome-ativo oculto" type="text" maxlength="160" aria-label="Nome do documento" />
+          </div>
+          <div class="barra-config-doc">
+            <button type="button" class="acao drill" id="doc-drill-down" title="Expandir todos os cards">Expandir</button>
+            <button type="button" class="acao drill" id="doc-drill-up" title="Recolher todos os cards">Recolher</button>
+            <button type="button" class="acao" id="doc-editar">Editar texto</button>
+            <button type="button" class="primario oculto" id="doc-salvar">Salvar texto</button>
+            <button type="button" class="acao oculto" id="doc-cancelar">Cancelar</button>
+            <button type="button" class="acao perigo" id="doc-excluir" title="Excluir documento">Excluir</button>
+          </div>
+        </div>
+        <div id="doc-toolbar" class="doc-toolbar oculto" role="toolbar" aria-label="Formatação do texto">
+          <div class="doc-toolbar-grupo" role="group" aria-label="Estilo">
+            <button type="button" class="doc-fmt" data-fmt="bold" title="Negrito (Ctrl+B)" aria-label="Negrito"><strong>N</strong></button>
+            <button type="button" class="doc-fmt" data-fmt="italic" title="Itálico (Ctrl+I)" aria-label="Itálico"><em>I</em></button>
+            <button type="button" class="doc-fmt" data-fmt="underline" title="Sublinhado (Ctrl+U)" aria-label="Sublinhado"><span class="fmt-u">S</span></button>
+          </div>
+          <span class="doc-toolbar-sep" aria-hidden="true"></span>
+          <div class="doc-toolbar-grupo" role="group" aria-label="Alinhamento">
+            <button type="button" class="doc-fmt" data-fmt="justifyLeft" title="Alinhar à esquerda" aria-label="Alinhar à esquerda">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 3h12v1.5H2V3zm0 3h8v1.5H2V6zm0 3h12v1.5H2V9zm0 3h8v1.5H2V12z"/></svg>
+            </button>
+            <button type="button" class="doc-fmt" data-fmt="justifyCenter" title="Centralizar" aria-label="Centralizar">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 3h12v1.5H2V3zm2 3h8v1.5H4V6zm-2 3h12v1.5H2V9zm2 3h8v1.5H4V12z"/></svg>
+            </button>
+            <button type="button" class="doc-fmt" data-fmt="justifyRight" title="Alinhar à direita" aria-label="Alinhar à direita">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 3h12v1.5H2V3zm4 3h8v1.5H6V6zm-4 3h12v1.5H2V9zm4 3h8v1.5H6V12z"/></svg>
+            </button>
+          </div>
+          <p class="ajuda doc-toolbar-ajuda">Selecione o trecho e aplique o estilo; o alinhamento vale para o parágrafo.</p>
+        </div>
+        <div id="preview-rj" class="preview-documento"></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="painel-tag" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-tag" role="dialog" aria-modal="true" aria-labelledby="tag-titulo">
+      <div class="secao-topo">
+        <h2 id="tag-titulo">Tag</h2>
+        <button type="button" class="acao" id="tag-fechar">Fechar</button>
+      </div>
+      <div class="grade">
+        <div class="campo"><label for="tag-id">Identificador</label><input id="tag-id" placeholder="ex.: tecnologia" autocomplete="off" /></div>
+        <div class="campo"><label for="tag-rotulo">Rótulo</label><input id="tag-rotulo" placeholder="Nome amigável" autocomplete="off" /></div>
+        <div class="campo"><label for="tag-grupo">Grupo / bloco principal</label>
+          <select id="tag-grupo">
+            <option value="">Selecione um grupo</option>
+          </select>
+          <p class="ajuda">Onde o campo será preenchido no formulário.</p>
+        </div>
+        <div class="campo largo" id="campo-tag-reuso">
+          <label>Reutilizar também nestes grupos</label>
+          <div id="tag-reuso-lista" class="tag-reuso-lista"></div>
+          <p class="ajuda">Nesses blocos a tag aparece no formulário sem pedir o valor de novo — usa o preenchimento do grupo principal.</p>
+        </div>
+        <div class="campo"><label for="tag-largura">Largura na linha</label>
+          <select id="tag-largura">
+            <option value="1">1/4 da linha</option>
+            <option value="2" selected>2/4 da linha</option>
+            <option value="3">3/4 da linha</option>
+            <option value="4">4/4 (linha inteira)</option>
+          </select>
+        </div>
+        <div class="campo"><label for="tag-tipo">Tipo do campo</label>
+          <select id="tag-tipo">
+            <option value="texto_curto">Texto curto (string)</option>
+            <option value="numero">Número</option>
+            <option value="texto">Texto longo</option>
+            <option value="ia_web">Busca por IA na internet</option>
+            <option value="tabela">Tabela (linhas e colunas)</option>
+          </select>
+        </div>
+        <div class="campo check"><label><input type="checkbox" id="tag-calculado" /> Tag calculada (sem campo no formulário)</label></div>
+        <div class="campo largo oculto" id="campo-tag-consulta">
+          <label for="tag-consulta-ia">Prompt sugerido (opcional)</label>
+          <textarea id="tag-consulta-ia" placeholder="Ex.: cargos de nível pleno em cloud AWS usados em editais públicos"></textarea>
+          <p class="ajuda">Aparece como rascunho no painel de IA do formulário. O usuário pode alterar o prompt na hora da busca.</p>
+        </div>
+        <div class="campo largo oculto" id="campo-tag-tabela">
+          <label>Colunas da tabela</label>
+          <div id="tag-colunas-lista" class="tag-colunas-lista"></div>
+          <button type="button" class="acao" id="tag-coluna-add">+ Coluna</button>
+          <div class="grade" style="margin-top:10px">
+            <div class="campo">
+              <label for="tag-agrupar-por">Agrupar por (opcional)</label>
+              <select id="tag-agrupar-por"><option value="">Sem agrupamento</option></select>
+            </div>
+            <div class="campo">
+              <label for="tag-somar">Somar coluna (opcional)</label>
+              <select id="tag-somar"><option value="">Sem total</option></select>
+            </div>
+          </div>
+          <p class="ajuda">Ex.: colunas Perfil, Experiência e Horas; agrupar por Item; somar Horas — gera o quadro com faixas ITEM e total.</p>
+        </div>
+      </div>
+      <p id="tag-erro" class="erro oculto"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="tag-cancelar">Cancelar</button>
+        <button type="button" class="primario" id="tag-confirmar">Salvar tag</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-ia-campo" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-ia-campo" role="dialog" aria-modal="true" aria-labelledby="ia-campo-titulo">
+      <div class="secao-topo">
+        <h2 id="ia-campo-titulo">Busca por IA</h2>
+        <button type="button" class="acao" id="ia-campo-fechar">Fechar</button>
+      </div>
+      <p id="ia-campo-ajuda" class="ajuda">Listas (certificações, funções) saem objetivas. Definições, produtos/serviços e justificativas saem em texto completo (até 2500 caracteres).</p>
+      <div class="campo largo">
+        <label for="ia-campo-prompt">O que você quer buscar?</label>
+        <textarea id="ia-campo-prompt" rows="4" placeholder="Ex.: Defina a plataforma Microsoft Dynamics e Power Apps e seus principais produtos e serviços"></textarea>
+      </div>
+      <label class="campo check"><input type="checkbox" id="ia-campo-usar-tecnologia" /> Incluir a tecnologia do formulário na busca</label>
+      <p class="ajuda">Deixe desmarcado para perguntas gerais. Marque só quando a resposta depender da tecnologia cadastrada.</p>
+      <div class="barra">
+        <button type="button" class="primario" id="ia-campo-buscar">Buscar</button>
+        <span class="total" id="ia-campo-estado"></span>
+      </div>
+      <div id="ia-campo-refino" class="lista-refino oculto"></div>
+      <div id="ia-campo-resultados" class="lista-sugestoes"></div>
+      <div class="campo largo">
+        <label for="ia-campo-texto-final">Texto que será inserido no campo <span id="ia-campo-contador" class="ajuda">(0/2500)</span></label>
+        <textarea id="ia-campo-texto-final" rows="10" maxlength="2500" placeholder="Revise o texto completo ou edite antes de inserir…"></textarea>
+      </div>
+      <p id="ia-campo-erro" class="erro oculto"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="ia-campo-cancelar">Cancelar</button>
+        <button type="button" class="primario" id="ia-campo-inserir" disabled>Inserir no campo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-encaixe" class="painel-encaixe oculto">
+    <div class="ficha-encaixe" role="dialog" aria-modal="true" aria-labelledby="encaixe-titulo">
+      <div class="secao-topo">
+        <h2 id="encaixe-titulo">Onde entra no documento</h2>
+        <button type="button" class="acao" id="encaixe-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">O trecho em destaque é o que sai deste cadastro. O restante da cláusula entra como está.</p>
+      <div id="encaixe-corpo"></div>
+    </div>
+  </div>
+
+  <div id="painel-sei" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-sei" role="dialog" aria-modal="true" aria-labelledby="sei-titulo">
+      <div class="secao-topo">
+        <h2 id="sei-titulo">Registrar número SEI</h2>
+        <button type="button" class="acao" id="sei-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Registre aqui um número de processo criado fora do GCPD. Esta ação não envia dados ao SEI.</p>
+      <p id="sei-processo" class="codigo-processo"></p>
+      <div class="campo">
+        <label for="numero-sei">Número SEI</label>
+        <input id="numero-sei" placeholder="Ex.: 1234.5678/2026-90" autocomplete="off" />
+      </div>
+      <p id="sei-erro" class="erro oculto"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="sei-cancelar">Cancelar</button>
+        <button type="button" class="primario" id="sei-confirmar">Registrar número</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-novo" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-sei" role="dialog" aria-modal="true" aria-labelledby="novo-titulo">
+      <div class="secao-topo">
+        <h2 id="novo-titulo">Novo cadastro</h2>
+        <button type="button" class="acao" id="novo-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Escolha o tipo de operação. Aditivar e Prorrogar simulam a busca no SEI pelo número já informado na grade.</p>
+      <div class="opcoes-cadastro">
+        <button type="button" class="opcao-cadastro" data-modo="novo">
+          <strong>Novo</strong>
+          <span>Formulário em branco para abertura.</span>
+        </button>
+        <button type="button" class="opcao-cadastro" data-modo="aditar">
+          <strong>Aditivar</strong>
+          <span>Informe o nº SEI e carregue o cadastro vigente.</span>
+        </button>
+        <button type="button" class="opcao-cadastro" data-modo="prorrogar">
+          <strong>Prorrogar</strong>
+          <span>Mesma busca, com destaque na vigência.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-tipo-processo" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-tipo-processo" role="dialog" aria-modal="true" aria-labelledby="tipo-processo-titulo">
+      <div class="secao-topo">
+        <h2 id="tipo-processo-titulo">Iniciar processo</h2>
+        <button type="button" class="acao" id="tipo-processo-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Escolha o tipo de processo. A lista pode ser ampliada conforme necessário.</p>
+      <div class="campo">
+        <label for="filtro-tipo-processo">Filtrar tipos de processo</label>
+        <input id="filtro-tipo-processo" placeholder="Digite para localizar um tipo" autocomplete="off" />
+      </div>
+      <div id="lista-tipos-processo" class="lista-tipos-processo" role="group" aria-label="Tipos de processo"></div>
+      <p id="tipo-processo-selecionado" class="ajuda">Selecione um tipo para continuar.</p>
+      <div class="campo">
+        <label for="novo-tipo-processo">Adicionar tipo à lista</label>
+        <div class="nova-linha">
+          <input id="novo-tipo-processo" placeholder="Nome do tipo de processo" autocomplete="off" />
+          <button type="button" id="adicionar-tipo-processo">Adicionar</button>
+        </div>
+      </div>
+      <p id="tipo-processo-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="tipo-processo-voltar">Voltar</button>
+        <button type="button" class="primario" id="tipo-processo-continuar" disabled>Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-decreto" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-decreto" role="dialog" aria-modal="true" aria-labelledby="decreto-titulo">
+      <div class="secao-topo">
+        <h2 id="decreto-titulo">Iniciar processo — Decreto</h2>
+        <button type="button" class="acao" id="decreto-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Preencha os dados de autuação e crie o processo diretamente no SEI. Os dados e o protocolo serão registrados no GCPD automaticamente.</p>
+
+      <fieldset class="grupo-decreto">
+        <legend>Protocolo</legend>
+        <label class="opcao-radio"><input type="radio" name="decreto-protocolo" value="automatico" checked /> Automático</label>
+        <label class="opcao-radio"><input type="radio" name="decreto-protocolo" value="informado" /> Informado</label>
+        <div class="campo oculto" id="campo-numero-protocolo">
+          <label for="decreto-numero-protocolo">Número do protocolo</label>
+          <input id="decreto-numero-protocolo" autocomplete="off" />
+        </div>
+      </fieldset>
+
+      <div class="grade grade-decreto">
+        <div class="campo largo">
+          <label for="decreto-tipo">Tipo do Processo</label>
+          <input id="decreto-tipo" value="Decreto" readonly />
+        </div>
+        <div class="campo largo">
+          <label for="decreto-especificacao">Especificação</label>
+          <input id="decreto-especificacao" />
+        </div>
+        <div class="campo largo">
+          <label for="decreto-prioridade">Prioridade</label>
+          <select id="decreto-prioridade">
+            <option value="">Selecione</option>
+            <option value="Normal">Normal</option>
+            <option value="Urgente">Urgente</option>
+          </select>
+        </div>
+        <div class="campo largo">
+          <label for="decreto-assunto-novo">Classificação por Assuntos</label>
+          <div class="nova-linha">
+            <input id="decreto-assunto-novo" placeholder="Digite uma classificação para adicionar" autocomplete="off" />
+            <button type="button" id="decreto-adicionar-assunto">Adicionar</button>
+          </div>
+          <div id="decreto-assuntos" class="lista-itens-decreto" aria-live="polite"></div>
+        </div>
+        <div class="campo largo">
+          <label for="decreto-interessado-novo">Interessados</label>
+          <div class="nova-linha">
+            <input id="decreto-interessado-novo" placeholder="Digite um interessado para adicionar" autocomplete="off" />
+            <button type="button" id="decreto-adicionar-interessado">Adicionar</button>
+          </div>
+          <div id="decreto-interessados" class="lista-itens-decreto" aria-live="polite"></div>
+        </div>
+        <div class="campo largo">
+          <label for="decreto-observacoes">Observações desta unidade</label>
+          <textarea id="decreto-observacoes" rows="3"></textarea>
+        </div>
+      </div>
+
+      <fieldset class="grupo-decreto">
+        <legend>Nível de Acesso</legend>
+        <div class="opcoes-acesso">
+          <label class="opcao-radio"><input type="radio" name="decreto-nivel-acesso" value="sigiloso" /> Sigiloso</label>
+          <label class="opcao-radio"><input type="radio" name="decreto-nivel-acesso" value="restrito" /> Restrito</label>
+          <label class="opcao-radio"><input type="radio" name="decreto-nivel-acesso" value="publico" checked /> Público</label>
+        </div>
+      </fieldset>
+
+      <p id="decreto-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+      <div id="decreto-sei-retorno" class="decreto-processo-gerado oculto" role="status" aria-live="polite">
+        <span id="decreto-sei-status">Processo criado no SEI de homologação</span>
+        <strong id="decreto-protocolo-sei"></strong>
+        <span id="decreto-id-procedimento-sei"></span>
+      </div>
+      <div class="barra">
+        <button type="button" class="acao" id="decreto-voltar">Voltar</button>
+        <button type="button" class="primario" id="decreto-criar-sei" disabled>Criar processo no SEI (Homologação)</button>
+        <button type="button" class="primario" id="decreto-continuar" disabled>Continuar para os documentos</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-contratacao" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-decreto" role="dialog" aria-modal="true" aria-labelledby="contratacao-titulo">
+      <div class="secao-topo">
+        <h2 id="contratacao-titulo">Iniciar Processo</h2>
+        <button type="button" class="acao" id="contratacao-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Preencha os dados e crie o processo diretamente no SEI. O cadastro local e o protocolo serão salvos automaticamente.</p>
+
+      <fieldset class="grupo-decreto">
+        <legend>Texto Inicial</legend>
+        <label class="opcao-radio"><input type="radio" name="contratacao-texto-inicial" value="documento_modelo" /> Documento Modelo</label>
+        <label class="opcao-radio"><input type="radio" name="contratacao-texto-inicial" value="texto_padrao" /> Texto Padrão</label>
+        <label class="opcao-radio"><input type="radio" name="contratacao-texto-inicial" value="nenhum" checked /> Nenhum</label>
+      </fieldset>
+
+      <div class="grade grade-decreto">
+        <div class="campo largo">
+          <label for="contratacao-descricao">Descrição</label>
+          <input id="contratacao-descricao" />
+        </div>
+        <div class="campo">
+          <label for="contratacao-numero">Número</label>
+          <input id="contratacao-numero" />
+        </div>
+        <div class="campo">
+          <label for="contratacao-nome-arvore">Nome na Árvore</label>
+          <input id="contratacao-nome-arvore" />
+        </div>
+        <div class="campo largo">
+          <label for="contratacao-interessado-novo">Interessados</label>
+          <div class="nova-linha">
+            <input id="contratacao-interessado-novo" placeholder="Digite um interessado para adicionar" autocomplete="off" />
+            <button type="button" id="contratacao-adicionar-interessado">Adicionar</button>
+          </div>
+          <div id="contratacao-interessados" class="lista-itens-decreto" aria-live="polite"></div>
+        </div>
+        <div class="campo largo">
+          <label for="contratacao-assunto-filtro">Classificação por Assuntos</label>
+          <input id="contratacao-assunto-filtro" placeholder="Clique para listar ou digite para filtrar" autocomplete="off" />
+          <div id="contratacao-assuntos-lista" class="lista-tipos-processo" style="display:none; max-height:220px;"></div>
+          <div id="contratacao-assuntos" class="lista-itens-decreto" aria-live="polite"></div>
+        </div>
+        <div class="campo largo">
+          <label for="contratacao-observacoes">Observações desta unidade</label>
+          <textarea id="contratacao-observacoes" rows="3"></textarea>
+        </div>
+      </div>
+
+      <fieldset class="grupo-decreto">
+        <legend>Nível de Acesso</legend>
+        <div class="opcoes-acesso">
+          <label class="opcao-radio"><input type="radio" name="contratacao-nivel-acesso" value="sigiloso" /> Sigiloso</label>
+          <label class="opcao-radio"><input type="radio" name="contratacao-nivel-acesso" value="restrito" /> Restrito</label>
+          <label class="opcao-radio"><input type="radio" name="contratacao-nivel-acesso" value="publico" checked /> Público</label>
+        </div>
+      </fieldset>
+
+      <p id="contratacao-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+      <div id="contratacao-sei-retorno" class="decreto-processo-gerado oculto" role="status" aria-live="polite">
+        <span id="contratacao-sei-status">Processo criado no SEI de homologação</span>
+        <strong id="contratacao-protocolo-sei"></strong>
+        <span id="contratacao-id-procedimento-sei"></span>
+      </div>
+      <div class="barra">
+        <button type="button" class="acao" id="contratacao-voltar">Voltar</button>
+        <button type="button" class="primario" id="contratacao-criar-sei" disabled>Criar processo no SEI (Homologação)</button>
+        <button type="button" class="acao" id="contratacao-anexar-documento" disabled>Anexar documento</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-documento-interno-sei" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-documento-sei" role="dialog" aria-modal="true" aria-labelledby="documento-interno-sei-titulo">
+      <div class="secao-topo">
+        <h2 id="documento-interno-sei-titulo">Anexar documento ao processo SEI</h2>
+        <button type="button" class="acao" id="documento-interno-sei-fechar">Fechar</button>
+      </div>
+      <section id="documento-interno-sei-lista">
+        <p class="ajuda">Este processo pode ter vários documentos internos. Os documentos já cadastrados permanecem disponíveis abaixo.</p>
+        <div id="documento-interno-sei-itens" class="lista-documentos-sei"></div>
+        <p id="documento-interno-sei-lista-vazia" class="ajuda oculto">Ainda não há documentos internos cadastrados neste processo.</p>
+        <p id="documento-interno-sei-lista-mensagem" class="aviso oculto" role="status" aria-live="polite"></p>
+        <div class="barra">
+          <button type="button" class="primario" id="documento-interno-sei-criar-novo">Criar novo documento interno</button>
+          <button type="button" class="acao oculto" id="documento-interno-sei-revisar-lista">Já verifiquei no SEI; permitir nova tentativa</button>
+        </div>
+      </section>
+      <p id="documento-interno-sei-ajuda-metadados" class="ajuda oculto">Preencha os metadados do novo documento interno. Depois, escolha uma seção editável e preencha um formulário para incluir o conteúdo.</p>
+      <form id="documento-interno-sei-form">
+        <div id="documento-interno-sei-metadados" class="grade grade-decreto oculto">
+          <div class="campo">
+            <label for="sei-doc-id-serie">Tipo documental (ID SEI)</label>
+            <select id="sei-doc-id-serie" required>
+              <option value="">Selecione o tipo documental</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="sei-doc-descricao">Descrição</label>
+            <input id="sei-doc-descricao" required />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-nivel-acesso">Nível de acesso</label>
+            <select id="sei-doc-nivel-acesso">
+              <option value="0">Público</option>
+              <option value="1">Restrito</option>
+              <option value="2">Sigiloso</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="sei-doc-unidade-geradora">ID da unidade geradora de protocolo</label>
+            <input id="sei-doc-unidade-geradora" inputmode="numeric" value="110000001" />
+          </div>
+          <div class="campo largo">
+            <label for="sei-doc-assuntos">IDs de assuntos</label>
+            <input id="sei-doc-assuntos" placeholder="Ex.: 708,709" />
+            <small class="ajuda">IDs numéricos separados por vírgula; o assunto do processo pode ser pré-preenchido.</small>
+          </div>
+          <div class="campo">
+            <label for="sei-doc-interessados">IDs de interessados</label>
+            <input id="sei-doc-interessados" placeholder="Ex.: 123,456" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-destinatarios">IDs de destinatários</label>
+            <input id="sei-doc-destinatarios" placeholder="Ex.: 123,456" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-unidades-reabertura">IDs das unidades para reabertura</label>
+            <input id="sei-doc-unidades-reabertura" placeholder="Ex.: 110000001" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-hipotese-legal">ID da hipótese legal (opcional)</label>
+            <input id="sei-doc-hipotese-legal" inputmode="numeric" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-grau-sigilo">Grau de sigilo (opcional)</label>
+            <input id="sei-doc-grau-sigilo" inputmode="numeric" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-flag-protocolo">Flag de protocolo (opcional)</label>
+            <input id="sei-doc-flag-protocolo" />
+          </div>
+          <div class="campo">
+            <label for="sei-doc-texto-padrao">ID do texto padrão interno (opcional)</label>
+            <input id="sei-doc-texto-padrao" inputmode="numeric" />
+          </div>
+          <div class="campo largo">
+            <label for="sei-doc-observacao">Observação</label>
+            <textarea id="sei-doc-observacao" rows="3"></textarea>
+          </div>
+        </div>
+        <div id="documento-interno-sei-conteudo" class="oculto">
+          <p id="documento-interno-sei-etapa-status" class="ok" role="status" aria-live="polite"></p>
+          <p class="ajuda">Escolha uma seção editável do SEI e preencha um formulário cadastrado. A prévia HTML será revisada antes de substituir o conteúdo da seção.</p>
+          <div class="grade">
+            <div class="campo">
+              <label for="sei-doc-secao">Seção do documento SEI</label>
+              <select id="sei-doc-secao"></select>
+            </div>
+            <div class="campo largo">
+              <label>Conteúdo atual da seção selecionada</label>
+              <div id="sei-doc-secao-atual" class="visualizador-documento-sei" aria-live="polite"></div>
+            </div>
+          </div>
+          <p id="documento-interno-sei-conteudo-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+          <div class="barra">
+            <button type="button" class="acao" id="documento-interno-sei-carregar-secoes">Atualizar lista de seções</button>
+            <button type="button" class="primario" id="documento-interno-sei-formulario-abrir">Preencher seção</button>
+            <button type="button" class="acao oculto" id="documento-interno-sei-revisar-alteracao">Já verifiquei no SEI; permitir nova tentativa</button>
+          </div>
+          <p id="documento-interno-sei-alteracao-retorno" class="ok oculto" role="status" aria-live="polite"></p>
+          <div class="barra">
+            <button type="button" class="acao" id="documento-interno-sei-voltar-lista">Voltar à lista de documentos</button>
+            <button type="button" class="primario" id="documento-interno-sei-outro">Criar outro documento interno</button>
+          </div>
+        </div>
+        <p id="documento-interno-sei-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+        <p id="documento-interno-sei-retorno" class="ok oculto" role="status" aria-live="polite"></p>
+        <div class="barra">
+          <button type="button" class="acao" id="documento-interno-sei-cancelar">Cancelar</button>
+          <button type="button" class="acao oculto" id="documento-interno-sei-revisar">Já verifiquei no SEI; permitir nova tentativa</button>
+          <button type="submit" class="primario oculto" id="documento-interno-sei-enviar">Cadastrar documento no SEI</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="painel-preencher-secao" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-documento-sei" role="dialog" aria-modal="true" aria-labelledby="preencher-secao-titulo">
+      <div class="secao-topo">
+        <h2 id="preencher-secao-titulo">Preencher seção do documento</h2>
+        <button type="button" class="acao" id="preencher-secao-fechar">Voltar</button>
+      </div>
+      <p class="ajuda">Selecione o formulário, preencha os campos, gere a prévia e inclua o conteúdo na seção do SEI.</p>
+      <section id="documento-interno-sei-formulario-painel" class="secao-formulario-sei">
+        <div class="campo">
+          <label for="sei-doc-formulario">Formulário cadastrado</label>
+          <select id="sei-doc-formulario">
+            <option value="">Carregue e selecione um formulário</option>
+          </select>
+        </div>
+        <div class="barra">
+          <button type="button" class="acao" id="documento-interno-sei-formulario-selecionar">Selecionar formulário</button>
+        </div>
+        <div id="documento-interno-sei-formulario-campos" class="grade"></div>
+        <div class="barra">
+          <button type="button" class="primario oculto" id="documento-interno-sei-visualizar">Visualizar HTML para o SEI</button>
+        </div>
+        <div id="documento-interno-sei-previa" class="oculto">
+          <h3>Pré-visualização HTML (formato SEI)</h3>
+          <p class="dica">Este HTML será enviado à seção: parágrafos justificados, negrito e tabelas simples.</p>
+          <div id="documento-interno-sei-previa-html" class="visualizador-documento-sei previa-documento-sei"></div>
+        </div>
+        <details class="campo oculto" style="margin-top:1rem;">
+          <summary>Ou enviar texto simples (teste da API)</summary>
+          <label for="sei-doc-texto-simples">Texto simples para a seção</label>
+          <textarea id="sei-doc-texto-simples" rows="4" placeholder="Use só se não for preencher o formulário acima"></textarea>
+        </details>
+        <div class="barra">
+          <button type="button" class="primario" id="documento-interno-sei-alterar">Incluir conteúdo na seção</button>
+        </div>
+      </section>
+      <p id="preencher-secao-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="preencher-secao-voltar">Voltar às seções</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-incluir-documento" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-documento-sei" role="dialog" aria-modal="true" aria-labelledby="incluir-documento-titulo">
+      <div class="secao-topo">
+        <h2 id="incluir-documento-titulo">Incluir documento no processo</h2>
+        <button type="button" class="acao" id="incluir-documento-fechar">Fechar</button>
+      </div>
+      <p class="ajuda">Demonstração local. O conteúdo será convertido para o editor e salvo como anexo do processo no GCPD; nada será enviado ao SEI.</p>
+
+      <section id="etapa-documento-selecao">
+        <div class="grade">
+          <div class="campo largo">
+            <label for="tipo-documento-sei">Tipo do Documento</label>
+            <select id="tipo-documento-sei">
+              <option value="DOE: Decreto Não Numerado">DOE: Decreto Não Numerado</option>
+            </select>
+          </div>
+          <div class="campo largo">
+            <label for="arquivo-word-documento">Word gerado para inserir</label>
+            <select id="arquivo-word-documento"></select>
+          </div>
+        </div>
+        <p id="documento-selecao-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+        <div class="barra">
+          <button type="button" class="acao" data-fechar-inclusao>Cancelar</button>
+          <button type="button" class="primario" id="documento-ir-dados">Continuar</button>
+        </div>
+      </section>
+
+      <section id="etapa-documento-dados" class="oculto">
+        <div class="identificacao-documento"><strong id="tipo-documento-escolhido"></strong></div>
+        <fieldset class="grupo-decreto">
+          <legend>Texto Inicial</legend>
+          <label class="opcao-radio"><input type="radio" name="texto-inicial-documento" value="documento_modelo" /> Documento Modelo</label>
+          <label class="opcao-radio"><input type="radio" name="texto-inicial-documento" value="texto_padrao" /> Texto Padrão</label>
+          <label class="opcao-radio"><input type="radio" name="texto-inicial-documento" value="nenhum" checked /> Nenhum</label>
+        </fieldset>
+        <div class="grade">
+          <div class="campo largo">
+            <label for="documento-descricao">Descrição</label>
+            <input id="documento-descricao" />
+          </div>
+          <div class="campo largo">
+            <label for="documento-nome-arvore">Nome na Árvore</label>
+            <input id="documento-nome-arvore" />
+          </div>
+          <div class="campo largo">
+            <label for="documento-assuntos">Classificação por Assuntos</label>
+            <textarea id="documento-assuntos" rows="3"></textarea>
+          </div>
+          <div class="campo largo">
+            <label for="documento-observacoes">Observações desta unidade</label>
+            <textarea id="documento-observacoes" rows="3"></textarea>
+          </div>
+        </div>
+        <fieldset class="grupo-decreto">
+          <legend>Nível de Acesso</legend>
+          <div class="opcoes-acesso">
+            <label class="opcao-radio"><input type="radio" name="documento-nivel-acesso" value="sigiloso" /> Sigiloso</label>
+            <label class="opcao-radio"><input type="radio" name="documento-nivel-acesso" value="restrito" /> Restrito</label>
+            <label class="opcao-radio"><input type="radio" name="documento-nivel-acesso" value="publico" checked /> Público</label>
+          </div>
+        </fieldset>
+        <p id="documento-dados-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+        <div class="barra">
+          <button type="button" class="acao" id="documento-voltar-selecao">Voltar</button>
+          <button type="button" class="primario" id="documento-ir-editor">Abrir editor</button>
+        </div>
+      </section>
+
+      <section id="etapa-documento-editor" class="oculto">
+        <p class="ajuda">Revise o conteúdo convertido do Word. A conversão preserva a estrutura e a formatação que puder; confira o resultado antes de salvar.</p>
+        <p id="documento-editor-avisos" class="aviso oculto"></p>
+        <div class="editor-documento-toolbar" role="toolbar" aria-label="Formatação do documento">
+          <button type="button" class="acao" data-editor-command="bold" title="Negrito"><strong>N</strong></button>
+          <button type="button" class="acao" data-editor-command="italic" title="Itálico"><em>I</em></button>
+          <button type="button" class="acao" data-editor-command="underline" title="Sublinhado"><u>S</u></button>
+          <button type="button" class="acao" data-editor-command="insertUnorderedList" title="Lista">• Lista</button>
+          <button type="button" class="acao" data-editor-command="undo" title="Desfazer">Desfazer</button>
+          <button type="button" class="acao" data-editor-command="redo" title="Refazer">Refazer</button>
+        </div>
+        <div id="editor-conteudo-documento" class="editor-conteudo-documento" contenteditable="true" role="textbox" aria-label="Conteúdo do documento" aria-multiline="true"></div>
+        <p id="documento-editor-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+        <div class="barra">
+          <button type="button" class="acao" id="documento-voltar-dados">Voltar</button>
+          <button type="button" class="primario" id="documento-salvar-anexo">Salvar documento no processo</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="painel-busca-sei" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-sei" role="dialog" aria-modal="true" aria-labelledby="busca-sei-titulo">
+      <div class="secao-topo">
+        <h2 id="busca-sei-titulo">Buscar processo no SEI</h2>
+        <button type="button" class="acao" id="busca-sei-fechar">Fechar</button>
+      </div>
+      <p id="busca-sei-ajuda" class="ajuda">Simulação: digite o número SEI que já aparece na coluna Nº SEI da Principal.</p>
+      <div class="campo">
+        <label for="busca-numero-sei">Número SEI</label>
+        <input id="busca-numero-sei" placeholder="Ex.: 1234.5678/2026-90" autocomplete="off" />
+      </div>
+      <p id="busca-sei-erro" class="erro oculto"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="busca-sei-cancelar">Cancelar</button>
+        <button type="button" class="primario" id="busca-sei-confirmar">Buscar e carregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="painel-certificacoes" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-certificacoes" role="dialog" aria-modal="true" aria-labelledby="cert-titulo">
+      <div class="secao-topo">
+        <h2 id="cert-titulo">Sugestões de certificações</h2>
+        <button type="button" class="acao" id="cert-fechar">Fechar</button>
+      </div>
+      <p id="cert-ajuda" class="ajuda">Marque as certificações desejadas e aplique no formulário. A busca usa a tecnologia e os perfis informados.</p>
+      <p id="cert-aviso" class="aviso oculto"></p>
+      <div id="cert-lista" class="lista-sugestoes"></div>
+      <p id="cert-erro" class="erro oculto"></p>
+      <div class="barra">
+        <button type="button" class="acao" id="cert-cancelar">Cancelar</button>
+        <button type="button" class="primario" id="cert-aplicar">Aplicar selecionadas</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=excluir-docs-lote"></script>
+<script src="{{ url_for('static', filename='cadastro.js') }}?v=tipos-processo-20261108"></script>
+</body>
+</html>

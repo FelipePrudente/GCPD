@@ -1,0 +1,32 @@
+{
+  "documentos": [
+    {
+      "id": "relatorio",
+      "nome": "Relatório de Justificativa",
+      "config_id": "relatorio_justificativa",
+      "gerador": "relatorio",
+      "sistema": true
+    },
+    {
+      "id": "termo",
+      "nome": "Termo de Referência",
+      "config_id": "termo_referencia",
+      "gerador": "termo",
+      "sistema": true
+    },
+    {
+      "id": "pesquisa",
+      "nome": "Pesquisa Salarial",
+      "config_id": "pesquisa_salarial",
+      "gerador": "pesquisa",
+      "sistema": true
+    },
+    {
+      "id": "estudo_tecnico_preliminar",
+      "nome": "Estudo Tecnico Preliminar",
+      "config_id": "estudo_tecnico_preliminar",
+      "gerador": null,
+      "sistema": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "estudo_tecnico_preliminar",
+  "nome": "Estudo Tecnico Preliminar",
+  "descricao": "Modelo criado em Configurações. Inclua campos em Parâmetros.",
+  "tags": [
+    {
+      "tag": "{{assunto}}",
+      "campo": "assunto",
+      "rotulo": "Assunto",
+      "secao": "Identificação",
+      "tipo": "texto"
+    },
+    {
+      "tag": "{{tecnologia}}",
+      "campo": "tecnologia",
+      "rotulo": "Tecnologia",
+      "secao": "Objeto",
+      "tipo": "texto"
+    }
+  ]
+}
