@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Relatório de Justificativa — esqueleto e campos</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --paper: #fffdf8;
+    --ink: #1c1915;
+    --muted: #5e574e;
+    --line: #e4ddd0;
+    --fixo: #1f7a4d;
+    --fixo-bg: #e7f6ee;
+    --campo: #1d4e89;
+    --campo-bg: #e7f0fa;
+    --ia: #6b3fa0;
+    --ia-bg: #f3eafa;
+    --confirma: #8a5a12;
+    --confirma-bg: #fbf3e4;
+    --aws: #8a4b12;
+    --dyn: #1a5276;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Calibri, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.45;
+  }
+  header {
+    background: #1c1915;
+    color: #f7f3ea;
+    padding: 28px 32px 22px;
+  }
+  header h1 { margin: 0 0 6px; font-size: 26px; font-weight: 650; }
+  header p { margin: 0; max-width: 920px; color: #ddd4c4; }
+  .pace {
+    margin-top: 14px;
+    background: #3a332b;
+    border-left: 4px solid #e2b657;
+    padding: 10px 14px;
+    max-width: 920px;
+    color: #f3ead6;
+    font-size: 14px;
+  }
+  nav.tabs {
+    display: flex;
+    gap: 8px;
+    padding: 14px 32px 0;
+    background: #1c1915;
+  }
+  nav.tabs button {
+    border: 0;
+    background: transparent;
+    color: #cbbfaa;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    border-bottom: 3px solid transparent;
+  }
+  nav.tabs button.active {
+    color: #fff;
+    border-bottom-color: #e2b657;
+  }
+  main { padding: 22px 32px 64px; max-width: 1280px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .fixo { background: var(--fixo-bg); color: var(--fixo); }
+  .campo { background: var(--campo-bg); color: var(--campo); }
+  .ia { background: var(--ia-bg); color: var(--ia); }
+  .confirma { background: var(--confirma-bg); color: var(--confirma); }
+  .layout { display: grid; grid-template-columns: 250px 1fr; gap: 18px; }
+  .side {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+  }
+  .side button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    padding: 7px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .side button:hover, .side button.on { background: #efe8da; }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px 14px;
+    margin-bottom: 14px;
+  }
+  .card h2 { margin: 8px 0 6px; font-size: 18px; }
+  .card .why { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .col {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    font-size: 13.5px;
+  }
+  .col h3 { margin: 0 0 8px; font-size: 13px; }
+  .col.aws h3 { color: var(--aws); }
+  .col.dyn h3 { color: var(--dyn); }
+  .col p { margin: 0 0 8px; }
+  .skel {
+    background: #fbf8f2;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+  .mark { background: #d9e8f8; color: #14365f; padding: 0 3px; border-radius: 3px; }
+  .mark-ia { background: #eadcf7; color: #4c2778; padding: 0 3px; border-radius: 3px; }
+  mark.preenche { background: #ffe08a; color: inherit; padding: 0 2px; border-radius: 2px; }
+  mark.preenche-ia { background: #eadcf7; color: inherit; padding: 0 2px; border-radius: 2px; }
+  .mapa { display: grid; grid-template-columns: minmax(280px, .9fr) minmax(340px, 1.15fr); gap: 14px; align-items: start; }
+  .trechos-pdf { display: flex; flex-direction: column; gap: 10px; }
+  .pdf {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .rotulo-pdf {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sem-preencher { margin: 8px 0 0; font-size: 12px; color: var(--fixo); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border-bottom: 1px solid var(--line); text-align: left; padding: 8px 8px; vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .vote {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+  }
+  .vote button {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .vote button.picked { border-color: #1c1915; background: #1c1915; color: #fff; }
+  .vote input {
+    flex: 1;
+    min-width: 180px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 8px;
+  }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .toolbar button, .primary {
+    border: 0;
+    background: #1c1915;
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .note { font-size: 13px; color: var(--muted); }
+  .hidden { display: none; }
+  @media (max-width: 900px) {
+    .layout, .cols, .mapa { grid-template-columns: 1fr; }
+    .side { position: static; max-height: none; }
+    main, header, nav.tabs { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Relatório de Justificativa — comparação do esqueleto</h1>
+  <p>Os dois processos comparados são o REL.GEN.054.2026 (tecnologias AWS) e o REL.GEN.105.2026 (Microsoft Dynamics e Power Apps). O corpo principal, antes dos anexos, tem cerca de 73% de texto em comum. Os anexos 01 a 08 são modelos em branco e aparecem iguais nos dois arquivos.</p>
+  <div class="pace">Ritmo: esta tela é só para validar a estrutura. O template ainda não está fechado e o sistema ainda não foi criado. Em cada bloco, marque se concorda com a classificação e deixe um comentário. Suas marcas ficam salvas neste navegador.</div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="comparacao">Comparação</button>
+  <button data-tab="esqueleto">Esqueleto</button>
+  <button data-tab="campos">Campos do cadastro</button>
+</nav>
+<main>
+  <section id="comparacao">
+    <div class="legend">
+      <span class="badge fixo">Fixo — igual nos dois</span>
+      <span class="badge campo">Campo — o usuário preenche</span>
+      <span class="badge ia">Texto da IA — a inteligência redige</span>
+      <span class="badge confirma">Confirmar com você</span>
+      <span class="badge" style="background:#ffe08a;color:#1c1915">Amarelo no trecho — dado a preencher</span>
+      <span class="badge ia">Roxo no trecho — texto que a IA redige</span>
+    </div>
+    <div class="toolbar">
+      <button type="button" id="exportar">Copiar minhas marcas</button>
+      <span class="note" id="export-status"></span>
+    </div>
+    <div class="layout">
+      <aside class="side" id="menu"></aside>
+      <div id="blocos"></div>
+    </div>
+  </section>
+
+  <section id="esqueleto" class="hidden">
+    <div class="card">
+      <h2>Template proposto do corpo do relatório</h2>
+      <p class="why">Azul é dado de cadastro. Roxo é texto que a inteligência produz a partir da tecnologia, dos perfis e do contexto informado. O restante entra pronto. Os anexos 01 a 08 ficam como modelos padrão e não entram neste esqueleto.</p>
+      <div class="skel" id="skel"></div>
+    </div>
+  </section>
+
+  <section id="campos" class="hidden">
+    <div class="card">
+      <h2>O que o cadastro precisa pedir</h2>
+      <p class="why">Estes são os campos para o botão Gerar Documentos montar o Relatório de Justificativa. A Pesquisa Salarial e o Termo de Referência ainda não foram mapeados. Campos calculados saem sozinhos a partir dos outros.</p>
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Quem preenche</th><th>Onde entra</th><th>Exemplo AWS</th><th>Exemplo Dynamics</th></tr>
+        </thead>
+        <tbody id="tabela-campos"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+const blocos = [
+  {
+    id: "capa",
+    titulo: "Capa",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "O timbre do Governo e da PRODESP se repete. Mudam o processo, o código do relatório, a versão, o mês, a tecnologia e, nos dois arquivos, também a linha da unidade no cabeçalho.",
+    aws: "Processo 359.00000175/2026-03. REL.GEN.054.2026 V1.0. Março/2026. Cabeçalho: Gerência de Software e Serviços. Assunto: tecnologias AWS.",
+    dyn: "Processo 359.00006264/2026-55. REL.GEN.105.2026 V1.1. Agosto/2026. Cabeçalho: Assessoria Técnica - Gerência de Engenharia de Software e Serviços. Assunto: Microsoft Dynamics e Power Apps.",
+    esqueleto: "Interessado permanece PRODESP nos dois. Diretoria DDS, Superintendência SCL e Gerência GEN também se repetem na capa."
+  },
+  {
+    id: "objetivo",
+    titulo: "1. Objetivo",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "A frase é a mesma. Só o nome da tecnologia muda no final.",
+    aws: "…plataformas tecnológicas da PRODESP utilizando Tecnologias AWS.",
+    dyn: "…plataformas tecnológicas da PRODESP utilizando Tecnologias Microsoft Dynamics e Power Apps.",
+    esqueleto: "Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando {{tecnologia}}."
+  },
+  {
+    id: "def",
+    titulo: "2.1 Definições da plataforma",
+    tipo: "ia",
+    tipoLabel: "Texto da IA",
+    porque: "Quase nada se repete. Cada relatório descreve a plataforma, os serviços principais e o benefício para a PRODESP. Este bloco deve ser redigido pela inteligência a partir da tecnologia informada.",
+    aws: "Descreve Amazon Web Services: Compute, Storage, Networking, Security, Analytics e IA/ML, com exemplos como EC2, Lambda, S3, IAM e SageMaker.",
+    dyn: "Descreve Dynamics e Power Apps: Dynamics Sales, Customer Service, Power Apps, Dataverse, Copilot Studio, governança, LGPD e DevSecOps.",
+    esqueleto: "Não vale um campo curto. A IA escreve o item 2.1.1 inteiro."
+  },
+  {
+    id: "medidas",
+    titulo: "2.2 Unidades de medida",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "O texto de APF, HST, local de execução, teletrabalho e a regra de quando usar PF ou HST é o mesmo nos dois relatórios.",
+    aws: "Medição em APF ou HST. HST nas dependências da PRODESP, dos clientes ou em teletrabalho. PF quando houver requisitos funcionais mensuráveis.",
+    dyn: "Mesmo texto.",
+    esqueleto: "Entra o bloco padrão, sem campo."
+  },
+  {
+    id: "situacao",
+    titulo: "2.3 Situação atual",
+    tipo: "ia",
+    tipoLabel: "Texto da IA",
+    porque: "Os dois falam de complementar a equipe interna e transferir conhecimento, mas o diagnóstico é específico da tecnologia. A inteligência redige.",
+    aws: "Não há contrato vigente para essas tecnologias. Cita curva de aprendizado e fabricantes.",
+    dyn: "Demanda sob ordem de serviço, com APF, HST ou sprint/release. Não afirma ausência de contrato vigente.",
+    esqueleto: "A IA escreve o item 2.3. Se a existência de contrato vigente for um fato, o cadastro precisa perguntar isso para a IA não inventar."
+  },
+  {
+    id: "just",
+    titulo: "3.1 Justificativa para a licitação",
+    tipo: "ia",
+    tipoLabel: "Texto da IA",
+    porque: "É o núcleo narrativo do relatório e muda por completo. AWS fala de crescimento da nuvem, de 35% para cerca de 150%, e de revisão de SLA. Dynamics fala de cadeia de valor, perfis e LGPD.",
+    aws: "Narrativa de expansão AWS, cloud native, Marketplace e alinhamento com contratos vigentes.",
+    dyn: "Narrativa de Dynamics, Power Platform, metodologias ágeis e lista de perfis especializados.",
+    esqueleto: "A IA escreve o item 3.1, antes do 3.1.2. Números de crescimento e fatos institucionais precisam ser informados pelo usuário, para a IA não inventar."
+  },
+  {
+    id: "clientes",
+    titulo: "3.1.2 Demanda atual de serviços",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "Os dois parágrafos de introdução e o parágrafo final, sobre ordem de serviço, são iguais. Muda a lista de cliente e projeto/sistema.",
+    aws: "Tabela Cliente + Projeto/Sistema, com PRODESP, SEFAZ-DF, SEDUC, UNICAMP, DETRAN, TJSP e outros.",
+    dyn: "Lista Projeto/Sistema: CETTPRO, CRM - SEDUC, DEFENSORIA, PROCON, DETRAN - PORTAL DOS CREDENCIADOS, CAO.",
+    esqueleto: "Introdução fixa + tabela {{cliente}} / {{projeto}} + fecho fixo."
+  },
+  {
+    id: "perfis",
+    titulo: "3.2 Demanda e 3.3 Licitação",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "A frase de abertura é a mesma. O quadro muda: itens/lotes, perfil, experiência mínima, horas e proporção do valor-hora. O total de horas e o valor por extenso são calculados.",
+    aws: "3 itens (AWS Cloud, Infraestrutura e Segurança, Dados e IA). 18 perfis. Total 272.160 horas. Referência de proporção 1,00 no Desenvolvedor Cloud Pleno.",
+    dyn: "3 itens (Dynamics, Power Apps, Dynamics/Power Apps). 20 perfis. Total 418.039 horas. Proporção 1,00 no Analista Desenvolvedor Dynamics Pleno.",
+    esqueleto: "Quadro repetível. A frase do 3.3 usa o total e o total por extenso."
+  },
+  {
+    id: "criterios",
+    titulo: "3.4 Critérios e 3.6 Proposta",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "A regra de menor valor do lote e de desconto sobre um item de referência é fixa. Mudam o nome da tecnologia e o perfil de referência.",
+    aws: "Item de referência: Desenvolvedor Cloud Pleno. Esse perfil existe no quadro.",
+    dyn: "Item de referência escrito como Desenvolvedor Dynamics Pleno. No quadro, o perfil de proporção 1,00 se chama Analista Desenvolvedor Dynamics Pleno. Precisa confirmar qual nome prevalece.",
+    esqueleto: "Texto padrão com {{tecnologia}} e {{perfil_referencia}}."
+  },
+  {
+    id: "pf",
+    titulo: "3.5 Pontos de função",
+    tipo: "confirma",
+    tipoLabel: "Confirmar",
+    porque: "A fórmula VPF = VMA * PROD e os itens 3.5.1, 3.5.3, 3.5.4 e 3.5.5 se repetem. Mudam a produtividade e a frase de quais perfis entram no valor médio da hora.",
+    aws: "12 horas por ponto de função. VMA = média das HST de nível pleno no item de interesse e do item 7.",
+    dyn: "8 horas por ponto de função. VMA = média dos plenos dos itens 2 e 3, e de todos os perfis do item 1.",
+    esqueleto: "Campos: horas por PF e a regra do VMA. O restante do 3.5 fica fixo."
+  },
+  {
+    id: "perfis-tec",
+    titulo: "3.7 Perfis técnicos",
+    tipo: "fixo",
+    tipoLabel: "Fixo, com um nome",
+    porque: "Formação superior, substituição em 5 dias úteis e áreas de conhecimento são iguais. Só o 3.7.1 cita o nome da tecnologia ao apontar para o Termo de Referência.",
+    aws: "Termo de Referência de Tecnologias AWS.",
+    dyn: "Termo de Referência de Tecnologias Microsoft Dynamics/Microsoft Power Apps.",
+    esqueleto: "Bloco padrão com {{tecnologia}} no item 3.7.1."
+  },
+  {
+    id: "habilitacao",
+    titulo: "3.8 Comprovação técnica",
+    tipo: "confirma",
+    tipoLabel: "Confirmar",
+    porque: "A introdução, as declarações de capacidade própria e de métodos ágeis, e a maior parte das regras dos atestados (50% do volume, sigilo, diligência, tradução, grupo empresarial) se repetem. A declaração do fabricante, os atestados específicos e a equivalência hora/PF mudam de estrutura, não só de palavra.",
+    aws: "Parceiro AWS Advanced, MSA/ProServe, ISG AWS nos últimos 24 meses. Atestados de blockchain e IA/ML, de ao menos 2 entre EC2, Security Group, Lambda e S3, e de perfis nomeados com no mínimo 2.500 horas. Equivalência de 12 horas por PF. Professional Services do fabricante: 4.000 horas em 12 meses.",
+    dyn: "Carta Microsoft dos últimos 6 meses nas 6 designações Solutions Partner. ISG Microsoft 2024 e/ou 2025. Atestado do perfil Analista Desenvolvedor Dynamics com no mínimo 4.000 horas, mais IA/ML. Equivalência de 8 horas por PF. Não há o item de Professional Services de 4.000 horas.",
+    esqueleto: "Miolo padrão dos atestados + um bloco livre, por tecnologia, com exigências do fabricante, componentes, perfis mínimos e horas mínimas."
+  },
+  {
+    id: "financeiro",
+    titulo: "3.9 e 3.10 Habilitação financeira e planilha",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "Certidão de falência, balanço, patrimônio líquido de 10% e os critérios da planilha de custos, do item a ao k, são o mesmo texto.",
+    aws: "Texto idêntico.",
+    dyn: "Texto idêntico.",
+    esqueleto: "Entra o bloco padrão."
+  },
+  {
+    id: "assinatura",
+    titulo: "3.11 Assinatura do contrato",
+    tipo: "confirma",
+    tipoLabel: "Confirmar",
+    porque: "O representante técnico, a explicação de CMMI/MPS.BR e a explicação das ISO 9001 e 27001 se repetem. Parceiro, estudo de mercado e lista de certificações profissionais mudam conforme o fabricante. CMMI nível 3 e MPS.BR nível C, e a exigência das duas ISO, aparecem nos dois.",
+    aws: "Parceiro AWS Advanced, MSA, ISG AWS 24 meses. Certificações: SysOps, Solutions Architect Professional e Associate, Security, DevOps, Developer, Database, Data Engineer, Cloud Practitioner, AI Practitioner.",
+    dyn: "Carta Microsoft e 6 designações. ISG Microsoft 2024/2025. Lista exemplificativa de certificações MB, PL, AZ e outras, distribuídas entre um ou mais profissionais.",
+    esqueleto: "3.11.1 fixo. Parceiro, estudo de mercado e certificações são campos. CMMI, MPS.BR e ISO ficam no texto padrão, se você confirmar que o nível exigido não muda."
+  },
+  {
+    id: "obrigacoes",
+    titulo: "4. Obrigações",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "Obrigações da contratada e da PRODESP são o mesmo texto, inclusive garantia de 5% em até 15 dias e substituição de profissional em 5 dias úteis.",
+    aws: "Texto idêntico.",
+    dyn: "Texto idêntico.",
+    esqueleto: "Entra o bloco padrão. Só vira campo se, em outro contrato, o percentual da garantia ou o prazo mudar."
+  },
+  {
+    id: "modelos",
+    titulo: "5. Modelos de formulários",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "A descrição dos anexos 01 a 08 é idêntica: ordem de serviço, SoW, recebimento, aceite, planilha de custos, apuração de atestados, proposta comercial e termo de confidencialidade.",
+    aws: "Texto idêntico.",
+    dyn: "Texto idêntico.",
+    esqueleto: "Entra o bloco padrão."
+  },
+  {
+    id: "recursos",
+    titulo: "6. Recursos financeiros e 7. Gestor",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "Os dois dizem que o DCO usa recurso corporativo e que gestor e fiscal serão indicados pela área demandante no decorrer do processo.",
+    aws: "Texto idêntico.",
+    dyn: "Texto idêntico.",
+    esqueleto: "Entra o bloco padrão, sem nomear gestor nesta etapa."
+  },
+  {
+    id: "conclusao",
+    titulo: "8. Conclusão",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "A frase é um modelo. Entram o total de horas, o por extenso, a tecnologia e o prazo. Nos dois casos o prazo é 12 meses, em lote único, com valor vindo da pesquisa de preços.",
+    aws: "272.160 horas de tecnologias AWS, 12 meses.",
+    dyn: "418.039 horas de Microsoft Dynamics/Microsoft Power Apps, 12 meses.",
+    esqueleto: "Total e por extenso calculados. Tecnologia vem do cadastro. Prazo de 12 meses e lote único ficam padrão até você dizer que podem mudar."
+  },
+  {
+    id: "assinam",
+    titulo: "9. Elaboração e 10. Aprovação",
+    tipo: "campo",
+    tipoLabel: "Campo",
+    porque: "A área que elabora e as pessoas que aprovam mudam. A assinatura de gerente da GEN se repete; a segunda assinatura não.",
+    aws: "Elaborado pela CCTR, vinculada à GEN. Aprovam Weller Oshiro, matrícula 16.056-0, gerente, e Giuliana Martin, matrícula 16.057-8, assessora.",
+    dyn: "Elaborado pela GEN. Aprovam Weller Oshiro, matrícula 16.056-0, gerente, e Tiago Macedo Rocha, matrícula 15.539-1, analista de negócios e TI.",
+    esqueleto: "Texto da área elaboradora + lista de nome, matrícula e cargo."
+  },
+  {
+    id: "anexos",
+    titulo: "Anexos 01 a 08",
+    tipo: "fixo",
+    tipoLabel: "Fixo",
+    porque: "São modelos em branco de ordem de serviço, plano de projeto, recebimento, aceite, planilhas, proposta e termo de sigilo. O início é o mesmo e o corpo usa espaços a preencher na execução do contrato, não na geração deste relatório.",
+    aws: "Modelos com XXX, datas e nomes em branco.",
+    dyn: "Mesmos modelos.",
+    esqueleto: "Anexar os modelos padrão. Não fazem parte do cadastro do relatório."
+  }
+];
+
+const campos = [
+  ["Número do processo SEI", "Usuário", "Capa e rodapé", "359.00000175/2026-03", "359.00006264/2026-55"],
+  ["Código do relatório", "Usuário", "Capa", "REL.GEN.054.2026", "REL.GEN.105.2026"],
+  ["Versão", "Usuário", "Capa", "V1.0", "V1.1"],
+  ["Mês e ano", "Usuário", "Capa", "Março/2026", "Agosto/2026"],
+  ["Unidade do cabeçalho", "Usuário", "Capa", "Gerência de Software e Serviços", "Assessoria Técnica - Gerência de Engenharia de Software e Serviços"],
+  ["Nome da tecnologia", "Usuário", "Capa, objetivo, 3.4, 3.7, conclusão", "Tecnologias AWS", "Tecnologias Microsoft Dynamics e Power Apps"],
+  ["Há contrato vigente hoje?", "Usuário", "Alimenta a IA no item 2.3", "Não há contrato vigente", "Não está dito dessa forma"],
+  ["Fatos que a justificativa não pode inventar", "Usuário", "Alimenta a IA nos itens 2.3 e 3.1", "Crescimento operacional citado no texto", "Plataformas e objetivos institucionais"],
+  ["Definição da plataforma", "IA", "Item 2.1.1", "Texto AWS", "Texto Dynamics e Power Apps"],
+  ["Situação atual", "IA", "Item 2.3", "Texto próprio", "Texto próprio"],
+  ["Justificativa da licitação", "IA", "Item 3.1", "Texto próprio", "Texto próprio"],
+  ["Cliente e projeto/sistema", "Usuário, lista", "Item 3.1.2", "PRODESP / Sustentação Squad de Operações", "SEDUC / CRM - SEDUC"],
+  ["Item ou lote", "Usuário, lista", "Quadros 3.2 e 3.3", "ITEM 1: AWS CLOUD", "ITEM 1: MICROSOFT DYNAMICS"],
+  ["Perfil, nível, experiência, horas e proporção", "Usuário, lista", "Quadros 3.2 e 3.3", "Desenvolvedor Cloud Pleno, 2 anos, 40.320 h, 1,00", "Analista Desenvolvedor Dynamics Pleno, 3 anos, 126.477 h, 1,00"],
+  ["Perfil de referência do desconto", "Usuário", "Itens 3.4 e 3.6", "Desenvolvedor Cloud Pleno", "Desenvolvedor Dynamics Pleno — confirmar o nome"],
+  ["Total de horas e por extenso", "Calculado", "Itens 3.3 e 8", "272.160", "418.039"],
+  ["Horas por ponto de função", "Usuário", "Itens 3.5.2 e 3.8", "12", "8"],
+  ["Regra do valor médio da hora (VMA)", "Usuário", "Item 3.5.2", "Plenos do item de interesse e do item 7", "Plenos dos itens 2 e 3 e todos os perfis do item 1"],
+  ["Prazo de vigência em meses", "Usuário, com padrão 12", "Conclusão", "12", "12"],
+  ["Exigência de parceria com o fabricante", "Usuário", "Itens 3.8 e 3.11", "AWS Advanced ou superior e MSA", "Carta Microsoft, 6 designações, últimos 6 meses"],
+  ["Estudo de mercado exigido", "Usuário", "Itens 3.8 e 3.11", "ISG AWS, últimos 24 meses", "ISG Microsoft, 2024 e/ou 2025"],
+  ["Atestados específicos e horas mínimas", "Usuário", "Item 3.8", "Perfis nomeados, mínimo 2.500 h; Professional Services 4.000 h", "Analista Desenvolvedor Dynamics, mínimo 4.000 h"],
+  ["Certificações profissionais exigidas", "Usuário, lista", "Item 3.11", "Lista AWS Certified", "Lista Microsoft, exemplificativa"],
+  ["Área que elabora", "Usuário", "Item 9", "CCTR vinculada à GEN", "GEN"],
+  ["Aprovadores: nome, matrícula e cargo", "Usuário, lista", "Item 10", "Weller Oshiro e Giuliana Martin", "Weller Oshiro e Tiago Macedo Rocha"]
+];
+
+const skel = `CAPA
+Governo do Estado de São Paulo
+Companhia de Processamento de Dados do Estado de São Paulo
+<span class="mark">{{unidade_cabecalho}}</span>
+
+RELATÓRIO DE JUSTIFICATIVA
+Nº do Processo: <span class="mark">{{processo}}</span>
+Interessado: PRODESP
+Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM <span class="mark">{{tecnologia}}</span>
+
+REL. <span class="mark">{{codigo}}</span> <span class="mark">{{versao}}</span>
+<span class="mark">{{mes_ano}}</span>
+
+DDS - Diretoria de Desenvolvimento de Sistemas
+SCL – Superintendência de Sistemas Estruturantes
+GEN - Gerência de Engenharia de Software e Serviços
+
+1. OBJETIVO
+[frase padrão] utilizando <span class="mark">{{tecnologia}}</span>.
+
+2. CONSIDERAÇÕES
+2.1 Definições
+<span class="mark-ia">{{ia.definicao_da_plataforma}}</span>
+
+2.2 Unidades de Medidas para Desenvolvimento dos Serviços
+[bloco fixo: APF, HST, local, teletrabalho e critério de medição]
+
+2.3 Situação Atual
+<span class="mark-ia">{{ia.situacao_atual}}</span>
+fato informado pelo usuário: <span class="mark">{{existe_contrato_vigente}}</span>
+
+3. PROCEDIMENTOS ADOTADOS
+3.1 Justificativa Para a Licitação
+<span class="mark-ia">{{ia.justificativa}}</span>
+fatos informados pelo usuário: <span class="mark">{{fatos_que_nao_podem_ser_inventados}}</span>
+
+3.1.2 Demanda Atual de Serviços
+[introdução fixa]
+para cada linha: <span class="mark">{{cliente}}</span> | <span class="mark">{{projeto_sistema}}</span>
+[fecho fixo sobre ordem de serviço]
+
+3.2 Demanda
+[introdução fixa]
+para cada item <span class="mark">{{item}}</span>:
+  <span class="mark">{{perfil}}</span> | <span class="mark">{{experiencia_anos}}</span> | <span class="mark">{{horas}}</span>
+total do item e total geral calculados
+
+3.3 Da Licitação
+[frase padrão] total de <span class="mark">{{total_horas}}</span> (<span class="mark">{{total_por_extenso}}</span>) horas
+mesmo quadro, acrescido de <span class="mark">{{proporcao_valor_hora}}</span>
+
+3.4 Critérios para Contratação
+[texto padrão] Termo de Referência em <span class="mark">{{tecnologia}}</span>
+item de referência <span class="mark">{{perfil_referencia}}</span>
+
+3.5 Contratação de Projetos em Pontos de Função
+[fórmula fixa VPF = VMA * PROD]
+<span class="mark">{{horas_por_pf}}</span> horas por ponto de função
+<span class="mark">{{regra_vma}}</span>
+
+3.6 Proposta Comercial
+[texto padrão] item de referência <span class="mark">{{perfil_referencia}}</span>
+
+3.7 Perfis Técnicos
+[texto padrão] tecnologia <span class="mark">{{tecnologia}}</span>
+
+3.8 Comprovação Técnica
+[declarações e regras gerais fixas]
+bloco da tecnologia:
+  <span class="mark">{{parceria_fabricante}}</span>
+  <span class="mark">{{estudo_de_mercado}}</span>
+  <span class="mark">{{atestados_especificos}}</span>
+  equivalência <span class="mark">{{horas_por_pf}}</span> horas por ponto de função
+
+3.9 Qualificação Econômico-Financeira
+[bloco fixo]
+
+3.10 Planilha de Composição de Custos e Preços
+[bloco fixo]
+
+3.11 Assinatura do contrato
+[representante técnico: bloco fixo]
+<span class="mark">{{parceria_fabricante}}</span>
+<span class="mark">{{estudo_de_mercado}}</span>
+<span class="mark">{{certificacoes}}</span>
+[CMMI nível 3 ou MPS.BR nível C, ISO 9001 e ISO/IEC 27001: bloco fixo, se confirmado]
+
+4. OBRIGAÇÕES
+[bloco fixo, garantia de 5% em 15 dias]
+
+5. MODELOS DE FORMULÁRIOS
+[bloco fixo, anexos 01 a 08]
+
+6. RECURSOS FINANCEIROS
+[bloco fixo]
+
+7. GESTOR E FISCAL DO CONTRATO
+[bloco fixo: indicados no decorrer do processo]
+
+8. CONCLUSÃO
+[frase padrão] <span class="mark">{{total_horas}}</span> (<span class="mark">{{total_por_extenso}}</span>) horas
+em <span class="mark">{{tecnologia}}</span>, por <span class="mark">{{prazo_meses}}</span> meses, lote único
+
+9. ELABORAÇÃO
+<span class="mark">{{area_elaboradora}}</span>
+
+10. APROVAÇÃO
+para cada assinatura: <span class="mark">{{nome}}</span>, matrícula <span class="mark">{{matricula}}</span>, <span class="mark">{{cargo}}</span>
+
+ANEXOS 01 A 08
+[modelos padrão, sem preenchimento neste cadastro]`;
+
+const sem = `<p class="sem-preencher">Sem destaque: este trecho entra inteiro, sem campo a preencher.</p>`;
+const trechos = {
+  capa: {
+    aws: `Governo do Estado de São Paulo
+Companhia de Processamento de Dados do Estado de São Paulo
+<mark class="preenche">Gerência de Software e Serviços</mark>
+
+RELATÓRIO DE JUSTIFICATIVA
+Nº do Processo: <mark class="preenche">359.00000175/2026-03</mark>
+Interessado: CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO - PRODESP
+Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM <mark class="preenche">TECNOLOGIAS AWS</mark>
+
+RELATÓRIO DE JUSTIFICATIVA
+<mark class="preenche">REL.GEN.054.2026 V1.0</mark>
+
+LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO
+ESPECIALIZADO EM <mark class="preenche">TECNOLOGIAS AWS</mark>
+
+DDS - Diretoria de Desenvolvimento de Sistemas
+SCL – Superintendência de Sistemas Estruturantes
+GEN - Gerência de Engenharia de Software e Serviços
+
+<mark class="preenche">MARÇO / 2026</mark>`,
+    dyn: `Governo do Estado de São Paulo
+Companhia de Processamento de Dados do Estado de São Paulo
+<mark class="preenche">Assessoria Técnica - Gerência de Engenharia de Software e Serviços</mark>
+
+RELATÓRIO DE JUSTIFICATIVA
+Nº do Processo: <mark class="preenche">359.00006264/2026-55</mark>
+Interessado: CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO - PRODESP
+Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM <mark class="preenche">TECNOLOGIAS MICROSOFT DYNAMICS E POWER APPS</mark>
+
+RELATÓRIO DE JUSTIFICATIVA
+<mark class="preenche">REL.GEN.105.2026 V1.1</mark>
+
+LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO
+ESPECIALIZADO EM <mark class="preenche">TECNOLOGIAS MICROSOFT DYNAMICS E POWER APPS</mark>
+
+DDS - Diretoria de Desenvolvimento de Sistemas
+SCL – Superintendência de Sistemas Estruturantes
+GEN - Gerência de Engenharia de Software e Serviços
+
+<mark class="preenche">AGOSTO / 2026</mark>`
+  },
+  objetivo: {
+    aws: `1. OBJETIVO
+
+Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado para contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando <mark class="preenche">Tecnologias AWS</mark>.`,
+    dyn: `1. OBJETIVO
+
+Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado para contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando <mark class="preenche">Tecnologias Microsoft Dynamics e Power Apps</mark>.`
+  },
+  def: {
+    aws: `2.1 Definições
+2.1.1 <mark class="preenche-ia">Plataforma Amazon Web Services (AWS)</mark>
+
+<mark class="preenche-ia">A Amazon Web Services (AWS) é uma plataforma de computação em nuvem que disponibiliza infraestrutura, plataformas e serviços tecnológicos sob demanda por meio da Internet, permitindo o desenvolvimento, implantação e operação de aplicações com alta disponibilidade, escalabilidade e segurança.</mark>
+
+O item segue nesse teor, com Compute, Storage, Networking, Security, Analytics e Inteligência Artificial. O bloco inteiro é o texto a redigir.`,
+    dyn: `2.1 Definições
+2.1.1 <mark class="preenche-ia">Plataformas Microsoft Dynamics e Power Apps</mark>
+
+<mark class="preenche-ia">As plataformas Microsoft Dynamics e Power Apps integram o ecossistema Microsoft voltado à construção, customização, automação, integração e sustentação de soluções corporativas, combinando recursos SaaS, PaaS, low-code/no-code e pro-code.</mark>
+
+O item segue com Dynamics Sales, Customer Service, Power Apps, Dataverse e os demais produtos. O bloco inteiro é o texto a redigir.`
+  },
+  medidas: {
+    aws: `2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).
+2.2.5 Tecnologias e Forma de Medição:
+Será passível de medição em PF quando envolver linguagens de programação que utilizem requisitos funcionais definidos e mensuráveis em Pontos de Função.${sem}`,
+    dyn: `2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).
+2.2.5 Tecnologias e Forma de Medição:
+O mesmo enunciado do relatório AWS.${sem}`
+  },
+  situacao: {
+    aws: `2.3 Situação Atual
+
+<mark class="preenche-ia">A PRODESP adota tecnologias AWS para o desenvolvimento e a manutenção de sistemas voltados para arquiteturas Client-Server, Internet, Intranet, Cloud e Mobile.</mark> Esse trabalho é realizado por equipe técnica própria, mas também depende de serviços de apoio técnico especializado.
+
+<mark class="preenche">Atualmente, não há nenhum contrato vigente para a prestação desses serviços</mark>, tornando indispensável a contratação para assegurar o atendimento às demandas projetadas dos clientes.`,
+    dyn: `2.3 Situação Atual
+
+<mark class="preenche-ia">A PRODESP possui ambiente tecnológico heterogêneo e crescente demanda por soluções corporativas baseadas em Microsoft Dynamics e Power Apps</mark>, abrangendo desenvolvimento, customização, configuração, implantação, manutenção, suporte, automação de processos, integração com sistemas corporativos e governança de dados.
+
+<mark class="preenche-ia">Atualmente, a contratação proposta visa atender demandas sob demanda, mediante Ordens de Serviço, com possibilidade de uso das modalidades de APF, HST ou sprint/release</mark>, conforme características de cada projeto.`
+  },
+  just: {
+    aws: `3.1 Justificativa Para a Licitação
+
+<mark class="preenche-ia">A PRODESP utiliza de forma contínua tecnologias baseadas em Amazon Web Services (AWS)</mark> para o desenvolvimento, evolução, manutenção e sustentação de sistemas.
+
+<mark class="preenche">Nos últimos anos, observa-se crescimento expressivo da operação em nuvem no ambiente tecnológico da PRODESP, com evolução da utilização de serviços AWS de aproximadamente 35% para níveis próximos a 150% de expansão operacional</mark>.
+
+O item segue com cloud native, AWS Marketplace, revisão de SLA e glosas, até o início do 3.1.2. Números e fatos institucionais precisam ser informados para a redação.`,
+    dyn: `3.1 Justificativa Para a Licitação
+
+<mark class="preenche-ia">A PRODESP necessita contratar serviços de Apoio Técnico Especializado em tecnologias Microsoft Dynamics e Power Apps</mark> para assegurar a execução de demandas de design, desenvolvimento, customização, configuração, implantação, manutenção, operação e suporte.
+
+<mark class="preenche-ia">A contratação também se justifica pela necessidade de dispor de perfis técnicos especializados e complementares, tais como Analista Desenvolvedor Dynamics, Analista de Suporte Dynamics, Analista Desenvolvedor Power Apps</mark>, Arquiteto Dynamics/Power Apps e os demais perfis citados no parágrafo.
+
+O item segue até a menção à LGPD e à sustentação das soluções, antes do 3.1.2.`
+  },
+  clientes: {
+    aws: `3.1.2 Demanda Atual de Serviços
+
+Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.
+
+Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:
+
+CLIENTE | PROJETO/SISTEMA
+<mark class="preenche">PRODESP | Sustentação PRODESP MOTOR BIOMETRICO - ABIS</mark>
+<mark class="preenche">SEFAZ-DF | Palantir PIAF - Sec Executiva fazenda BSB - SEEC</mark>
+<mark class="preenche">PRODESP | Sustentação Squad de Operações Prodesp</mark>
+e as demais linhas do quadro.
+
+Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos, o que será feito por ocasião da apresentação do relatório que justificará a emissão da Ordem de Serviço.`,
+    dyn: `3.1.2 Demanda Atual de Serviços
+
+Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.
+
+Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:
+
+Projeto/Sistema
+<mark class="preenche">CETTPRO</mark>
+<mark class="preenche">CRM - SEDUC</mark>
+<mark class="preenche">DEFENSORIA</mark>
+<mark class="preenche">PROCON</mark>
+<mark class="preenche">DETRAN - PORTAL DOS CREDENCIADOS</mark>
+<mark class="preenche">CAO - Conselho de arquitetura e urbanismo</mark>
+
+Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos.`
+  },
+  perfis: {
+    aws: `3.2 Demanda
+
+A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos ultimos 12 meses, alem de novas demandas em estagio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir:
+
+Perfil Técnico | Experiência Mínima (anos) | Total de horas Estimadas Licitação
+<mark class="preenche">ITEM 1: AWS CLOUD | 147.168</mark>
+<mark class="preenche">Arquiteto de Soluções Cloud Pleno | 3 | 10.080</mark>
+<mark class="preenche">Desenvolvedor Cloud Pleno | 2 | 40.320</mark>
+e os demais perfis dos itens 1, 2 e 3.
+<mark class="preenche">272.160,00</mark>
+
+3.3 Da Licitação
+
+Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de <mark class="preenche">272.160 (duzentas e setenta e duas mil e cento e sessenta) horas</mark>, apresentados no quadro abaixo.
+
+No quadro do 3.3, a coluna Proporção do valor-hora traz, no perfil de referência, <mark class="preenche">1,00</mark>.`,
+    dyn: `3.2 Demanda
+
+A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos ultimos 12 meses, alem de novas demandas em estagio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir.
+
+O quadro, no PDF, está desenhado e não sai na extração do texto. Os dados preenchidos são item, perfil, experiência, horas e o total do item. O total geral informado no 3.3 é <mark class="preenche">418.039</mark> horas.
+
+3.3 Da Licitação
+
+Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de <mark class="preenche">418.039 (quatrocentos e dezoito mil e trinta e nove) horas</mark>, apresentados no quadro abaixo.
+
+A proporção <mark class="preenche">1,00</mark> está no perfil Analista Desenvolvedor Dynamics Pleno.`
+  },
+  criterios: {
+    aws: `3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias AWS</mark>, juntado ao processo.
+3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência "<mark class="preenche">Desenvolvedor Cloud Pleno</mark>".
+
+"O critério de julgamento será o menor valor total do lote, apurado a partir do maior desconto percentual ofertado sobre o valor base do item de referência ('<mark class="preenche">Desenvolvedor Cloud Pleno</mark>')."`,
+    dyn: `3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias Microsoft Dynamics e Power Apps</mark>, juntado ao processo.
+3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência "<mark class="preenche">Desenvolvedor Dynamics Pleno</mark>".
+
+"O critério de julgamento será o menor valor total do lote, apurado a partir do maior desconto percentual ofertado sobre o valor base do item de referência ('<mark class="preenche">Desenvolvedor Dynamics Pleno</mark>')."`
+  },
+  pf: {
+    aws: `3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:
+
+VPF = VMA * PROD
+
+VMA = <mark class="preenche">Valor médio da HST (Hora de Serviço Técnico) praticada para todos os perfis técnicos de nível pleno no item de interesse e do item 7.</mark>
+
+·A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de <mark class="preenche">12 Horas por Ponto de Função</mark>.
+
+Os itens 3.5.1, 3.5.3, 3.5.4 e 3.5.5 permanecem sem destaque.`,
+    dyn: `3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:
+
+VPF = VMA * PROD
+
+VMA = <mark class="preenche">Valor médio da HST (Hora de Serviço Técnico) dos perfis técnicos de nível pleno dos itens “2 – Microsoft Power Apps” e “3 - Microsoft Dynamics/Microsoft Power Apps”, e de todos os perfis do item “01 Microsoft Dynamics”.</mark>
+
+·A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de <mark class="preenche">08 Horas por Ponto de Função</mark>.
+
+Os itens 3.5.1, 3.5.3, 3.5.4 e 3.5.5 permanecem sem destaque.`
+  },
+  "perfis-tec": {
+    aws: `3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias AWS</mark>, juntado ao processo.
+
+3.7.5 Todos os profissionais deverão possuir graduação Superior em pelo menos um dos seguintes cursos.
+3.7.4 Qualquer profissional alocado deverá ser substituído em até 5 (cinco) dias úteis.${sem}`,
+    dyn: `3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias Microsoft Dynamics/Microsoft Power Apps</mark>, juntado ao processo.
+
+3.7.2 a 3.7.6 repetem formação, comprovação de experiência e substituição em 5 dias úteis, sem outro dado a preencher.`
+  },
+  habilitacao: {
+    aws: `3.8 Comprovação Técnica
+
+Para garantir que os serviços que serão prestados estarão aderentes aos processos de desenvolvimento de software, voltados à qualidade e alinhados com as melhores práticas do mercado, a LICITANTE que sagrar-se vencedora deverá atender às seguintes exigências.
+
+c) Declaração de Ciência quanto à:
+<mark class="preenche">Comprovação de ser parceira certificada AWS – Amazon Web Services, na categoria Advanced ou superior</mark>,
+<mark class="preenche">Habilitação junto ao fabricante, através do MSA (MASTER SERVICE AGREEMENT), que demonstre ter proficiência técnica para as demandas de alta complexidade, como Proserve AWS.</mark>
+
+No atestado do perfil: <mark class="preenche">totalizando, minimamente, 2.500 horas</mark>.
+i) Os atestados poderão apresentar medição em Pontos de Função, com a equivalência de <mark class="preenche">12 Horas de Serviço para 1 Ponto de Função Bruto</mark>.
+
+As letras de sigilo, diligência, somatório de atestados e grupo empresarial permanecem sem destaque.`,
+    dyn: `3.8.1.2.1 Atestados de Capacidade Técnica
+
+b) Entende-se por mesma natureza e porte, atestado(s) de serviços similares ao objeto da licitação que demonstre(m) que a empresa prestou serviços correspondentes a 50% (cinquenta por cento) do volume total estimado na licitação, sendo obrigatório comprovar experiência na prestação de serviços de apoio técnico especializado em <mark class="preenche">tecnologias Microsoft Dynamics e Power Apps</mark>.
+
+O atestado do perfil exige, no mínimo, <mark class="preenche">4.000 horas</mark> para o Analista Desenvolvedor Dynamics.
+A equivalência usada neste relatório é de <mark class="preenche">8 horas</mark> por ponto de função.
+
+A introdução do 3.8 e as declarações de capacidade própria e de métodos ágeis permanecem sem destaque.`
+  },
+  financeiro: {
+    aws: `3.9 Qualificação Econômico-Financeira
+Certidão negativa de falência, balanço patrimonial e patrimônio líquido de 10% do valor estimado da contratação.
+
+3.10 Planilha de Composição de Custos e Preços
+Critérios da letra a à letra k, inclusive salário por perfil, regime tributário, encargos, benefícios da CCT, lucro e taxa de administração.${sem}`,
+    dyn: `3.9 Qualificação Econômico-Financeira
+O mesmo texto de certidão, balanço e patrimônio líquido de 10%.
+
+3.10 Planilha de Composição de Custos e Preços
+Os mesmos critérios da letra a à letra k.${sem}`
+  },
+  assinatura: {
+    aws: `3.11.1 Representante Técnico - a LICITANTE deverá designar um Representante Técnico que atuará como o preposto.
+
+3.11.2 Comprovação de Parceiro Certificado
+A licitante vencedora deverá comprovar ser <mark class="preenche">parceira certificada AWS – Amazon Web Services, na categoria Advanced ou superior</mark>.
+
+3.11.3 Reconhecimento em Estudo de Mercado
+A licitante deve ter sido reconhecida no <mark class="preenche">Relatório “AWS Ecosystem Partners ISG Provider Lens® Study – Brazil”, nos últimos 24 meses</mark>.
+
+3.11.3 Comprovação de profissional Certificado
+<mark class="preenche">AWS Certified SysOps Administrator - Associate; AWS Certified Solutions Architect - Professional; AWS Certified Solutions Architect - Associate; AWS Certified Security - Specialty; AWS Certified DevOps Engineer - Professional; AWS Certified Developer - Associate; AWS Certified Database - Specialty; AWS Certified Data Engineer - Associate; AWS Certified Cloud Practitioner; AWS Certified AI Practitioner</mark>.
+
+3.11.4 CMMI nível 3 ou MPS.BR nível C, e 3.11.5 ISO 9001 e ISO/IEC 27001, permanecem sem destaque.`,
+    dyn: `3.11.2 Comprovação de Parceiro Certificado
+A licitante que sagrar-se vencedora deverá comprovar ser parceira certificada do fabricante mediante apresentação de <mark class="preenche">carta da Microsoft, emitida nos últimos 6 (seis) meses</mark> a contar da data de publicação deste Edital, atestando sua designação de parceiro de soluções, ou sua competência em cada uma das <mark class="preenche">06 (seis) áreas: Business Applications, Data & AI, Digital & App Innovation, Infrastructure, Security e Modern Work</mark>.
+
+3.11.3 Reconhecimento em Estudo de Mercado
+<mark class="preenche">ISG Microsoft, edições 2024 e/ou 2025</mark>.
+
+3.11.3 Comprovação de profissional Certificado
+<mark class="preenche">Lista exemplificativa de certificações MB, PL, AZ e outras, distribuídas entre um ou mais profissionais</mark>.
+
+3.11.1, CMMI/MPS.BR e as ISO permanecem sem destaque.`
+  },
+  obrigacoes: {
+    aws: `4.1.1 Garantia Contratual
+A contratada deverá apresentar garantia de 5% do valor do contrato, em até 15 dias após a assinatura.
+
+4.1.2 Outras obrigações
+Substituição de profissional em até 5 dias úteis, entre as demais obrigações da contratada e da PRODESP.${sem}`,
+    dyn: `4. DAS OBRIGAÇÕES DA PRODESP E DA CONTRATADA
+O mesmo texto de garantia de 5% em até 15 dias e de substituição de profissional em 5 dias úteis.${sem}`
+  },
+  modelos: {
+    aws: `5.1 Modelo da Ordem de Serviço de Apoio Técnico Especializado - ATE
+5.2 Modelo do Plano do Projeto – SoW (Statement Of Work)
+5.3 Modelo de Termo de Recebimento de Serviços
+5.4 Modelo do Termo de Aceite de Serviços
+5.5 Modelo da Planilha de Composição de Custos e Preços
+5.6 Modelo da Planilha de Apuração de Qualificação Técnica Operacional
+5.7 Modelo da Proposta Comercial
+5.8 Termo de Confidencialidade Sigilo e Uso${sem}`,
+    dyn: `5.1 a 5.8
+A mesma lista de modelos, na mesma ordem.${sem}`
+  },
+  recursos: {
+    aws: `6. RECURSOS FINANCEIROS
+Serão utilizados recursos financeiros de origem corporativa para a emissão do DCO (Documento de Comprovação Orçamentária) destinado a esta contratação, porém a execução dos serviços se dará mediante a emissão de Ordens de Serviços que serão vinculadas ao referido DCO, podendo as despesas serem cobertas por ESP, Recurso Corporativo, Investimento, Condomínio etc.
+
+7. GESTOR E FISCAL DO CONTRATO
+Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.${sem}`,
+    dyn: `6. RECURSOS FINANCEIROS
+O mesmo texto do DCO e da origem corporativa.
+
+7. GESTOR E FISCAL DO CONTRATO
+Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.${sem}`
+  },
+  conclusao: {
+    aws: `8. CONCLUSÃO
+
+Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de <mark class="preenche">272.160 (duzentos e setenta e dois mil e cento e sessenta) horas</mark> de serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias AWS</mark>, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de <mark class="preenche">12 (doze) meses</mark> a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.`,
+    dyn: `8. CONCLUSÃO
+
+Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de <mark class="preenche">418.039 (quatrocentos e dezoito mil e trinta e nove) horas</mark> de serviços de Apoio Técnico Especializado em <mark class="preenche">Tecnologias Microsoft Dynamics/Microsoft Power Apps</mark>, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de <mark class="preenche">12 (doze) meses</mark> a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.`
+  },
+  assinam: {
+    aws: `9. ELABORAÇÃO
+Este relatório foi elaborado pela <mark class="preenche">CCTR – Coordenadoria de Contratos DDS, vinculada à GEN – Gerência de Engenharia de Software e Serviços</mark>, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.
+
+10. APROVAÇÃO
+<mark class="preenche">Weller Oshiro
+Matrícula: 16.056-0
+Gerente</mark>
+GEN – Gerência de Engenharia de Software e Serviços
+
+<mark class="preenche">Giuliana Martin
+Matrícula: 16.057-8
+Assessora</mark>
+GEN – Gerência de Engenharia de Software e Serviços`,
+    dyn: `9. ELABORAÇÃO
+Este relatório foi elaborado pela <mark class="preenche">GEN – Gerência de Engenharia de Software e Serviços</mark>, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.
+
+10. APROVAÇÃO
+<mark class="preenche">Weller Oshiro
+Matrícula: 16.056-0
+Gerente</mark>
+GEN – Gerência de Engenharia de Software e Serviços
+
+<mark class="preenche">Tiago Macedo Rocha
+Matrícula: 15.539-1
+Analista de Negócios e TI</mark>
+GEN – Gerência de Engenharia de Software e Serviços`
+  },
+  anexos: {
+    aws: `ANEXO 01 – MODELO DE ORDEM DE SERVIÇO DE APOIO TÉCNICO ESPECIALIZADO - ATE
+
+A presente Ordem de Serviço é celebrada em conformidade com o procedimento para Prestação de Serviços de Apoio Técnico Especializado aos Programas de Computador previsto no Contrato PRO.00.XXXX, firmado entre a Companhia de Processamento de Dados do Estado de São Paulo – PRODESP e a Xxxxxxxxx Xxxxxxxxxxx S.A., em vigor desde dd/mm/aaaa.
+
+Usuário:
+Gerência xxxxxxxxxx xxxxxxxxxxxx xxxxx
+Responsável: xxxxxxxxx xxxxxxxxxxxx xxxxx Matrícula: xx.xxx.x${sem}`,
+    dyn: `ANEXO 01 – MODELO DE ORDEM DE SERVIÇO DE APOIO TÉCNICO ESPECIALIZADO - ATE
+
+O mesmo modelo em branco, com XXX, datas e nomes por preencher na execução do contrato, não na geração deste relatório.${sem}`
+  }
+};
+
+const menu = document.getElementById("menu");
+const host = document.getElementById("blocos");
+const storeKey = "rj-comparacao-marcas";
+const marcas = JSON.parse(localStorage.getItem(storeKey) || "{}");
+
+function salvar() {
+  localStorage.setItem(storeKey, JSON.stringify(marcas));
+}
+
+blocos.forEach((b) => {
+  const btn = document.createElement("button");
+  btn.textContent = b.titulo;
+  btn.onclick = () => document.getElementById(b.id).scrollIntoView({ behavior: "smooth", block: "start" });
+  menu.appendChild(btn);
+
+  const card = document.createElement("article");
+  card.className = "card";
+  card.id = b.id;
+  const atual = marcas[b.id] || {};
+  const t = trechos[b.id];
+  card.innerHTML = `
+    <span class="badge ${b.tipo}">${b.tipoLabel}</span>
+    <h2>${b.titulo}</h2>
+    <div class="mapa">
+      <div>
+        <p class="why">${b.porque}</p>
+        <div class="cols">
+          <div class="col aws"><h3>AWS — REL.GEN.054.2026</h3><p>${b.aws}</p></div>
+          <div class="col dyn"><h3>Dynamics — REL.GEN.105.2026</h3><p>${b.dyn}</p></div>
+        </div>
+        <p class="why" style="margin-top:10px"><strong>No esqueleto:</strong> ${b.esqueleto}</p>
+      </div>
+      <div class="trechos-pdf">
+        <p class="rotulo-pdf">Trecho do PDF</p>
+        <div class="col aws"><h3>AWS — texto do relatório</h3><p class="pdf">${t.aws}</p></div>
+        <div class="col dyn"><h3>Dynamics — texto do relatório</h3><p class="pdf">${t.dyn}</p></div>
+      </div>
+    </div>
+    <div class="vote" data-id="${b.id}">
+      <span class="note">Sua leitura:</span>
+      ${["Fixo", "Campo", "Texto da IA", "Misto", "Não sei"].map((op) =>
+        `<button type="button" data-op="${op}" class="${atual.op === op ? "picked" : ""}">${op}</button>`
+      ).join("")}
+      <input type="text" placeholder="Comentário para ajustarmos o esqueleto" value="${atual.nota || ""}" />
+    </div>`;
+  host.appendChild(card);
+});
+
+host.addEventListener("click", (ev) => {
+  const button = ev.target.closest("button[data-op]");
+  if (!button) return;
+  const box = button.closest(".vote");
+  const id = box.dataset.id;
+  marcas[id] = marcas[id] || {};
+  marcas[id].op = button.dataset.op;
+  box.querySelectorAll("button").forEach((el) => el.classList.remove("picked"));
+  button.classList.add("picked");
+  salvar();
+});
+
+host.addEventListener("input", (ev) => {
+  if (ev.target.tagName !== "INPUT") return;
+  const id = ev.target.closest(".vote").dataset.id;
+  marcas[id] = marcas[id] || {};
+  marcas[id].nota = ev.target.value;
+  salvar();
+});
+
+document.getElementById("skel").innerHTML = skel;
+
+const tbody = document.getElementById("tabela-campos");
+campos.forEach((c) => {
+  const tr = document.createElement("tr");
+  const quem = c[1].startsWith("IA") ? "ia" : c[1].startsWith("Calculado") ? "confirma" : "campo";
+  tr.innerHTML = `<td>${c[0]}</td><td><span class="badge ${quem}">${c[1]}</span></td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td>`;
+  tbody.appendChild(tr);
+});
+
+document.querySelectorAll("nav.tabs button").forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll("nav.tabs button").forEach((el) => el.classList.remove("active"));
+    btn.classList.add("active");
+    ["comparacao", "esqueleto", "campos"].forEach((id) => {
+      document.getElementById(id).classList.toggle("hidden", id !== btn.dataset.tab);
+    });
+  };
+});
+
+document.getElementById("exportar").onclick = async () => {
+  const linhas = blocos.map((b) => {
+    const m = marcas[b.id] || {};
+    return `${b.titulo}: ${m.op || "sem marca"}${m.nota ? " — " + m.nota : ""}`;
+  });
+  const texto = linhas.join("\n");
+  try {
+    await navigator.clipboard.writeText(texto);
+    document.getElementById("export-status").textContent = "Marcas copiadas. Pode colar aqui no chat.";
+  } catch (e) {
+    document.getElementById("export-status").textContent = texto;
+  }
+};
+</script>
+</body>
+</html>
