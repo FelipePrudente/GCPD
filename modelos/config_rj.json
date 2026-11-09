@@ -1,0 +1,352 @@
+{
+  "tags": [
+    {
+      "id": "unidade_cabecalho",
+      "rotulo": "Unidade Cabecalho",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "n_processo_sei",
+      "rotulo": "N Processo Sei",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "interessado",
+      "rotulo": "Interessado",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "tecnologia",
+      "rotulo": "Tecnologia",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 2,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "sigla_relatorio",
+      "rotulo": "Sigla Relatorio",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "versao",
+      "rotulo": "Versao",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "mes_ano",
+      "rotulo": "Mes Ano",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "prazo_meses",
+      "rotulo": "Prazo Meses",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "catalogo_tecnologia",
+      "rotulo": "Catalogo Tecnologia",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "tabela",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [
+        {
+          "id": "perfil",
+          "rotulo": "Perfil técnico",
+          "tipo": "texto"
+        },
+        {
+          "id": "experiencia",
+          "rotulo": "Experiência mínima (anos)",
+          "tipo": "numero"
+        },
+        {
+          "id": "horas",
+          "rotulo": "Total de horas",
+          "tipo": "numero"
+        }
+      ],
+      "agrupar_por": "",
+      "somar": "horas"
+    },
+    {
+      "id": "regra_vma",
+      "rotulo": "Regra Vma",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 2,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "horas_por_pf",
+      "rotulo": "Horas Por Pf",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "tabela",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [
+        {
+          "id": "item",
+          "rotulo": "Item",
+          "tipo": "texto"
+        },
+        {
+          "id": "perfil",
+          "rotulo": "Perfil técnico",
+          "tipo": "texto"
+        },
+        {
+          "id": "experiencia",
+          "rotulo": "Experiência mínima (anos)",
+          "tipo": "numero"
+        },
+        {
+          "id": "horas",
+          "rotulo": "Total de horas",
+          "tipo": "numero"
+        }
+      ],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "incluir_snap",
+      "rotulo": "Incluir Snap",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "versao_sisp",
+      "rotulo": "Versao Sisp",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "quadro_lotes",
+      "rotulo": "Quadro Lotes",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "tabela",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [
+        {
+          "id": "item",
+          "rotulo": "Item",
+          "tipo": "texto"
+        },
+        {
+          "id": "perfil",
+          "rotulo": "Perfil técnico",
+          "tipo": "texto"
+        }
+      ],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "perfil_referencia",
+      "rotulo": "Perfil Referencia",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "dominio_plataforma",
+      "rotulo": "Dominio Plataforma",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "descricao_perfis",
+      "rotulo": "Descricao Perfis",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "ia_web",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "regime_certificacao",
+      "rotulo": "Regime Certificacao",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "ia_web",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "certificacoes",
+      "rotulo": "Certificacoes",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "descricao_itens",
+      "rotulo": "Descricao Itens",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "texto_elaboracao",
+      "rotulo": "Texto Elaboracao",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "local_data",
+      "rotulo": "Local Data",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "lista_aprovadores",
+      "rotulo": "Lista Aprovadores",
+      "grupo": "Documento",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    }
+  ],
+  "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Documento\"><header class=\"card-bloco-cabecalho\"><h3>Documento</h3></header><div class=\"card-bloco-corpo\"><p>Governo do Estado de São Paulo</p>\n<p>Companhia de Processamento de Dados do Estado de São Paulo</p>\n<p>{{unidade_cabecalho}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>Nº do Processo: {{n_processo_sei}}</p>\n<p>Interessado: {{interessado}}</p>\n<p>Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>{{sigla_relatorio}} {{versao}}</p>\n<p>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO</p>\n<p>EM {{tecnologia}}</p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p>{{mes_ano}}</p>\n<p>1. INTRODUÇÃO</p>\n<p>Este Termo de Referência fornece as especificações técnicas mínimas que a proponente deverá atender para a prestação dos serviços de Apoio Técnico Especializado. (Texto padrão fixo.)</p>\n<p>2. ESCOPO E ESTRATÉGIA DE CONTRATAÇÃO DOS SERVIÇOS</p>\n<p>2.1 Do Objeto</p>\n<p>Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, pelo período de {{prazo_meses}} meses.</p>\n<p>Catálogo da tecnologia (por grupo de serviços):</p>\n<p>{{catalogo_tecnologia}}</p>\n<p>(Lista cadastrada por grupo — ex.: Computação | EC2, Lambda… — sem inventar serviço novo.)</p>\n<p>2.2 Ambiente Tecnológico da Prodesp</p>\n<p>Catálogo padrão da PRODESP: sistemas operacionais, bancos de dados, linguagens, servidores, portais, nuvem (AWS, Azure, Google Cloud, Huawei, Prodesp VCloud), observabilidade e a nota de que poderão ser pedidas versões superiores. (Texto/tabela padrão fixo.)</p>\n<p>2.3 Metodologia, Disciplinas e Artefatos</p>\n<p>Metodologia, artefatos, Scrum, BPM e plano de projeto. Percentuais de esforço: requisitos 25%, design 10%, implementação 40%, testes 15%, homologação 5% e implantação 5%. (Texto padrão fixo.)</p>\n<p>2.4 Planejamento de Projetos</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.5 Modalidades de Remuneração</p>\n<p>Modalidades: Análise de Pontos de Função (APF), Horas de Serviço Técnico (HST) e sprint ou release. (Texto padrão fixo.)</p>\n<p>2.6 Remuneração por Análise de Pontos de Função</p>\n<p>Quando o dimensionamento for em Pontos de Função, o valor será calculado pela fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou produtividade mínima o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>Métodos admitidos: IFPUG, SFP, NESMA, COSMIC{{incluir_snap}}.</p>\n<p>Roteiro SISP versão {{versao_sisp}}.</p>\n<p>2.7 Remuneração por Horas de Serviço Técnico</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.8 Remuneração por Sprints</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.9 Tecnologias e Forma de Medição</p>\n<p>(Texto padrão fixo sobre quando usar PF ou HST.)</p>\n<p>2.10 Proposta Comercial</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.11 Formação de Lotes</p>\n<p>A contratação será definida em lote único para tecnologias {{tecnologia}}, conforme o quadro a seguir (mesmo quadro do Relatório de Justificativa):</p>\n<p>{{quadro_lotes}}</p>\n<p>(Tabela: ITEM | PERFIL | EXPERIÊNCIA MÍNIMA (ANOS) | HORAS | PROPORÇÃO DO VALOR-HORA.)</p>\n<p>Item de referência do desconto: \"{{perfil_referencia}}\".</p>\n<p>3. QUALIFICAÇÕES E COMPETÊNCIAS</p>\n<p>3.1 Qualificações</p>\n<p>3.1.1 a 3.1.4, 3.1.6 e 3.1.7 — comprovação de experiência, formação superior e substituição em até 5 (cinco) dias úteis. (Texto padrão fixo.)</p>\n<p>3.1.5 Quadro de experiência mínima — reaproveita os perfis do item 2.11.</p>\n<p>3.1.8 Domínio mínimo da plataforma:</p>\n<p>{{dominio_plataforma}}</p>\n<p>(Lista de serviços/módulos da tecnologia, a partir do catálogo do objeto.)</p>\n<p>3.2 Perfis Técnicos</p>\n<p>Para execução dos serviços serão requeridos os Perfis Técnicos relacionados no quadro do subitem 2.11, com as qualificações e competências descritas a seguir.</p>\n<p>{{descricao_perfis}}</p>\n<p>(Texto da IA por perfil: atuação + experiência e domínio — limitado aos perfis e à tecnologia cadastrados.)</p>\n<p>3.3 Certificações</p>\n<p>Regime da exigência: {{regime_certificacao}}</p>\n<p>Certificações: {{certificacoes}}</p>\n<p>(Ex.: obrigatória no ato da contratação, ou exemplificativa na ordem de serviço.)</p>\n<p>3.4 Métodos ágeis</p>\n<p>Declaração de capacidade em Scrum, XP, FDD ou ASD. (Texto padrão fixo.)</p>\n<p>4. EXECUÇÃO E ENTREGA DOS SERVIÇOS</p>\n<p>4.1 a 4.5 Ordem de serviço, local, horário, teletrabalho e representantes</p>\n<p>Ordem de serviço (assinatura em até 2 dias úteis), local de execução, horário, teletrabalho e representantes técnicos. (Texto padrão fixo.)</p>\n<p>4.6 Descrição dos serviços por item (quando aplicável)</p>\n<p>{{descricao_itens}}</p>\n<p>(Texto da IA por item do lote, a partir do catálogo e dos perfis, sem criar serviço novo. Pode ficar vazio se o escopo já estiver concentrado no item 2.1.)</p>\n<p>4.7 a 4.9 Entrega, recebimento, SLA, ICE e aceite</p>\n<p>Entrega, recebimento, qualidade, ICE de 90% e aceite final. (Texto padrão fixo, com numeração única.)</p>\n<p>5. PROTEÇÃO E GOVERNANÇA</p>\n<p>5.1 a 5.5 Subcontratação, garantia, conhecimento, propriedade e dados</p>\n<p>Subcontratação até 30%, garantia de 90 dias, transferência de conhecimento, propriedade intelectual e proteção de dados (comunicação de incidente em até 24 horas). (Texto padrão fixo.)</p>\n<p>5.6 Vedação a consórcio</p>\n<p>Vedação a consórcio, com fundamento em execução integrada, habitualidade, subordinação e mercado apto a atender sozinho. (Texto padrão fixo.)</p>\n<p>6. ELABORAÇÃO</p>\n<p>{{texto_elaboracao}}</p>\n<p>7. APROVAÇÃO</p>\n<p>{{local_data}}</p>\n<p>{{lista_aprovadores}}</p><p>{{lista_aprovadores}}<br></p>\n<p>(Lista repetível: NOME | MATRÍCULA | CARGO.)</p></div></section>\n</article>"
+}

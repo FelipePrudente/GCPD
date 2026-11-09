@@ -1,0 +1,32 @@
+{
+  "id": "relatorio_justificativa",
+  "nome": "Relatório de Justificativa",
+  "descricao": "Cada tag abaixo corresponde a um campo (ou bloco) do formulário. Na geração, a tag é substituída pelo valor preenchido.",
+  "tags": [
+    {"tag": "{{mes_ano}}", "campo": "mes_ano", "rotulo": "Mês e ano", "secao": "Identificação", "tipo": "texto"},
+    {"tag": "{{codigo_relatorio}}", "campo": "codigo_relatorio", "rotulo": "Código do relatório", "secao": "Identificação", "tipo": "texto"},
+    {"tag": "{{versao_relatorio}}", "campo": "versao_relatorio", "rotulo": "Versão do relatório", "secao": "Identificação", "tipo": "texto"},
+    {"tag": "{{assunto}}", "campo": "assunto", "rotulo": "Assunto", "secao": "Identificação", "tipo": "texto"},
+    {"tag": "{{tecnologia}}", "campo": "tecnologia", "rotulo": "Tecnologia", "secao": "Objeto", "tipo": "texto"},
+    {"tag": "{{prazo_meses}}", "campo": "prazo_meses", "rotulo": "Prazo em meses", "secao": "Identificação", "tipo": "texto"},
+    {"tag": "{{prazo_meses_extenso}}", "campo": "prazo_meses", "rotulo": "Prazo em meses (por extenso)", "secao": "Identificação", "tipo": "derivado"},
+    {"tag": "{{fatos}}", "campo": "fatos", "rotulo": "Fatos / situação atual", "secao": "Objeto", "tipo": "texto"},
+    {"tag": "{{catalogo}}", "campo": "catalogo", "rotulo": "Catálogo (grupos e serviços)", "secao": "Objeto", "tipo": "lista"},
+    {"tag": "{{clientes}}", "campo": "clientes", "rotulo": "Clientes e projetos", "secao": "Demanda", "tipo": "tabela"},
+    {"tag": "{{perfis}}", "campo": "perfis", "rotulo": "Perfis técnicos e horas", "secao": "Demanda", "tipo": "tabela"},
+    {"tag": "{{total_horas}}", "campo": "perfis", "rotulo": "Total de horas (calculado)", "secao": "Demanda", "tipo": "derivado"},
+    {"tag": "{{total_horas_extenso}}", "campo": "perfis", "rotulo": "Total de horas por extenso", "secao": "Demanda", "tipo": "derivado"},
+    {"tag": "{{perfil_referencia}}", "campo": "perfil_referencia", "rotulo": "Perfil de referência", "secao": "Critérios", "tipo": "texto"},
+    {"tag": "{{horas_por_pf}}", "campo": "horas_por_pf", "rotulo": "Horas por ponto de função", "secao": "Critérios", "tipo": "texto"},
+    {"tag": "{{regra_vma}}", "campo": "regra_vma", "rotulo": "Regra VMA", "secao": "Critérios", "tipo": "texto"},
+    {"tag": "{{parceria}}", "campo": "parceria", "rotulo": "Parceria / fabricante", "secao": "Comprovação", "tipo": "texto"},
+    {"tag": "{{estudo_mercado}}", "campo": "estudo_mercado", "rotulo": "Estudo de mercado", "secao": "Comprovação", "tipo": "texto"},
+    {"tag": "{{atestados}}", "campo": "atestados", "rotulo": "Atestados", "secao": "Comprovação", "tipo": "texto"},
+    {"tag": "{{regime_certificacao}}", "campo": "regime_certificacao", "rotulo": "Regime da certificação", "secao": "Comprovação", "tipo": "texto"},
+    {"tag": "{{certificacoes}}", "campo": "certificacoes", "rotulo": "Certificações", "secao": "Comprovação", "tipo": "lista"},
+    {"tag": "{{horas_professional}}", "campo": "horas_professional", "rotulo": "Horas professional services", "secao": "Comprovação", "tipo": "texto"},
+    {"tag": "{{area_elaboracao}}", "campo": "area_elaboracao", "rotulo": "Quem elabora o relatório", "secao": "Elaboração", "tipo": "texto"},
+    {"tag": "{{local_data}}", "campo": "local_data", "rotulo": "Local e data", "secao": "Elaboração", "tipo": "texto"},
+    {"tag": "{{aprovadores}}", "campo": "aprovadores", "rotulo": "Aprovadores", "secao": "Elaboração", "tipo": "lista"}
+  ]
+}
