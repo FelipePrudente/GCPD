@@ -19,6 +19,8 @@ from flask.sessions import SecureCookieSessionInterface
 
 import banco
 import integracao_sei
+from geradores.abertura_ia import gerar_html_secao, montar_abertura, sugerir_preenchimento_formulario
+from geradores.assistente_abertura import conversar as conversar_abertura
 from geradores.campo_ia import responder_campo_ia
 from geradores.ia_config import payload_ia_config, salvar_ia_config
 from geradores.certificacoes_sugestao import sugerir_certificacoes
@@ -253,14 +255,15 @@ def normalizar(bruto, exigir_pacote_completo=True):
             "nivel_acesso": nivel_acesso if nivel_acesso in {"sigiloso", "restrito", "publico"} else "publico",
         },
         "processo_contratacao": {
-            "texto_inicial": (
-                texto_inicial_contratacao
-                if texto_inicial_contratacao in {"documento_modelo", "texto_padrao", "nenhum"}
-                else "nenhum"
+            "especificacao": (
+                _texto(processo_contratacao_bruto, "especificacao")
+                or _texto(processo_contratacao_bruto, "descricao")
             ),
-            "descricao": _texto(processo_contratacao_bruto, "descricao"),
-            "numero": _texto(processo_contratacao_bruto, "numero"),
-            "nome_arvore": _texto(processo_contratacao_bruto, "nome_arvore"),
+            "descricao": (
+                _texto(processo_contratacao_bruto, "descricao")
+                or _texto(processo_contratacao_bruto, "especificacao")
+            ),
+            "prioridade": _texto(processo_contratacao_bruto, "prioridade"),
             "interessados": lista_textos_contratacao("interessados"),
             "assuntos": lista_textos_contratacao("assuntos"),
             "observacoes": _texto(processo_contratacao_bruto, "observacoes"),
@@ -360,6 +363,27 @@ def inicio():
     if not _sessao_sei_atual():
         return render_template("login.html")
     return render_template("index.html")
+
+
+@app.get("/cadastro")
+def cadastro_page():
+    if not _sessao_sei_atual():
+        return redirect("/")
+    return render_template("index.html")
+
+
+@app.get("/fluxo-criar")
+def fluxo_criar_processo():
+    if not _sessao_sei_atual():
+        return redirect("/")
+    return render_template("fluxo_criar_processo.html")
+
+
+@app.get("/processo-sei-ia")
+def processo_sei_ia():
+    if not _sessao_sei_atual():
+        return redirect("/")
+    return render_template("processo_sei_ia.html")
 
 
 @app.get("/api/catalogo")
@@ -632,6 +656,133 @@ def config_ia_salvar():
     return jsonify(payload_ia_config())
 
 
+@app.get("/api/config/processo-assunto")
+def config_processo_assunto_listar():
+    return jsonify({
+        "ok": True,
+        "relacoes": banco.listar_relacoes_processo_assunto(),
+        "assuntos": banco.listar_assuntos_sei(),
+        "tipos_processo": banco.listar_tipos_processo_sei(),
+    })
+
+
+@app.put("/api/config/processo-assunto")
+def config_processo_assunto_salvar():
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        return jsonify({"ok": False, "mensagem": "Informe a relação processo/assunto."}), 400
+    try:
+        banco.salvar_relacao_processo_assunto(
+            bruto.get("tipo_processo_id_sei") or bruto.get("id_sei") or "",
+            bruto.get("assunto_id_sei") or "",
+        )
+        banco.persistir_relacoes_processo_assunto_arquivo()
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    except Exception as erro:
+        app.logger.exception("Falha ao salvar relação processo/assunto")
+        return jsonify({"ok": False, "mensagem": f"Falha ao salvar: {erro}"}), 500
+    return jsonify({
+        "ok": True,
+        "relacoes": banco.listar_relacoes_processo_assunto(),
+    })
+
+
+@app.get("/api/processo-assunto")
+def processo_assunto_obter():
+    """Retorna o assunto vinculado a um tipo de processo (por id_sei ou nome)."""
+    id_sei = (request.args.get("tipo_processo_id_sei") or "").strip()
+    nome = (request.args.get("tipo_processo") or request.args.get("nome") or "").strip()
+    assunto = banco.obter_assunto_do_tipo_processo(tipo_processo_id_sei=id_sei, tipo_processo_nome=nome)
+    return jsonify({"ok": True, "assunto": assunto})
+
+
+@app.post("/api/ia/montar-abertura")
+def ia_montar_abertura():
+    """Usa a IA cadastrada para montar processo + documento a partir de um texto livre."""
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        return jsonify({"ok": False, "mensagem": "Informe a descrição do processo."}), 400
+    try:
+        resultado = montar_abertura(
+            bruto.get("descricao") or bruto.get("pedido") or bruto.get("texto"),
+            bruto.get("tipo_processo") or bruto.get("tipo_processo_sei") or "",
+        )
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    except Exception as erro:
+        app.logger.exception("Falha em /api/ia/montar-abertura")
+        return jsonify({"ok": False, "mensagem": f"Falha ao montar abertura com IA: {erro}"}), 502
+    return jsonify(resultado)
+
+
+@app.post("/api/ia/assistente-abertura")
+def ia_assistente_abertura():
+    """Bate-papo para achar tipo de processo e documento nas listas internas."""
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        bruto = {}
+    try:
+        resultado = conversar_abertura(
+            bruto.get("mensagem") or bruto.get("texto") or "",
+            bruto.get("estado"),
+            bruto.get("escolha"),
+        )
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    except Exception as erro:
+        app.logger.exception("Falha em /api/ia/assistente-abertura")
+        return jsonify({"ok": False, "mensagem": f"Falha no assistente: {erro}"}), 502
+    return jsonify(resultado)
+
+
+@app.post("/api/ia/gerar-secao")
+def ia_gerar_secao():
+    """Gera HTML de seção editável com a IA configurada (Gemini/OpenAI)."""
+    if not _csrf_sei_valido():
+        return jsonify({"ok": False, "mensagem": "Sessão expirada. Atualize a página e tente novamente."}), 403
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        return jsonify({"ok": False, "mensagem": "Informe o prompt da seção."}), 400
+    try:
+        resultado = gerar_html_secao(
+            bruto.get("prompt") or bruto.get("consulta") or "",
+            bruto.get("contexto") or "",
+            bruto.get("tipo_documento") or "",
+        )
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    except Exception as erro:
+        app.logger.exception("Falha em /api/ia/gerar-secao")
+        return jsonify({"ok": False, "mensagem": f"Falha ao gerar seção com IA: {erro}"}), 502
+    return jsonify(resultado)
+
+
+@app.post("/api/ia/preencher-formulario")
+def ia_preencher_formulario():
+    """Sugere valores para as tags do formulário escolhido (genérico para qualquer formulário)."""
+    if not _csrf_sei_valido():
+        return jsonify({"ok": False, "mensagem": "Sessão expirada. Atualize a página e tente novamente."}), 403
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        return jsonify({"ok": False, "mensagem": "Informe o formulário e o contexto."}), 400
+    formulario = bruto.get("formulario")
+    if not isinstance(formulario, dict):
+        return jsonify({"ok": False, "mensagem": "Selecione um formulário válido."}), 400
+    contexto = bruto.get("contexto") if isinstance(bruto.get("contexto"), dict) else {}
+    sessao = _sessao_sei_atual() or {}
+    if not contexto.get("interessado") and sessao.get("usuario"):
+        contexto = {**contexto, "interessado": sessao.get("usuario")}
+    try:
+        resultado = sugerir_preenchimento_formulario(formulario, contexto)
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    except Exception as erro:
+        app.logger.exception("Falha em /api/ia/preencher-formulario")
+        return jsonify({"ok": False, "mensagem": f"Falha ao sugerir preenchimento: {erro}"}), 502
+    return jsonify(resultado)
+
+
 @app.post("/api/campos/sugerir")
 def campos_sugerir():
     bruto = request.get_json(force=True, silent=False) or {}
@@ -883,17 +1034,30 @@ def _dados_criacao_processo_sei(cadastro):
         dados_tipo = processo_contratacao
     assunto = (
         str(cadastro.get("assunto") or "").strip()
-        or str(dados_tipo.get("descricao") or dados_tipo.get("especificacao") or "").strip()
+        or str(dados_tipo.get("especificacao") or dados_tipo.get("descricao") or "").strip()
         or f"Processo SEI - {tipo_processo}"
     )
+    assuntos = _resolver_assuntos_sei(dados_tipo.get("assuntos") or [])
+    if not assuntos:
+        relacionado = banco.obter_assunto_do_tipo_processo(
+            tipo_processo_id_sei=tipo_id,
+            tipo_processo_nome=tipo_processo,
+        )
+        if relacionado and relacionado.get("id_sei"):
+            assuntos = [{"id": relacionado["id_sei"]}]
+    if not assuntos:
+        raise ValueError(
+            "Selecione ao menos um assunto na Classificação por Assuntos. "
+            "É obrigatório para criar o processo no SEI."
+        )
     return {
         "tipo_processo": tipo_processo,
         "tipo_id": tipo_id,
         "assunto": assunto,
-        "especificacao": dados_tipo.get("descricao") or dados_tipo.get("especificacao") or "",
+        "especificacao": dados_tipo.get("especificacao") or dados_tipo.get("descricao") or "",
         "observacoes": dados_tipo.get("observacoes") or "",
         "nivel_acesso": dados_tipo.get("nivel_acesso") or "publico",
-        "assuntos": _resolver_assuntos_sei(dados_tipo.get("assuntos") or []),
+        "assuntos": assuntos,
     }
 
 
@@ -1054,9 +1218,7 @@ def criar_documento_interno_no_sei(processo_id):
         if not procedimento_id:
             raise ValueError("Crie o processo no SEI antes de anexar um documento.")
         bruto = _corpo_json()
-        tipo_documento = banco.obter_tipo_documento_sei(bruto.get("idSerie"))
-        if not tipo_documento:
-            raise ValueError("Selecione um tipo documental válido.")
+        bruto, tipo_documento = banco.aplicar_regras_documento_sei(bruto)
         documento = integracao_sei.cadastrar_documento_interno(
             procedimento=procedimento_id,
             campos=bruto,
@@ -1069,16 +1231,26 @@ def criar_documento_interno_no_sei(processo_id):
             "ok": False,
             "mensagem": str(erro),
             "resultado_incerto": erro.resultado_incerto,
+            "campo_faltante": erro.campo_faltante,
         }), erro.status_http
     except ValueError as erro:
-        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+        return jsonify({
+            "ok": False,
+            "mensagem": str(erro),
+            "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
+        }), 400
     if documento.get("id_documento"):
         try:
+            descricao_local = (
+                str(bruto.get("descricao") or "").strip()
+                or str(bruto.get("nomeArvore") or "").strip()
+                or tipo_documento["nome"]
+            )
             banco.registrar_documento_sei(
                 processo_id=processo_id,
                 id_documento=documento["id_documento"],
                 protocolo=documento.get("protocolo"),
-                descricao=bruto.get("descricao"),
+                descricao=descricao_local,
                 id_serie=tipo_documento["id"],
                 tipo_documento=tipo_documento["nome"],
             )
@@ -1682,6 +1854,168 @@ def pdf_upload():
             "mensagem": "Não foi possível converter o Word corrigido. Feche o Word se ele estiver aberto e tente de novo. Detalhe: " + str(erro),
         }), 500
     return jsonify({"ok": True, "id": identificador, "arquivo": destino.name})
+
+
+@app.post("/api/processos/criar-com-documento")
+def criar_processo_com_documento():
+    """Cria processo no SEI e cadastra documento interno em uma única operação.
+    Retorna status parcial em caso de falha no documento (processo já criado).
+    """
+    if not _csrf_sei_valido():
+        return jsonify({"ok": False, "mensagem": "Sessão expirada. Atualize a página e tente novamente."}), 403
+    sessao_sei = _sessao_sei_atual()
+    if not sessao_sei:
+        return jsonify({"ok": False, "mensagem": "Entre no SEI antes de criar o processo."}), 401
+
+    bruto = request.get_json(silent=True)
+    if not isinstance(bruto, dict):
+        return jsonify({"ok": False, "mensagem": "Informe os dados do processo e do documento."}), 400
+
+    dados_processo = bruto.get("processo") or bruto
+    dados_documento = bruto.get("documento") or {}
+
+    if not isinstance(dados_processo, dict) or not isinstance(dados_documento, dict):
+        return jsonify({
+            "ok": False,
+            "mensagem": "Estrutura inválida. Use {processo: {...}, documento: {...}}.",
+        }), 400
+
+    try:
+        cadastro = normalizar(dados_processo, exigir_pacote_completo=False)
+        dados_tipo = _dados_criacao_processo_sei(cadastro)
+        processo = banco.reservar_novo_processo_sei(
+            tipo=str(dados_processo.get("tipo_processo") or "Abertura").strip(),
+            assunto=dados_tipo["assunto"],
+            cadastro=cadastro,
+        )
+    except (ValueError, TypeError) as erro:
+        return jsonify({"ok": False, "mensagem": str(erro), "etapa": "validacao"}), 400
+
+    try:
+        retorno_processo = integracao_sei.criar_processo(
+            tipo_processo=dados_tipo["tipo_id"],
+            especificacao=dados_tipo["especificacao"],
+            observacoes=dados_tipo["observacoes"],
+            nivel_acesso=dados_tipo["nivel_acesso"],
+            assuntos=dados_tipo["assuntos"],
+            token=sessao_sei["token"],
+        )
+    except integracao_sei.ErroIntegracaoSEI as erro:
+        banco.falhar_criacao_sei(processo["id"], erro.resultado_incerto)
+        if erro.status_http == 401:
+            _encerrar_sessao_sei()
+        return jsonify({
+            "ok": False,
+            "mensagem": str(erro),
+            "etapa": "criar_processo",
+            "resultado_incerto": erro.resultado_incerto,
+            "processo_id": processo["id"],
+        }), erro.status_http or 500
+
+    try:
+        extras = cadastro.get("extras") or {}
+        extras["n_processo_sei"] = retorno_processo["protocolo"]
+        cadastro["extras"] = extras
+        processo = banco.concluir_criacao_sei(
+            processo["id"],
+            retorno_processo["id_procedimento"],
+            retorno_processo["protocolo"],
+            cadastro=cadastro,
+        )
+    except (ValueError, sqlite3.Error):
+        banco.falhar_criacao_sei(processo["id"], resultado_incerto=True)
+        return jsonify({
+            "ok": False,
+            "mensagem": (
+                "Processo criado no SEI, mas falhou ao registrar localmente. "
+                "Não tente criar novamente."
+            ),
+            "etapa": "registrar_processo",
+            "resultado_incerto": True,
+            "protocolo": retorno_processo.get("protocolo"),
+            "id_procedimento": retorno_processo.get("id_procedimento"),
+        }), 500
+
+    documento_resultado = None
+    if dados_documento and dados_documento.get("idSerie"):
+        try:
+            dados_documento, tipo_documento = banco.aplicar_regras_documento_sei(dados_documento)
+        except ValueError as erro:
+            return jsonify({
+                "ok": False,
+                "mensagem": (
+                    f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
+                    f"mas o documento não foi enviado: {erro}"
+                ),
+                "etapa": "validar_documento",
+                "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
+                "processo": processo,
+                "protocolo": retorno_processo.get("protocolo"),
+                "id_procedimento": retorno_processo.get("id_procedimento"),
+            }), 400
+        try:
+            documento_resultado = integracao_sei.cadastrar_documento_interno(
+                procedimento=retorno_processo["id_procedimento"],
+                campos=dados_documento,
+                token=sessao_sei["token"],
+            )
+            if documento_resultado.get("id_documento"):
+                descricao_local = (
+                    str(dados_documento.get("descricao") or "").strip()
+                    or str(dados_documento.get("nomeArvore") or "").strip()
+                    or tipo_documento["nome"]
+                )
+                banco.registrar_documento_sei(
+                    processo_id=processo["id"],
+                    id_documento=documento_resultado["id_documento"],
+                    protocolo=documento_resultado.get("protocolo"),
+                    descricao=descricao_local,
+                    id_serie=tipo_documento["id"],
+                    tipo_documento=tipo_documento["nome"],
+                )
+        except integracao_sei.ErroIntegracaoSEI as erro:
+            if erro.status_http == 401:
+                _encerrar_sessao_sei()
+            return jsonify({
+                "ok": False,
+                "mensagem": (
+                    f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
+                    f"mas falhou ao cadastrar o documento: {erro}"
+                ),
+                "etapa": "cadastrar_documento",
+                "resultado_incerto": erro.resultado_incerto,
+                "campo_faltante": erro.campo_faltante,
+                "processo": processo,
+                "protocolo": retorno_processo.get("protocolo"),
+                "id_procedimento": retorno_processo.get("id_procedimento"),
+            }), erro.status_http or 500
+        except (ValueError, sqlite3.Error) as erro:
+            return jsonify({
+                "ok": False,
+                "mensagem": (
+                    "Processo criado e documento confirmado no SEI, "
+                    f"mas falhou ao registrar localmente: {erro}"
+                ),
+                "etapa": "registrar_documento",
+                "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
+                "processo": processo,
+                "documento": documento_resultado,
+                "protocolo": retorno_processo.get("protocolo"),
+                "id_procedimento": retorno_processo.get("id_procedimento"),
+            }), 500
+
+    return jsonify({
+        "ok": True,
+        "mensagem": (
+            "Processo e documento criados com sucesso."
+            if documento_resultado
+            else "Processo criado com sucesso."
+        ),
+        "processo": processo,
+        "documento": documento_resultado,
+        "protocolo": retorno_processo.get("protocolo"),
+        "id_procedimento": retorno_processo.get("id_procedimento"),
+    }), 201
 
 
 if __name__ == "__main__":

@@ -17,10 +17,103 @@ BASE_URL_PADRAO = "https://homologacao.sei.sp.gov.br/sei/modulos/mod-wssei/contr
 
 
 class ErroIntegracaoSEI(Exception):
-    def __init__(self, mensagem, status_http=502, resultado_incerto=False):
+    def __init__(self, mensagem, status_http=502, resultado_incerto=False, campo_faltante=None):
         super().__init__(mensagem)
         self.status_http = int(status_http or 502)
         self.resultado_incerto = bool(resultado_incerto)
+        self.campo_faltante = str(campo_faltante or "").strip() or None
+
+
+CAMPOS_DOCUMENTO_INTERNO = (
+    "idSerie",
+    "flagProtocolo",
+    "unidadesReabertura",
+    "nivelAcesso",
+    "idHipoteseLegal",
+    "grauSigilo",
+    "descricao",
+    "nomeArvore",
+    "assuntos",
+    "interessados",
+    "destinatarios",
+    "observacao",
+    "idUnidadeGeradoraProtocolo",
+    "idTextoPadraoInterno",
+    "numero",
+)
+
+# Campos sempre enviados no body (como no Postman do Relatório de Justificativa).
+CAMPOS_DOCUMENTO_BASE = {
+    "idSerie",
+    "nivelAcesso",
+    "descricao",
+    "nomeArvore",
+    "assuntos",
+    "observacao",
+    "idUnidadeGeradoraProtocolo",
+}
+
+_ALIASES_CAMPO_FALTANTE = {
+    "idserie": "idSerie",
+    "flagprotocolo": "flagProtocolo",
+    "unidadesreabertura": "unidadesReabertura",
+    "nivelacesso": "nivelAcesso",
+    "idhipoteselegal": "idHipoteseLegal",
+    "grausigilo": "grauSigilo",
+    "descricao": "descricao",
+    "nomearvore": "nomeArvore",
+    "nome": "nomeArvore",
+    "assuntos": "assuntos",
+    "interessados": "interessados",
+    "destinatarios": "destinatarios",
+    "destinatario": "destinatarios",
+    "observacao": "observacao",
+    "observacoes": "observacao",
+    "idunidadegeradoraprotocolo": "idUnidadeGeradoraProtocolo",
+    "unidade": "idUnidadeGeradoraProtocolo",
+    "unidadegeradora": "idUnidadeGeradoraProtocolo",
+    "idtextopadraointerno": "idTextoPadraoInterno",
+    "textopadrao": "idTextoPadraoInterno",
+    "numero": "numero",
+    "numerodocumento": "numero",
+}
+
+
+def _normalizar_nome_campo_documento(nome):
+    chave = re.sub(r"[^a-z0-9]", "", str(nome or "").strip().casefold())
+    if not chave:
+        return ""
+    if chave in _ALIASES_CAMPO_FALTANTE:
+        return _ALIASES_CAMPO_FALTANTE[chave]
+    for oficial in CAMPOS_DOCUMENTO_INTERNO:
+        if oficial.casefold() == str(nome or "").strip().casefold():
+            return oficial
+    return ""
+
+
+def extrair_campo_faltante_documento(mensagem):
+    texto = str(mensagem or "")
+    if not texto:
+        return None
+    candidatos = []
+    candidatos.extend(re.findall(r"\[([^\]]+)\]", texto))
+    candidatos.extend(
+        re.findall(
+            r"(?:campo|par[aâ]metro|field)\s+[\"']?([A-Za-z_][A-Za-z0-9_]*)",
+            texto,
+            flags=re.IGNORECASE,
+        )
+    )
+    for bruto in candidatos:
+        oficial = _normalizar_nome_campo_documento(bruto)
+        if oficial:
+            return oficial
+    # Fallback: procura nomes conhecidos soltos na mensagem.
+    texto_norm = re.sub(r"[^a-z0-9]+", " ", texto.casefold())
+    for alias, oficial in _ALIASES_CAMPO_FALTANTE.items():
+        if re.search(rf"\b{re.escape(alias)}\b", texto_norm):
+            return oficial
+    return None
 
 
 def validar_base_url(valor):
@@ -235,41 +328,43 @@ def cadastrar_documento_interno(procedimento, campos, token):
     if not isinstance(campos, dict):
         raise ErroIntegracaoSEI("Os dados do documento são inválidos.", status_http=400)
 
-    nomes_campos = (
-        "idSerie",
-        "flagProtocolo",
-        "unidadesReabertura",
-        "nivelAcesso",
-        "idHipoteseLegal",
-        "grauSigilo",
-        "descricao",
-        "assuntos",
-        "interessados",
-        "destinatarios",
-        "observacao",
-        "idUnidadeGeradoraProtocolo",
-        "idTextoPadraoInterno",
-    )
-    valores = {
-        nome: str(campos.get(nome) or "").strip()
-        for nome in nomes_campos
-    }
-    if not re.fullmatch(r"-?\d+", valores["idSerie"]):
+    # Envia só o que veio no payload (dinâmico), no estilo do Postman.
+    # Campos base vazios ainda entram; extras só entram se presentes na requisição.
+    valores = {}
+    for nome in CAMPOS_DOCUMENTO_INTERNO:
+        if nome not in campos and nome not in CAMPOS_DOCUMENTO_BASE:
+            continue
+        if nome not in campos and nome in CAMPOS_DOCUMENTO_BASE:
+            valores[nome] = ""
+            continue
+        valores[nome] = str(campos.get(nome) or "").strip()
+
+    if not re.fullmatch(r"-?\d+", valores.get("idSerie", "")):
         raise ErroIntegracaoSEI(
             "Informe o ID numérico da série/tipo documental do SEI.",
             status_http=400,
+            campo_faltante="idSerie",
         )
-    if not valores["descricao"]:
-        raise ErroIntegracaoSEI("Informe a descrição do documento.", status_http=400)
-    if valores["nivelAcesso"] not in {"0", "1", "2"}:
-        # aceita nomes e normaliza
-        valores["nivelAcesso"] = _nivel_acesso_codigo(valores["nivelAcesso"] or campos.get("nivelAcesso") or "0")
+    if "nivelAcesso" in valores and valores["nivelAcesso"] not in {"0", "1", "2"}:
+        valores["nivelAcesso"] = _nivel_acesso_codigo(
+            valores.get("nivelAcesso") or campos.get("nivelAcesso") or "0"
+        )
         if valores["nivelAcesso"] not in {"0", "1", "2"}:
-            raise ErroIntegracaoSEI("Selecione um nível de acesso válido.", status_http=400)
+            raise ErroIntegracaoSEI(
+                "Selecione um nível de acesso válido.",
+                status_http=400,
+                campo_faltante="nivelAcesso",
+            )
+
+    # Extras vazios não são enviados (equivalente a desmarcar no Postman).
+    envio = {}
+    for nome, valor in valores.items():
+        if nome in CAMPOS_DOCUMENTO_BASE or valor:
+            envio[nome] = valor
 
     boundary = f"----GCPD{secrets.token_hex(16)}"
     partes = []
-    for nome, valor in valores.items():
+    for nome, valor in envio.items():
         partes.extend((
             f"--{boundary}\r\n".encode("ascii"),
             f'Content-Disposition: form-data; name="{nome}"\r\n\r\n'.encode("ascii"),
@@ -304,6 +399,7 @@ def cadastrar_documento_interno(procedimento, campos, token):
             mensagem,
             status_http=erro.code if 400 <= erro.code < 500 else 502,
             resultado_incerto=incerto,
+            campo_faltante=extrair_campo_faltante_documento(detalhe or mensagem),
         ) from erro
     except (TimeoutError, URLError) as erro:
         raise ErroIntegracaoSEI(
@@ -330,9 +426,11 @@ def cadastrar_documento_interno(procedimento, campos, token):
             resultado_incerto=True,
         )
     if resposta.get("sucesso") is not True:
+        mensagem = _mensagem_api(resposta) or "O SEI recusou o cadastro do documento."
         raise ErroIntegracaoSEI(
-            _mensagem_api(resposta) or "O SEI recusou o cadastro do documento.",
-            status_http=502,
+            mensagem,
+            status_http=400,
+            campo_faltante=extrair_campo_faltante_documento(mensagem),
         )
     data = resposta.get("data") if isinstance(resposta.get("data"), dict) else {}
     id_documento = (
