@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCPD — Criar Processo SEI - IA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=assistente-chat" />
+</head>
+<body>
+<header>
+  <div class="cabecalho">
+    <p class="marca">GCPD · PRODESP</p>
+    <h1>Criar Processo SEI - IA</h1>
+    <p>Converse com o assistente. Ele busca nas listas internas o tipo de processo e o documento, sugere opções e confirma com você antes de criar no SEI.</p>
+    <div class="sei-conexao" aria-live="polite">
+      <span id="sei-sessao-status">Verificando sessão…</span>
+      <a href="/" style="color:#fff;font-weight:700;">Voltar aos processos</a>
+      <button type="button" class="acao" id="sei-logout">Desconectar</button>
+    </div>
+  </div>
+</header>
+<main class="pagina-sei-ia">
+  <a class="voltar-processos" href="/">← Voltar aos processos</a>
+
+  <section id="etapa-chat" class="card-abrir-ia chat-assistente">
+    <div class="secao-topo"><h2>Assistente de abertura</h2></div>
+    <div id="chat-mensagens" class="chat-mensagens" aria-live="polite"></div>
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <label class="sr-only" for="chat-entrada">Mensagem</label>
+      <textarea id="chat-entrada" rows="2" placeholder="Ex.: Preciso abrir um processo para contratação de 1000 licenças do GitLab Ultimate"></textarea>
+      <div class="barra chat-barra">
+        <a class="acao" href="/" style="text-decoration:none;">Cancelar</a>
+        <button type="button" class="acao" id="chat-reiniciar">Recomeçar</button>
+        <button type="submit" class="primario" id="chat-enviar">Enviar</button>
+      </div>
+    </form>
+    <p id="abrir-ia-mensagem" class="erro oculto" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="etapa-revisao" class="card-abrir-ia oculto">
+    <div class="secao-topo"><h2>Revise antes de criar no SEI</h2></div>
+    <p class="ajuda" id="abrir-ia-fonte"></p>
+    <dl id="resumo-leitura" class="resumo-leitura"></dl>
+    <div id="abrir-ia-edicao" class="oculto"></div>
+    <p id="abrir-ia-mensagem-revisao" class="erro oculto" role="status" aria-live="polite"></p>
+    <div class="barra">
+      <button type="button" class="acao" id="abrir-ia-voltar-prompt">Voltar ao chat</button>
+      <button type="button" class="acao" id="abrir-ia-editar">Editar Campos</button>
+      <button type="button" class="primario" id="abrir-ia-confirmar">Confirmar e criar no SEI</button>
+    </div>
+  </section>
+</main>
+<script src="{{ url_for('static', filename='processo-sei-ia.js') }}?v=ia-preencher-formulario"></script>
+</body>
+</html>

@@ -1378,6 +1378,128 @@
     }
   }
 
+  let processoAssuntoRelacoes = [];
+  let processoAssuntoAssuntos = [];
+
+  function escHtmlPa(texto) {
+    return String(texto ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function statusProcessoAssunto(texto, tipo = "") {
+    const el = document.getElementById("processo-assunto-status");
+    const erro = document.getElementById("processo-assunto-erro");
+    if (erro) {
+      erro.textContent = "";
+      erro.classList.add("oculto");
+    }
+    if (!el) return;
+    el.textContent = texto || "";
+    el.className = tipo === "ok" ? "ok" : (tipo === "erro" ? "erro" : "ajuda");
+  }
+
+  function desenharGradeProcessoAssunto() {
+    const corpo = document.getElementById("processo-assunto-corpo");
+    if (!corpo) return;
+    const filtroProc = String(document.getElementById("processo-assunto-filtro")?.value || "").toLocaleLowerCase();
+    const filtroAssunto = String(document.getElementById("processo-assunto-filtro-assunto")?.value || "").toLocaleLowerCase();
+    const opcoesAssunto = [
+      `<option value="">— Sem vínculo —</option>`,
+      ...processoAssuntoAssuntos.map((item) => {
+        const rotulo = item.nome || `${item.codigo || ""} - ${item.descricao || item.id_sei}`;
+        return `<option value="${escHtmlPa(item.id_sei)}">${escHtmlPa(rotulo)}</option>`;
+      }),
+    ].join("");
+    const linhas = processoAssuntoRelacoes.filter((item) => {
+      const textoProc = `${item.tipo_processo_id_sei || ""} ${item.tipo_processo_nome || ""}`.toLocaleLowerCase();
+      const textoAssunto = `${item.assunto_id_sei || ""} ${item.assunto_nome || ""} ${item.assunto_codigo || ""} ${item.assunto_descricao || ""}`.toLocaleLowerCase();
+      if (filtroProc && !textoProc.includes(filtroProc)) return false;
+      if (filtroAssunto && !textoAssunto.includes(filtroAssunto)) return false;
+      return true;
+    });
+    if (!linhas.length) {
+      corpo.innerHTML = `<tr><td colspan="4">Nenhuma relação encontrada.</td></tr>`;
+      return;
+    }
+    corpo.innerHTML = linhas.map((item) => {
+      const semVinculo = !item.assunto_id_sei;
+      return `
+        <tr class="${semVinculo ? "sem-vinculo" : ""}" data-proc-id="${escHtmlPa(item.tipo_processo_id_sei)}">
+          <td class="id-celula">${escHtmlPa(item.tipo_processo_id_sei)}</td>
+          <td>${escHtmlPa(item.tipo_processo_nome || "—")}</td>
+          <td class="id-celula">${escHtmlPa(item.assunto_id_sei || "—")}</td>
+          <td>
+            <select data-assunto-select="${escHtmlPa(item.tipo_processo_id_sei)}">
+              ${opcoesAssunto}
+            </select>
+          </td>
+        </tr>
+      `;
+    }).join("");
+    corpo.querySelectorAll("[data-assunto-select]").forEach((select) => {
+      const idProc = select.getAttribute("data-assunto-select");
+      const atual = processoAssuntoRelacoes.find((item) => String(item.tipo_processo_id_sei) === String(idProc));
+      select.value = atual?.assunto_id_sei || "";
+    });
+    statusProcessoAssunto(`${linhas.length} processo(s) na grade. ${processoAssuntoRelacoes.filter((i) => i.assunto_id_sei).length} com assunto vinculado.`);
+  }
+
+  async function carregarPainelProcessoAssunto() {
+    statusProcessoAssunto("Carregando relações…");
+    const resposta = await fetch("/api/config/processo-assunto");
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Falha ao carregar Processo/Assunto.");
+    processoAssuntoRelacoes = corpo.relacoes || [];
+    processoAssuntoAssuntos = corpo.assuntos || [];
+    desenharGradeProcessoAssunto();
+  }
+
+  async function abrirPainelProcessoAssunto() {
+    document.getElementById("painel-ia-config")?.classList.add("oculto");
+    const painel = document.getElementById("painel-processo-assunto");
+    try {
+      await carregarPainelProcessoAssunto();
+      painel?.classList.remove("oculto");
+    } catch (falha) {
+      status(falha.message, "erro");
+    }
+  }
+
+  function fecharPainelProcessoAssunto() {
+    document.getElementById("painel-processo-assunto")?.classList.add("oculto");
+  }
+
+  async function salvarRelacaoProcessoAssunto(tipoProcessoIdSei, assuntoIdSei) {
+    const erro = document.getElementById("processo-assunto-erro");
+    if (erro) {
+      erro.textContent = "";
+      erro.classList.add("oculto");
+    }
+    try {
+      const resposta = await fetch("/api/config/processo-assunto", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo_processo_id_sei: tipoProcessoIdSei,
+          assunto_id_sei: assuntoIdSei || "",
+        }),
+      });
+      const corpo = await resposta.json();
+      if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível salvar a relação.");
+      processoAssuntoRelacoes = corpo.relacoes || processoAssuntoRelacoes;
+      desenharGradeProcessoAssunto();
+      statusProcessoAssunto("Relação salva.", "ok");
+    } catch (falha) {
+      if (erro) {
+        erro.textContent = falha.message;
+        erro.classList.remove("oculto");
+      }
+    }
+  }
+
   async function carregarPainelIaConfig() {
     const resposta = await fetch("/api/config/ia");
     const corpo = await resposta.json();
@@ -1404,6 +1526,7 @@
   }
 
   async function abrirPainelIaConfig() {
+    document.getElementById("painel-processo-assunto")?.classList.add("oculto");
     const painel = document.getElementById("painel-ia-config");
     const erro = document.getElementById("ia-config-erro");
     if (erro) {
@@ -1478,6 +1601,18 @@
     document.getElementById("ia-config-salvar")?.addEventListener("click", () => { salvarPainelIaConfig(); });
     document.getElementById("painel-ia-config")?.addEventListener("click", (evento) => {
       if (evento.target.id === "painel-ia-config") fecharPainelIaConfig();
+    });
+    document.getElementById("processo-assunto-abrir")?.addEventListener("click", () => { abrirPainelProcessoAssunto(); });
+    document.getElementById("processo-assunto-fechar")?.addEventListener("click", fecharPainelProcessoAssunto);
+    document.getElementById("painel-processo-assunto")?.addEventListener("click", (evento) => {
+      if (evento.target.id === "painel-processo-assunto") fecharPainelProcessoAssunto();
+    });
+    document.getElementById("processo-assunto-filtro")?.addEventListener("input", desenharGradeProcessoAssunto);
+    document.getElementById("processo-assunto-filtro-assunto")?.addEventListener("input", desenharGradeProcessoAssunto);
+    document.getElementById("processo-assunto-corpo")?.addEventListener("change", (evento) => {
+      const select = evento.target.closest("[data-assunto-select]");
+      if (!select) return;
+      salvarRelacaoProcessoAssunto(select.getAttribute("data-assunto-select"), select.value);
     });
 
     const lista = document.getElementById("lista-tags-rj");

@@ -32,6 +32,7 @@ const ASSUNTOS_SEI_IDS = {
 const ASSUNTO_DECRETO_PADRAO =
   "001.01.01.001 - Decreto, estatuto, código, regulamento, regimento, instrução, normativa, norma, resolução, deliberação, portaria";
 const ASSUNTO_CONTRATACAO_PADRAO = "006.01.10.004 - Expediente de atendimento";
+const INTERESSADO_UNIDADE_PADRAO = "GESP - TUPP";
 const TIPO_PROCESSO_CONTRATACAO =
   "Processo de Contratação de Serviço Técnico Profissional Especializado";
 
@@ -56,12 +57,10 @@ function vazio() {
       nivel_acesso: "publico",
     },
     processo_contratacao: {
-      texto_inicial: "nenhum",
-      descricao: "",
-      numero: "",
-      nome_arvore: "",
+      especificacao: "",
+      prioridade: "",
       interessados: [],
-      assuntos: [ASSUNTO_CONTRATACAO_PADRAO],
+      assuntos: [],
       observacoes: "",
       nivel_acesso: "publico",
     },
@@ -126,10 +125,13 @@ function carregar() {
         ...(base.processo_contratacao || {}),
       };
       if (!Array.isArray(base.processo_contratacao.assuntos)) {
-        base.processo_contratacao.assuntos = [ASSUNTO_CONTRATACAO_PADRAO];
+        base.processo_contratacao.assuntos = [];
       }
       if (!Array.isArray(base.processo_contratacao.interessados)) {
         base.processo_contratacao.interessados = [];
+      }
+      if (!("especificacao" in base.processo_contratacao) && base.processo_contratacao.descricao) {
+        base.processo_contratacao.especificacao = base.processo_contratacao.descricao;
       }
       ["processo", "interessado", "unidade", "contrato_vigente"].forEach((chaveAntiga) => delete base[chaveAntiga]);
       if (!base.extras || typeof base.extras !== "object" || Array.isArray(base.extras)) base.extras = {};
@@ -166,15 +168,15 @@ function lerFormularioProcessoSei() {
 
 function lerFormularioContratacao() {
   if (campo("painel-contratacao")?.classList.contains("oculto")) return;
-  const textoInicial = document.querySelector('input[name="contratacao-texto-inicial"]:checked');
   const nivelAcesso = document.querySelector('input[name="contratacao-nivel-acesso"]:checked');
   const atual = dados.processo_contratacao || vazio().processo_contratacao;
+  const especificacao = campo("contratacao-especificacao")?.value.trim() || "";
   dados.processo_contratacao = {
     ...atual,
-    texto_inicial: textoInicial?.value || atual.texto_inicial,
-    descricao: campo("contratacao-descricao")?.value.trim() || "",
-    numero: campo("contratacao-numero")?.value.trim() || "",
-    nome_arvore: campo("contratacao-nome-arvore")?.value.trim() || "",
+    especificacao,
+    // Compatibilidade com payload antigo que usava "descricao".
+    descricao: especificacao,
+    prioridade: campo("contratacao-prioridade")?.value || "",
     observacoes: campo("contratacao-observacoes")?.value.trim() || "",
     nivel_acesso: nivelAcesso?.value || atual.nivel_acesso,
   };
@@ -364,12 +366,9 @@ function htmlCampoExtra(tag) {
   } else if (tipo === "texto_curto") {
     controle = `<input id="extra-${id}" type="text" data-extra-id="${id}" value="${valor}" placeholder="Valor para {{${id}}}" />`;
   } else if (tipo === "ia_web") {
+    // Campos legados ia_web passam a ser texto comum; a busca fica no Assistente IA.
     const linhas = Math.min(12, Math.max(2, String(valorBruto).split("\n").length + (String(valorBruto).length > 80 ? 2 : 0)));
-    controle = `
-      <div class="campo-ia-linha">
-        <textarea id="extra-${id}" data-extra-id="${id}" rows="${linhas}" placeholder="Digite ou use IA para preencher">${valor}</textarea>
-        <button type="button" class="acao botao-ia" data-buscar-ia="${id}" title="Buscar com IA">IA</button>
-      </div>`;
+    controle = `<textarea id="extra-${id}" data-extra-id="${id}" rows="${linhas}" placeholder="Valor para {{${id}}}">${valor}</textarea>`;
   } else {
     controle = `<textarea id="extra-${id}" data-extra-id="${id}" rows="3" placeholder="Valor para {{${id}}}">${valor}</textarea>`;
   }
@@ -2166,16 +2165,48 @@ document.getElementById("painel-documento-interno-sei").addEventListener("click"
   if (evento.target.id === "painel-documento-interno-sei") fecharPainelDocumentoInternoSei();
 });
 document.getElementById("documento-interno-sei-form").addEventListener("submit", cadastrarDocumentoInternoNoSei);
+document.getElementById("sei-doc-id-serie")?.addEventListener("change", () => {
+  aplicarSugestoesCamposPorTipoDocumento();
+});
+campo("sei-doc-assunto-filtro")?.addEventListener("focus", () => desenharListaAssuntosDocumentoSei());
+campo("sei-doc-assunto-filtro")?.addEventListener("click", () => desenharListaAssuntosDocumentoSei());
+campo("sei-doc-assunto-filtro")?.addEventListener("input", () => desenharListaAssuntosDocumentoSei());
+campo("sei-doc-assuntos-lista")?.addEventListener("click", (evento) => {
+  const botao = evento.target.closest("[data-assunto-doc-id]");
+  if (!botao) return;
+  selecionarAssuntoDocumentoSei(botao.dataset.assuntoDocId, botao.dataset.assuntoDocNome);
+});
+campo("sei-doc-assuntos-selecionados")?.addEventListener("click", (evento) => {
+  const botao = evento.target.closest("[data-indice-assunto-doc]");
+  if (!botao) return;
+  assuntosDocumentoSeiSelecionados.splice(Number(botao.dataset.indiceAssuntoDoc), 1);
+  desenharAssuntosDocumentoSeiSelecionados();
+  desenharListaAssuntosDocumentoSei();
+});
+document.querySelectorAll('input[name="sei-doc-texto-inicial"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    const valor = document.querySelector('input[name="sei-doc-texto-inicial"]:checked')?.value || "nenhum";
+    if (valor === "nenhum") {
+      blocoCampoDocumentoSei("idTextoPadraoInterno")?.classList.add("oculto");
+      return;
+    }
+    revelarCampoDocumentoSei("idTextoPadraoInterno", { focar: false });
+  });
+});
 document.getElementById("documento-interno-sei-revisar").addEventListener("click", liberarNovaTentativaDocumentoSei);
 document.getElementById("documento-interno-sei-revisar-lista").addEventListener("click", liberarNovaTentativaDocumentoSei);
 document.getElementById("documento-interno-sei-carregar-secoes").addEventListener("click", carregarConteudoDocumentoSei);
 document.getElementById("documento-interno-sei-alterar").addEventListener("click", alterarConteudoDocumentoSei);
 document.getElementById("documento-interno-sei-revisar-alteracao").addEventListener("click", liberarNovaAlteracaoDocumentoSei);
 document.getElementById("documento-interno-sei-formulario-abrir").addEventListener("click", navegarParaFormularioDocumentoSei);
-document.getElementById("preencher-secao-fechar")?.addEventListener("click", fecharPainelPreencherSecao);
-document.getElementById("preencher-secao-voltar")?.addEventListener("click", fecharPainelPreencherSecao);
+document.getElementById("preencher-secao-fechar")?.addEventListener("click", () => {
+  voltarDoFormularioParaListaDocumentos();
+});
+document.getElementById("preencher-secao-voltar")?.addEventListener("click", () => {
+  voltarDoFormularioParaListaDocumentos();
+});
 document.getElementById("painel-preencher-secao")?.addEventListener("click", (evento) => {
-  if (evento.target.id === "painel-preencher-secao") fecharPainelPreencherSecao();
+  if (evento.target.id === "painel-preencher-secao") voltarDoFormularioParaListaDocumentos();
 });
 document.getElementById("documento-interno-sei-formulario-selecionar").addEventListener("click", selecionarFormularioDocumentoSei);
 document.getElementById("documento-interno-sei-visualizar").addEventListener("click", visualizarFormularioDocumentoSei);
@@ -2188,12 +2219,149 @@ document.getElementById("sei-doc-formulario").addEventListener("change", limparP
 document.getElementById("documento-interno-sei-formulario-campos").addEventListener("input", limparPreviaFormularioDocumentoSei);
 document.getElementById("documento-interno-sei-formulario-campos").addEventListener("change", limparPreviaFormularioDocumentoSei);
 document.getElementById("documento-interno-sei-formulario-campos").addEventListener("click", (evento) => {
-  const botaoIa = evento.target.closest("[data-buscar-ia-sei]");
-  if (botaoIa) {
-    abrirPainelIaCampo(botaoIa.dataset.buscarIaSei);
+  manipularTabelaFormularioDocumentoSei(evento);
+});
+
+function definirVisibilidadeAssistenteIaFlutuante(visivel) {
+  const dock = document.getElementById("assistente-ia-flutuante");
+  if (!dock) return;
+  dock.classList.toggle("oculto", !visivel);
+  if (!visivel) definirEstadoAssistenteIa(false);
+}
+
+function definirEstadoAssistenteIa(aberto) {
+  const painel = document.getElementById("assistente-ia-painel");
+  const botao = document.getElementById("assistente-ia-abrir");
+  if (!painel || !botao) return;
+  painel.classList.toggle("oculto", !aberto);
+  botao.setAttribute("aria-expanded", aberto ? "true" : "false");
+  botao.classList.toggle("oculto", aberto);
+  if (aberto) document.getElementById("assistente-ia-prompt")?.focus();
+}
+
+function atualizarContadorAssistenteIa() {
+  const resposta = document.getElementById("assistente-ia-resposta");
+  const contador = document.getElementById("assistente-ia-contador");
+  const botaoCopiar = document.getElementById("assistente-ia-copiar");
+  const n = (resposta?.value || "").length;
+  if (contador) contador.textContent = `(${n})`;
+  if (botaoCopiar) botaoCopiar.disabled = !n;
+}
+
+async function executarAssistenteIa() {
+  const prompt = document.getElementById("assistente-ia-prompt")?.value.trim() || "";
+  const estado = document.getElementById("assistente-ia-estado");
+  const erro = document.getElementById("assistente-ia-erro");
+  const botao = document.getElementById("assistente-ia-buscar");
+  const resposta = document.getElementById("assistente-ia-resposta");
+  if (!erro || !botao || !resposta) return;
+  erro.classList.add("oculto");
+  erro.textContent = "";
+  if (!prompt) {
+    erro.className = "erro";
+    erro.classList.remove("oculto");
+    erro.textContent = "Escreva o que você deseja buscar.";
     return;
   }
-  manipularTabelaFormularioDocumentoSei(evento);
+  botao.disabled = true;
+  if (estado) estado.textContent = "Gerando resposta com IA…";
+  resposta.value = "";
+  atualizarContadorAssistenteIa();
+  try {
+    const tecnologia =
+      document.querySelector('[data-form-sei-tag="tecnologia"]')?.value?.trim()
+      || dados.tecnologia
+      || document.getElementById("tecnologia")?.value
+      || "";
+    const fetchResposta = await fetch("/api/campos/sugerir", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        consulta: prompt,
+        consulta_ia: prompt,
+        rotulo: "Assistente IA",
+        tecnologia,
+        usar_tecnologia: Boolean(document.getElementById("assistente-ia-usar-tecnologia")?.checked),
+        historico: [],
+      }),
+    });
+    const corpo = await fetchResposta.json().catch(() => ({}));
+    if (!fetchResposta.ok) throw new Error(corpo.mensagem || "Falha na busca com IA.");
+    if (corpo.modo === "refinar") {
+      const perguntas = (corpo.perguntas || [])
+        .map((perg) => perg.pergunta || "")
+        .filter(Boolean)
+        .join("\n");
+      resposta.value = perguntas
+        ? `${corpo.mensagem || "A IA pediu mais detalhes:"}\n\n${perguntas}\n\nInclua esses detalhes no prompt e busque de novo.`
+        : (corpo.mensagem || "A IA pediu mais detalhes. Refine o prompt e busque de novo.");
+      if (estado) estado.textContent = "Refine o prompt e busque novamente.";
+      atualizarContadorAssistenteIa();
+      return;
+    }
+    const itens = corpo.itens || [];
+    if (!itens.length) throw new Error(corpo.mensagem || "Nenhuma resposta retornada pela IA.");
+    resposta.value = itens.map((item) => item.texto || "").filter(Boolean).join("\n\n");
+    if (estado) estado.textContent = corpo.mensagem || "Resposta pronta. Copie e cole no campo desejado.";
+    atualizarContadorAssistenteIa();
+  } catch (falha) {
+    if (estado) estado.textContent = "";
+    erro.className = "erro";
+    erro.classList.remove("oculto");
+    erro.textContent = falha.message;
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function copiarRespostaAssistenteIa() {
+  const texto = document.getElementById("assistente-ia-resposta")?.value.trim() || "";
+  const erro = document.getElementById("assistente-ia-erro");
+  const estado = document.getElementById("assistente-ia-estado");
+  if (!texto) return;
+  try {
+    await navigator.clipboard.writeText(texto);
+    if (estado) estado.textContent = "Resposta copiada. Cole no campo desejado.";
+    if (erro) {
+      erro.classList.add("oculto");
+      erro.textContent = "";
+    }
+  } catch (_) {
+    const area = document.getElementById("assistente-ia-resposta");
+    area?.focus();
+    area?.select();
+    if (estado) estado.textContent = "Selecione o texto e use Ctrl+C para copiar.";
+  }
+}
+
+function limparAssistenteIa() {
+  const prompt = document.getElementById("assistente-ia-prompt");
+  const resposta = document.getElementById("assistente-ia-resposta");
+  const estado = document.getElementById("assistente-ia-estado");
+  const erro = document.getElementById("assistente-ia-erro");
+  if (prompt) prompt.value = "";
+  if (resposta) resposta.value = "";
+  if (estado) estado.textContent = "";
+  if (erro) {
+    erro.classList.add("oculto");
+    erro.textContent = "";
+  }
+  atualizarContadorAssistenteIa();
+}
+
+document.getElementById("assistente-ia-abrir")?.addEventListener("click", () => {
+  const painel = document.getElementById("assistente-ia-painel");
+  definirEstadoAssistenteIa(Boolean(painel?.classList.contains("oculto")));
+});
+document.getElementById("assistente-ia-fechar")?.addEventListener("click", () => definirEstadoAssistenteIa(false));
+document.getElementById("assistente-ia-buscar")?.addEventListener("click", executarAssistenteIa);
+document.getElementById("assistente-ia-copiar")?.addEventListener("click", copiarRespostaAssistenteIa);
+document.getElementById("assistente-ia-limpar")?.addEventListener("click", limparAssistenteIa);
+document.getElementById("assistente-ia-prompt")?.addEventListener("keydown", (evento) => {
+  if ((evento.ctrlKey || evento.metaKey) && evento.key === "Enter") {
+    evento.preventDefault();
+    executarAssistenteIa();
+  }
 });
 document.getElementById("painel-contratacao").addEventListener("input", () => {
   salvar();
@@ -2479,10 +2647,13 @@ function aplicarCadastro(cadastro) {
     ...(base.processo_contratacao || {}),
   };
   if (!Array.isArray(base.processo_contratacao.assuntos)) {
-    base.processo_contratacao.assuntos = [ASSUNTO_CONTRATACAO_PADRAO];
+    base.processo_contratacao.assuntos = [];
   }
   if (!Array.isArray(base.processo_contratacao.interessados)) {
     base.processo_contratacao.interessados = [];
+  }
+  if (!base.processo_contratacao.especificacao && base.processo_contratacao.descricao) {
+    base.processo_contratacao.especificacao = base.processo_contratacao.descricao;
   }
   if (!Array.isArray(base.catalogo)) base.catalogo = [];
   if (!Array.isArray(base.clientes) || !base.clientes.length) base.clientes = [listas.clientes()];
@@ -2694,21 +2865,101 @@ function fecharPainelContratacao() {
   campo("painel-contratacao").classList.add("oculto");
 }
 
+function normalizarTextoComparacao(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function sugerirAssuntoPorTipoProcesso(tipoNome) {
+  const tipoNorm = normalizarTextoComparacao(tipoNome);
+  if (!tipoNorm || !assuntosSei.length) return "";
+  let melhor = "";
+  let melhorScore = 0;
+  assuntosSei.forEach((item) => {
+    const nome = String(item.nome || "");
+    const nomeNorm = normalizarTextoComparacao(nome);
+    const semCodigo = nomeNorm.replace(/^\d[\d.\s-]+/, "").trim();
+    if (!semCodigo) return;
+    if (semCodigo === tipoNorm || nomeNorm.endsWith(tipoNorm) || semCodigo.endsWith(tipoNorm)) {
+      melhor = nome;
+      melhorScore = Number.MAX_SAFE_INTEGER;
+      return;
+    }
+    if (semCodigo.includes(tipoNorm) || tipoNorm.includes(semCodigo)) {
+      const score = Math.min(semCodigo.length, tipoNorm.length);
+      if (score > melhorScore) {
+        melhorScore = score;
+        melhor = nome;
+      }
+    }
+  });
+  return melhor;
+}
+
+async function obterAssuntoVinculadoTipoProcesso(tipoNome = "", tipoIdSei = "") {
+  const idSei = String(tipoIdSei || dados.tipo_processo_sei_id || "").trim();
+  const nome = String(tipoNome || dados.tipo_processo_sei || tipoProcessoSelecionado || "").trim();
+  if (!idSei && !nome) return null;
+  try {
+    const params = new URLSearchParams();
+    if (idSei) params.set("tipo_processo_id_sei", idSei);
+    if (nome) params.set("tipo_processo", nome);
+    const resposta = await fetch(`/api/processo-assunto?${params.toString()}`);
+    const corpo = await lerRespostaApi(resposta);
+    if (!resposta.ok) return null;
+    return corpo.assunto || null;
+  } catch (_erro) {
+    return null;
+  }
+}
+
+async function aplicarPadroesFormularioContratacao() {
+  const processo = dados.processo_contratacao || vazio().processo_contratacao;
+  const tipo = dados.tipo_processo_sei || tipoProcessoSelecionado || "";
+
+  if (!(processo.interessados || []).length) {
+    processo.interessados = [INTERESSADO_UNIDADE_PADRAO];
+  }
+
+  const assuntosAtuais = processo.assuntos || [];
+  const soPadraoAntigo = assuntosAtuais.length === 1
+    && assuntosAtuais[0] === ASSUNTO_CONTRATACAO_PADRAO;
+  if (!assuntosAtuais.length || soPadraoAntigo) {
+    const vinculado = await obterAssuntoVinculadoTipoProcesso(tipo, dados.tipo_processo_sei_id);
+    if (vinculado?.nome) {
+      processo.assuntos = [vinculado.nome];
+    } else {
+      const sugerido = sugerirAssuntoPorTipoProcesso(tipo);
+      processo.assuntos = sugerido ? [sugerido] : [];
+    }
+  }
+
+  dados.processo_contratacao = processo;
+}
+
 function preencherFormularioContratacao() {
   const processo = dados.processo_contratacao || vazio().processo_contratacao;
-  document.querySelectorAll('input[name="contratacao-texto-inicial"]').forEach((radio) => {
-    radio.checked = radio.value === processo.texto_inicial;
-  });
-  campo("contratacao-descricao").value = processo.descricao || "";
-  campo("contratacao-numero").value = processo.numero || "";
-  campo("contratacao-nome-arvore").value = processo.nome_arvore || "";
+  const tipo = dados.tipo_processo_sei || tipoProcessoSelecionado || "";
+  if (campo("contratacao-tipo")) campo("contratacao-tipo").value = tipo;
+  campo("contratacao-especificacao").value = processo.especificacao || processo.descricao || "";
+  campo("contratacao-prioridade").value = processo.prioridade || "";
   campo("contratacao-observacoes").value = processo.observacoes || "";
   document.querySelectorAll('input[name="contratacao-nivel-acesso"]').forEach((radio) => {
-    radio.checked = radio.value === processo.nivel_acesso;
+    radio.checked = radio.value === (processo.nivel_acesso || "publico");
   });
   desenharItensContratacao("assuntos");
   desenharItensContratacao("interessados");
-  carregarAssuntosSei();
+  carregarAssuntosSei().then(async () => {
+    await aplicarPadroesFormularioContratacao();
+    desenharItensContratacao("assuntos");
+    desenharItensContratacao("interessados");
+    desenharListaAssuntosContratacao();
+    salvar();
+  });
 }
 
 let assuntosSei = [];
@@ -2893,6 +3144,18 @@ function preencherFormularioProcessoSei() {
   document.querySelectorAll('input[name="decreto-nivel-acesso"]').forEach((radio) => {
     radio.checked = radio.value === processoSei.nivel_acesso;
   });
+  obterAssuntoVinculadoTipoProcesso(dados.tipo_processo_sei, dados.tipo_processo_sei_id).then((vinculado) => {
+    if (vinculado?.nome) {
+      const atuais = processoSei.assuntos || [];
+      const soPadrao = atuais.length === 1 && atuais[0] === ASSUNTO_DECRETO_PADRAO;
+      if (!atuais.length || soPadrao) {
+        processoSei.assuntos = [vinculado.nome];
+        dados.processo_sei = processoSei;
+        desenharItensProcessoSei("assuntos");
+        salvar();
+      }
+    }
+  });
   desenharItensProcessoSei("assuntos");
   desenharItensProcessoSei("interessados");
   atualizarCampoNumeroProtocolo();
@@ -2990,8 +3253,15 @@ async function criarProcessoNoSei() {
   const ehDecreto = !campo("painel-decreto").classList.contains("oculto");
   const prefixo = ehDecreto ? "decreto" : "contratacao";
   const mostrarMensagem = ehDecreto ? mensagemDecreto : mensagemContratacao;
+  const assuntosSelecionados = ehDecreto
+    ? (dados.processo_sei?.assuntos || [])
+    : (dados.processo_contratacao?.assuntos || []);
+  if (!(assuntosSelecionados || []).filter(Boolean).length) {
+    mostrarMensagem("Selecione ao menos um assunto na Classificação por Assuntos. Campo obrigatório.");
+    return;
+  }
   if (!csrfSei) {
-    const autenticado = await carregarSessaoSei();
+    const autenticado = await carregarSessaoSei().then(() => retomarAberturaIaSeHouver());
     if (!autenticado) return;
   }
   if (!window.confirm(
@@ -3191,7 +3461,7 @@ async function abrirDocumentoInternoSeiDaLista(evento) {
     salvarEstadoDocumentoInternoSei(estado);
   }
   campo("documento-interno-sei-lista").classList.add("oculto");
-  await prepararEtapaConteudoDocumentoSei(estado);
+  await prepararEtapaConteudoDocumentoSei(estado, { irDiretoAoFormulario: true });
 }
 
 function mensagemDocumentoInternoSei(texto, tipo = "erro") {
@@ -3231,17 +3501,7 @@ async function abrirPainelDocumentoInternoSei() {
   campo("documento-interno-sei-conteudo").classList.add("oculto");
   campo("documento-interno-sei-enviar").classList.add("oculto");
   campo("documento-interno-sei-form").reset();
-  campo("sei-doc-descricao").value = "";
-  campo("sei-doc-nivel-acesso").value = ({
-    publico: "0",
-    restrito: "1",
-    sigiloso: "2",
-  })[processo.nivel_acesso] || "0";
-  campo("sei-doc-assuntos").value = (processo.assuntos || [])
-    .map((assunto) => ASSUNTOS_SEI_IDS[assunto])
-    .filter(Boolean)
-    .join(",");
-  campo("sei-doc-observacao").value = processo.observacoes || "";
+  campo("sei-doc-unidade-geradora").value = "110000001";
   campo("documento-interno-sei-retorno").textContent = "";
   campo("documento-interno-sei-retorno").classList.add("oculto");
   campo("documento-interno-sei-revisar").classList.add("oculto");
@@ -3258,12 +3518,17 @@ async function abrirPainelDocumentoInternoSei() {
   await carregarListaDocumentosInternosSei();
 }
 
-async function prepararEtapaConteudoDocumentoSei(estado) {
+async function prepararEtapaConteudoDocumentoSei(estado, opcoes = {}) {
+  const irDiretoAoFormulario =
+    Boolean(opcoes.irDiretoAoFormulario) &&
+    estado.status === "em_andamento" &&
+    !estado.alteracao_incerta;
   campo("documento-interno-sei-lista").classList.add("oculto");
   campo("documento-interno-sei-ajuda-metadados").classList.add("oculto");
   campo("documento-interno-sei-metadados").classList.add("oculto");
   campo("documento-interno-sei-enviar").classList.add("oculto");
-  campo("documento-interno-sei-conteudo").classList.remove("oculto");
+  // Tela de seções fica oculta no caminho feliz; só aparece em falhas/estados especiais.
+  campo("documento-interno-sei-conteudo").classList.toggle("oculto", irDiretoAoFormulario);
   campo("documento-interno-sei-formulario-painel").classList.add("oculto");
   campo("documento-interno-sei-previa").classList.add("oculto");
   campo("documento-interno-sei-previa-html").replaceChildren();
@@ -3288,37 +3553,72 @@ async function prepararEtapaConteudoDocumentoSei(estado) {
       `Conteúdo enviado ao SEI para o documento ${estado.protocolo || estado.id_documento}.`;
   } else {
     campo("documento-interno-sei-etapa-status").textContent =
-      `Documento SEI ${estado.protocolo ? `(${estado.protocolo})` : `ID ${estado.id_documento || "pendente"}`} cadastrado. Selecione uma seção editável e use um formulário para preparar o conteúdo.`;
+      `Documento SEI ${estado.protocolo ? `(${estado.protocolo})` : `ID ${estado.id_documento || "pendente"}`} cadastrado. Abrindo o formulário para incluir o conteúdo…`;
   }
   if (estado.status === "vinculo_pendente") {
+    campo("documento-interno-sei-conteudo").classList.remove("oculto");
     mensagemConteudoDocumentoInternoSei(
       "A associação local falhou. Por segurança, o GCPD bloqueou a alteração deste documento.",
       "erro",
     );
     return;
   }
-  await carregarConteudoDocumentoSei();
+  if (irDiretoAoFormulario) {
+    const painel = campo("painel-preencher-secao");
+    if (painel) painel.classList.remove("oculto");
+    definirVisibilidadeAssistenteIaFlutuante(true);
+    const msg = campo("preencher-secao-mensagem");
+    if (msg) {
+      msg.textContent = "Preparando o documento…";
+      msg.className = "aviso";
+      msg.classList.remove("oculto");
+    }
+  }
+  await carregarConteudoDocumentoSei({ silencioso: irDiretoAoFormulario });
+  if (!irDiretoAoFormulario) return;
+  if (actualPodeAlterarDocumentoSei(estadoDocumentoInternoSei())) {
+    await navegarParaFormularioDocumentoSei();
+    return;
+  }
+  // Falha ao obter seção: volta a mostrar o painel técnico com a mensagem de erro.
+  fecharPainelPreencherSecao();
+  campo("documento-interno-sei-conteudo").classList.remove("oculto");
 }
 
-async function carregarConteudoDocumentoSei() {
+async function carregarConteudoDocumentoSei(opcoes = {}) {
+  const silencioso = Boolean(opcoes.silencioso);
   let estado;
   try {
     estado = estadoDocumentoInternoSei();
   } catch (erro) {
-    mensagemConteudoDocumentoInternoSei(erro.message);
+    if (!silencioso) mensagemConteudoDocumentoInternoSei(erro.message);
+    const msg = campo("preencher-secao-mensagem");
+    if (silencioso && msg) {
+      msg.textContent = erro.message;
+      msg.className = "erro";
+      msg.classList.remove("oculto");
+    }
     return;
   }
   if (!estado?.id_documento) {
-    mensagemConteudoDocumentoInternoSei(
-      "O documento foi cadastrado, mas o SEI não retornou seu ID; não é possível consultar ou alterar as seções.",
-    );
+    const texto =
+      "O documento foi cadastrado, mas o SEI não retornou seu ID; não é possível consultar ou alterar as seções.";
+    if (!silencioso) mensagemConteudoDocumentoInternoSei(texto);
+    const msg = campo("preencher-secao-mensagem");
+    if (silencioso && msg) {
+      msg.textContent = texto;
+      msg.className = "erro";
+      msg.classList.remove("oculto");
+    }
     return;
   }
   const botao = campo("documento-interno-sei-carregar-secoes");
   botao.disabled = true;
   campo("documento-interno-sei-formulario-abrir").disabled = true;
   campo("documento-interno-sei-alterar").disabled = true;
-  mensagemConteudoDocumentoInternoSei("Consultando as seções do documento no SEI…", "aviso");
+  if (!silencioso) {
+    mensagemConteudoDocumentoInternoSei("Consultando as seções do documento no SEI…", "aviso");
+  }
   try {
     const resposta = await fetch(
       `/api/processos/${processoEmEdicao.id}/documentos/${encodeURIComponent(estado.id_documento)}/secoes`,
@@ -3349,12 +3649,19 @@ async function carregarConteudoDocumentoSei() {
     if (!secoesDocumentoInternoSei.length) {
       throw new Error("O documento não possui seções editáveis no SEI.");
     }
-    mostrarConteudoSecaoAtual();
+    if (!silencioso) mostrarConteudoSecaoAtual();
+    else if (seletorSecao.value) mostrarConteudoSecaoAtual();
     campo("documento-interno-sei-formulario-abrir").disabled =
       estado.status !== "em_andamento" || Boolean(estado.alteracao_incerta);
-    mensagemConteudoDocumentoInternoSei("");
+    if (!silencioso) mensagemConteudoDocumentoInternoSei("");
   } catch (erro) {
-    mensagemConteudoDocumentoInternoSei(erro.message);
+    if (!silencioso) mensagemConteudoDocumentoInternoSei(erro.message);
+    const msg = campo("preencher-secao-mensagem");
+    if (silencioso && msg) {
+      msg.textContent = erro.message;
+      msg.className = "erro";
+      msg.classList.remove("oculto");
+    }
   } finally {
     botao.disabled = false;
     const atual = estadoDocumentoInternoSei();
@@ -3444,12 +3751,19 @@ async function carregarListaFormulariosDocumentoSei() {
 async function navegarParaFormularioDocumentoSei() {
   if (!actualPodeAlterarDocumentoSei(estadoDocumentoInternoSei())) {
     mensagemConteudoDocumentoInternoSei(
-      "Selecione uma seção editável e confirme que o documento está em andamento antes de abrir o formulário.",
+      "Não há seção editável disponível para este documento. Atualize a lista ou tente novamente.",
     );
     return;
   }
+  // Garante uma seção selecionada sem exibir a tela intermediária ao usuário.
+  const seletor = campo("sei-doc-secao");
+  if (seletor && seletor.options.length && seletor.selectedIndex < 0) {
+    seletor.selectedIndex = 0;
+  }
+  if (seletor?.value) mostrarConteudoSecaoAtual();
   const painel = campo("painel-preencher-secao");
   if (painel) painel.classList.remove("oculto");
+  definirVisibilidadeAssistenteIaFlutuante(true);
   const painelForm = campo("documento-interno-sei-formulario-painel");
   if (painelForm) painelForm.classList.remove("oculto");
   campo("documento-interno-sei-formulario-campos").replaceChildren();
@@ -3466,7 +3780,7 @@ async function navegarParaFormularioDocumentoSei() {
   await carregarListaFormulariosDocumentoSei();
   if (msg) {
     if (formulariosDocumentoSei.length) {
-      msg.textContent = "Selecione o formulário, preencha os campos, gere a prévia HTML e inclua o conteúdo na seção.";
+      msg.textContent = "Selecione o formulário, preencha os campos, gere a prévia e inclua o conteúdo no documento.";
       msg.className = "aviso";
       msg.classList.remove("oculto");
     } else {
@@ -3479,9 +3793,136 @@ async function navegarParaFormularioDocumentoSei() {
 
 function fecharPainelPreencherSecao() {
   campo("painel-preencher-secao")?.classList.add("oculto");
+  definirVisibilidadeAssistenteIaFlutuante(false);
 }
 
-function selecionarFormularioDocumentoSei() {
+async function voltarDoFormularioParaListaDocumentos() {
+  fecharPainelPreencherSecao();
+  await mostrarListaDocumentosInternosSei();
+}
+
+function lerContextoFormularioIaLocal() {
+  try {
+    const bruto = sessionStorage.getItem("gcpd-contexto-formulario-ia");
+    return bruto ? JSON.parse(bruto) : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function aplicarValoresFormularioDocumentoSei(valores) {
+  if (!valores || typeof valores !== "object") return 0;
+  const host = campo("documento-interno-sei-formulario-campos");
+  let aplicados = 0;
+  Object.entries(valores).forEach(([tagId, valor]) => {
+    if (valor == null || typeof valor === "object") return;
+    const el = host.querySelector(`[data-form-sei-tag="${CSS.escape(tagId)}"]`);
+    if (!el) return;
+    el.value = String(valor);
+    aplicados += 1;
+  });
+  return aplicados;
+}
+
+function montarContextoPreenchimentoFormularioSei() {
+  const salvo = lerContextoFormularioIaLocal();
+  const interessados =
+    dados.processo_contratacao?.interessados ||
+    dados.processo_sei?.interessados ||
+    [];
+  const assuntos =
+    dados.processo_contratacao?.assuntos ||
+    dados.processo_sei?.assuntos ||
+    [];
+  return {
+    pedido: salvo.pedido || dados.fatos || dados.extras?.pedido || "",
+    numero_sei:
+      processoEmEdicao?.numero_sei ||
+      salvo.numero_sei ||
+      dados.extras?.n_processo_sei ||
+      dados.extras?.numero_sei ||
+      "",
+    interessado:
+      salvo.interessado ||
+      (Array.isArray(interessados) ? interessados[0] : "") ||
+      "",
+    assunto:
+      salvo.assunto ||
+      (Array.isArray(assuntos) ? assuntos[0] : "") ||
+      dados.assunto ||
+      "",
+    tipo_processo:
+      salvo.tipo_processo ||
+      dados.processo_contratacao?.tipo_processo_sei ||
+      dados.processo_sei?.tipo_processo_sei ||
+      "",
+  };
+}
+
+async function sugerirPreenchimentoFormularioDocumentoSei() {
+  if (!formularioDocumentoSeiSelecionado) return;
+  if (!csrfSei) {
+    const autenticado = await carregarSessaoSei();
+    if (!autenticado) return;
+  }
+  const msg = campo("preencher-secao-mensagem");
+  if (msg) {
+    msg.textContent = "A IA está analisando este formulário e sugerindo o preenchimento…";
+    msg.className = "aviso";
+    msg.classList.remove("oculto");
+  }
+  try {
+    const resposta = await fetch("/api/ia/preencher-formulario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfSei,
+      },
+      body: JSON.stringify({
+        formulario: {
+          id: formularioDocumentoSeiSelecionado.id,
+          nome: formularioDocumentoSeiSelecionado.nome,
+          tags: (formularioDocumentoSeiSelecionado.tags || []).map((tag) => ({
+            id: tag.id,
+            rotulo: tag.rotulo,
+            tipo: tag.tipo,
+            grupo: tag.grupo,
+            calculado: Boolean(tag.calculado),
+          })),
+        },
+        contexto: montarContextoPreenchimentoFormularioSei(),
+      }),
+    });
+    const corpo = await lerRespostaApi(resposta);
+    if (!resposta.ok || !corpo.ok) {
+      throw new Error(corpo.mensagem || "Não foi possível sugerir o preenchimento.");
+    }
+    const aplicados = aplicarValoresFormularioDocumentoSei(corpo.valores || {});
+    limparPreviaFormularioDocumentoSei();
+    if (msg) {
+      if (corpo.aviso) {
+        msg.textContent = aplicados
+          ? `${aplicados} campo(s) preenchidos. ${corpo.aviso}`
+          : corpo.aviso;
+        msg.className = "aviso";
+      } else {
+        msg.textContent = aplicados
+          ? `${aplicados} campo(s) sugerido(s). Revise antes de incluir no SEI${corpo.fonte ? ` · ${corpo.fonte}` : ""}.`
+          : "Nenhum campo pôde ser sugerido automaticamente. Preencha manualmente.";
+        msg.className = aplicados ? "aviso" : "erro";
+      }
+      msg.classList.remove("oculto");
+    }
+  } catch (erro) {
+    if (msg) {
+      msg.textContent = erro.message || "Falha ao sugerir preenchimento com IA.";
+      msg.className = "erro";
+      msg.classList.remove("oculto");
+    }
+  }
+}
+
+async function selecionarFormularioDocumentoSei() {
   const id = campo("sei-doc-formulario").value;
   formularioDocumentoSeiSelecionado =
     formulariosDocumentoSei.find((formulario) => formulario.id === id) || null;
@@ -3511,14 +3952,9 @@ function selecionarFormularioDocumentoSei() {
     `).join("")
     : `<p class="ajuda">Este formulário não possui campos para preencher. Clique em Visualizar para revisar o documento.</p>`;
   campo("documento-interno-sei-visualizar").classList.remove("oculto");
-  const numeroSei = processoEmEdicao?.numero_sei || dados.extras?.n_processo_sei || "";
-  if (numeroSei) {
-    const campoProcesso = camposFormulario.querySelector('[data-form-sei-tag="n_processo_sei"]');
-    if (campoProcesso && !campoProcesso.value) {
-      campoProcesso.value = numeroSei;
-    }
-  }
   mensagemConteudoDocumentoInternoSei("");
+  // Após a escolha do formulário: a IA analisa as tags daquele formulário e sugere valores.
+  await sugerirPreenchimentoFormularioDocumentoSei();
 }
 
 function htmlCampoFormularioDocumentoSei(tag) {
@@ -3557,12 +3993,7 @@ function htmlCampoFormularioDocumentoSei(tag) {
     ? `<input type="number" step="any" data-form-sei-tag="${id}" />`
     : tipo === "texto_curto"
       ? `<input type="text" data-form-sei-tag="${id}" />`
-      : tipo === "ia_web"
-        ? `<div class="campo-ia-linha">
-            <textarea rows="3" data-form-sei-tag="${id}" placeholder="Digite ou use IA para preencher"></textarea>
-            <button type="button" class="acao botao-ia" data-buscar-ia-sei="${id}" title="Buscar com IA">IA</button>
-          </div>`
-        : `<textarea rows="3" data-form-sei-tag="${id}"></textarea>`;
+      : `<textarea rows="3" data-form-sei-tag="${id}" placeholder="Valor para {{${id}}}"></textarea>`;
   return `<div class="campo span-${largura}"><label>${rotulo}</label>${controle}</div>`;
 }
 
@@ -3811,6 +4242,230 @@ async function alterarConteudoDocumentoSei() {
   }
 }
 
+const CAMPOS_DOC_SEI = {
+  idSerie: { id: "sei-doc-id-serie", rotulo: "Tipo documental" },
+  descricao: { id: "sei-doc-descricao", rotulo: "Descrição" },
+  nomeArvore: { id: "sei-doc-nome-arvore", rotulo: "Nome na Árvore" },
+  nivelAcesso: { id: "sei-doc-nivel-acesso", rotulo: "Nível de acesso" },
+  idUnidadeGeradoraProtocolo: { id: "sei-doc-unidade-geradora", rotulo: "Unidade geradora de protocolo" },
+  assuntos: { id: "sei-doc-assuntos", rotulo: "Assuntos" },
+  observacao: { id: "sei-doc-observacao", rotulo: "Observações desta unidade" },
+  flagProtocolo: { id: "sei-doc-flag-protocolo", rotulo: "Flag de protocolo" },
+  interessados: { id: "sei-doc-interessados", rotulo: "Interessados" },
+  destinatarios: { id: "sei-doc-destinatarios", rotulo: "Destinatários" },
+  unidadesReabertura: { id: "sei-doc-unidades-reabertura", rotulo: "Unidades para reabertura" },
+  idHipoteseLegal: { id: "sei-doc-hipotese-legal", rotulo: "Hipótese legal" },
+  grauSigilo: { id: "sei-doc-grau-sigilo", rotulo: "Grau de sigilo" },
+  idTextoPadraoInterno: { id: "sei-doc-texto-padrao", rotulo: "Texto padrão interno" },
+};
+
+const CAMPOS_DOC_SEI_BASE = new Set([
+  "idSerie",
+  "descricao",
+  "nomeArvore",
+  "nivelAcesso",
+  "assuntos",
+  "observacao",
+  "textoInicial",
+]);
+
+let assuntosDocumentoSeiSelecionados = [];
+let tiposDocumentoSei = [];
+
+function blocoCampoDocumentoSei(nomeApi) {
+  return campo("documento-interno-sei-metadados")
+    ?.querySelector(`[data-sei-campo="${nomeApi}"]`);
+}
+
+function campoDocumentoSeiVisivel(nomeApi) {
+  if (nomeApi === "idUnidadeGeradoraProtocolo" || nomeApi === "flagProtocolo") return true;
+  const bloco = blocoCampoDocumentoSei(nomeApi);
+  if (!bloco) {
+    return Boolean(campo(CAMPOS_DOC_SEI[nomeApi]?.id));
+  }
+  return !bloco.classList.contains("oculto");
+}
+
+function revelarCampoDocumentoSei(nomeApi, { obrigatorio = false, focar = true } = {}) {
+  const meta = CAMPOS_DOC_SEI[nomeApi];
+  const bloco = blocoCampoDocumentoSei(nomeApi);
+  if (!meta || !bloco) return false;
+  bloco.classList.remove("oculto");
+  if (obrigatorio) bloco.dataset.seiObrigatorio = "1";
+  const input = campo(meta.id) || bloco.querySelector("input, select, textarea");
+  if (input && focar) {
+    input.focus();
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  return true;
+}
+
+function resetarVisibilidadeCamposDocumentoSei() {
+  campo("documento-interno-sei-metadados")
+    ?.querySelectorAll("[data-sei-campo]")
+    .forEach((bloco) => {
+      const nome = bloco.dataset.seiCampo;
+      const base = CAMPOS_DOC_SEI_BASE.has(nome) || bloco.dataset.seiBase === "1";
+      bloco.classList.toggle("oculto", !base);
+      delete bloco.dataset.seiObrigatorio;
+      bloco.classList.remove("campo-sei-faltante");
+    });
+}
+
+function tipoDocumentoSeiSelecionado() {
+  const id = campo("sei-doc-id-serie")?.value || "";
+  return tiposDocumentoSei.find((tipo) => String(tipo.id) === String(id)) || null;
+}
+
+function aplicarSugestoesCamposPorTipoDocumento() {
+  const tipo = tipoDocumentoSeiSelecionado();
+  const blocoAssunto = blocoCampoDocumentoSei("assuntos");
+  if (blocoAssunto) {
+    if (tipo?.precisa_assunto) blocoAssunto.dataset.seiObrigatorio = "1";
+    else delete blocoAssunto.dataset.seiObrigatorio;
+  }
+}
+
+function sincronizarAssuntosDocumentoSeiHidden() {
+  const hidden = campo("sei-doc-assuntos");
+  if (hidden) {
+    hidden.value = assuntosDocumentoSeiSelecionados.map((item) => item.id).join(",");
+  }
+}
+
+function desenharAssuntosDocumentoSeiSelecionados() {
+  const host = campo("sei-doc-assuntos-selecionados");
+  if (!host) return;
+  host.replaceChildren();
+  assuntosDocumentoSeiSelecionados.forEach((item, indice) => {
+    const linha = document.createElement("div");
+    linha.className = "item-decreto";
+    const texto = document.createElement("span");
+    texto.textContent = item.nome || item.id;
+    const remover = document.createElement("button");
+    remover.type = "button";
+    remover.className = "remover";
+    remover.textContent = "Remover";
+    remover.dataset.indiceAssuntoDoc = String(indice);
+    linha.append(texto, remover);
+    host.append(linha);
+  });
+  sincronizarAssuntosDocumentoSeiHidden();
+}
+
+function desenharListaAssuntosDocumentoSei() {
+  const lista = campo("sei-doc-assuntos-lista");
+  const filtroEl = campo("sei-doc-assunto-filtro");
+  if (!lista || !filtroEl) return;
+  const filtro = filtroEl.value.trim().toLocaleLowerCase();
+  const selecionados = new Set(assuntosDocumentoSeiSelecionados.map((item) => String(item.id)));
+  const visiveis = (assuntosSei || []).filter((item) => {
+    const nome = String(item.nome || "").toLocaleLowerCase();
+    const id = String(item.id_sei || "").toLocaleLowerCase();
+    return !filtro || nome.includes(filtro) || id.includes(filtro);
+  });
+  lista.style.display = "grid";
+  if (!(assuntosSei || []).length) {
+    lista.innerHTML = `<p class="lista-tipos-vazia">Nenhum assunto cadastrado.</p>`;
+    return;
+  }
+  if (!visiveis.length) {
+    lista.innerHTML = `<p class="lista-tipos-vazia">Nenhum assunto corresponde ao termo.</p>`;
+    return;
+  }
+  lista.innerHTML = visiveis.map((item) => `
+    <button type="button" class="tipo-processo-opcao"
+      aria-pressed="${selecionados.has(String(item.id_sei))}"
+      data-assunto-doc-id="${escHtml(item.id_sei)}"
+      data-assunto-doc-nome="${escHtml(item.nome)}">${escHtml(item.nome)}</button>
+  `).join("");
+}
+
+function selecionarAssuntoDocumentoSei(id, nome) {
+  if (!id) return;
+  const indice = assuntosDocumentoSeiSelecionados.findIndex((item) => String(item.id) === String(id));
+  if (indice >= 0) {
+    assuntosDocumentoSeiSelecionados.splice(indice, 1);
+  } else {
+    assuntosDocumentoSeiSelecionados.push({ id: String(id), nome: nome || String(id) });
+  }
+  campo("sei-doc-assunto-filtro").value = "";
+  desenharAssuntosDocumentoSeiSelecionados();
+  desenharListaAssuntosDocumentoSei();
+}
+
+function preencherAssuntosDocumentoSeiIniciais() {
+  const processo = dados.processo_contratacao || vazio().processo_contratacao;
+  const nomes = processo.assuntos || [];
+  assuntosDocumentoSeiSelecionados = [];
+  nomes.forEach((nome) => {
+    const hit = (assuntosSei || []).find((item) => item.nome === nome)
+      || (assuntosSei || []).find((item) => String(item.id_sei) === String(ASSUNTOS_SEI_IDS[nome] || ""));
+    if (hit?.id_sei) {
+      assuntosDocumentoSeiSelecionados.push({ id: String(hit.id_sei), nome: hit.nome });
+    }
+  });
+  desenharAssuntosDocumentoSeiSelecionados();
+  desenharListaAssuntosDocumentoSei();
+}
+
+function coletarCamposDocumentoSeiVisiveis() {
+  const payload = {};
+  Object.entries(CAMPOS_DOC_SEI).forEach(([nomeApi, meta]) => {
+    if (!campoDocumentoSeiVisivel(nomeApi)) return;
+    if (nomeApi === "nivelAcesso") {
+      payload.nivelAcesso = document.querySelector('input[name="sei-doc-nivel-acesso"]:checked')?.value || "0";
+      return;
+    }
+    if (nomeApi === "assuntos") {
+      payload.assuntos = assuntosDocumentoSeiSelecionados.map((item) => item.id).join(",");
+      return;
+    }
+    const el = campo(meta.id);
+    if (!el) return;
+    payload[nomeApi] = String(el.value || "").trim();
+  });
+
+  // Sempre envia unidade geradora (valor técnico padrão).
+  payload.idUnidadeGeradoraProtocolo = campo("sei-doc-unidade-geradora")?.value.trim() || "110000001";
+  const tipo = tipoDocumentoSeiSelecionado();
+  if (tipo?.precisa_numero) payload.numero = "DDS001";
+  else delete payload.numero;
+
+  const textoInicial = document.querySelector('input[name="sei-doc-texto-inicial"]:checked')?.value || "nenhum";
+  if (textoInicial !== "nenhum") {
+    const idTexto = campo("sei-doc-texto-padrao")?.value.trim() || "";
+    if (idTexto) payload.idTextoPadraoInterno = idTexto;
+  }
+  return payload;
+}
+
+function validarCamposDocumentoSeiVisiveis(payload) {
+  if (!payload.idSerie) return "Selecione o tipo documental.";
+  for (const [nomeApi, meta] of Object.entries(CAMPOS_DOC_SEI)) {
+    const bloco = blocoCampoDocumentoSei(nomeApi);
+    if (!bloco || bloco.classList.contains("oculto")) continue;
+    if (bloco.dataset.seiObrigatorio === "1" && !payload[nomeApi]) {
+      revelarCampoDocumentoSei(nomeApi, { obrigatorio: true });
+      return `Preencha o campo obrigatório: ${meta.rotulo}.`;
+    }
+  }
+  return "";
+}
+
+function destacarCampoDocumentoSeiFaltante(nomeApi, mensagem) {
+  if (!nomeApi || !revelarCampoDocumentoSei(nomeApi, { obrigatorio: true })) {
+    return mensagem;
+  }
+  const bloco = blocoCampoDocumentoSei(nomeApi);
+  bloco?.classList.add("campo-sei-faltante");
+  const rotulo = CAMPOS_DOC_SEI[nomeApi]?.rotulo || nomeApi;
+  return (
+    `O SEI exigiu o campo “${rotulo}”. Preencha-o e clique novamente em Cadastrar documento no SEI.`
+    + (mensagem ? ` Detalhe: ${mensagem}` : "")
+  );
+}
+
 async function iniciarOutroDocumentoInternoSei() {
   if (localStorage.getItem(chaveResultadoIncertoDocumentoSei()) === "1") {
     mensagemDocumentoInternoSei(
@@ -3833,6 +4488,7 @@ async function carregarTiposDocumentoSei() {
       throw new Error(corpo.mensagem || "Não foi possível carregar os tipos documentais.");
     }
     const tipos = corpo.tipos || [];
+    tiposDocumentoSei = tipos;
     if (!tipos.length) throw new Error("Não há tipos documentais cadastrados.");
     select.replaceChildren(
       new Option("Selecione o tipo documental", ""),
@@ -3855,10 +4511,36 @@ function mostrarFormularioNovoDocumentoInternoSei() {
   campo("documento-interno-sei-enviar").disabled = false;
   campo("documento-interno-sei-form").reset();
   campo("sei-doc-unidade-geradora").value = "110000001";
+  campo("sei-doc-flag-protocolo").value = "";
   campo("documento-interno-sei-revisar").classList.add("oculto");
   mensagemDocumentoInternoSei("");
   mensagemConteudoDocumentoInternoSei("");
-  campo("sei-doc-id-serie").focus();
+  resetarVisibilidadeCamposDocumentoSei();
+
+  const processo = dados.processo_contratacao || vazio().processo_contratacao;
+  const nivel = ({
+    publico: "0",
+    restrito: "1",
+    sigiloso: "2",
+  })[processo.nivel_acesso] || "0";
+  document.querySelectorAll('input[name="sei-doc-nivel-acesso"]').forEach((radio) => {
+    radio.checked = radio.value === nivel;
+  });
+  document.querySelectorAll('input[name="sei-doc-texto-inicial"]').forEach((radio) => {
+    radio.checked = radio.value === "nenhum";
+  });
+  campo("sei-doc-observacao").value = processo.observacoes || "";
+  campo("sei-doc-descricao").value = "";
+  campo("sei-doc-nome-arvore").value = "";
+
+  const carregar = assuntosSei?.length
+    ? Promise.resolve()
+    : carregarAssuntosSei().catch(() => {});
+  carregar.finally(() => {
+    preencherAssuntosDocumentoSeiIniciais();
+    aplicarSugestoesCamposPorTipoDocumento();
+    campo("sei-doc-id-serie")?.focus();
+  });
 }
 
 function liberarNovaTentativaDocumentoSei() {
@@ -3894,21 +4576,13 @@ async function cadastrarDocumentoInternoNoSei(evento) {
     if (!autenticado) return;
   }
 
-  const campos = {
-    idSerie: campo("sei-doc-id-serie").value,
-    flagProtocolo: campo("sei-doc-flag-protocolo").value.trim(),
-    unidadesReabertura: campo("sei-doc-unidades-reabertura").value.trim(),
-    nivelAcesso: campo("sei-doc-nivel-acesso").value,
-    idHipoteseLegal: campo("sei-doc-hipotese-legal").value.trim(),
-    grauSigilo: campo("sei-doc-grau-sigilo").value.trim(),
-    descricao: campo("sei-doc-descricao").value.trim(),
-    assuntos: campo("sei-doc-assuntos").value.trim(),
-    interessados: campo("sei-doc-interessados").value.trim(),
-    destinatarios: campo("sei-doc-destinatarios").value.trim(),
-    observacao: campo("sei-doc-observacao").value.trim(),
-    idUnidadeGeradoraProtocolo: campo("sei-doc-unidade-geradora").value.trim(),
-    idTextoPadraoInterno: campo("sei-doc-texto-padrao").value.trim(),
-  };
+  const campos = coletarCamposDocumentoSeiVisiveis();
+  const erroLocal = validarCamposDocumentoSeiVisiveis(campos);
+  if (erroLocal) {
+    mensagemDocumentoInternoSei(erroLocal, "erro");
+    return;
+  }
+
   const botao = campo("documento-interno-sei-enviar");
   let cadastroConcluido = false;
   botao.disabled = true;
@@ -3947,8 +4621,13 @@ async function cadastrarDocumentoInternoNoSei(evento) {
       if (corpo.resultado_incerto) {
         localStorage.setItem(chaveResultadoIncertoDocumentoSei(), "1");
         campo("documento-interno-sei-revisar").classList.remove("oculto");
+        throw new Error(corpo.mensagem || "Não foi possível cadastrar o documento no SEI.");
       }
-      throw new Error(corpo.mensagem || "Não foi possível cadastrar o documento no SEI.");
+      const mensagem = destacarCampoDocumentoSeiFaltante(
+        corpo.campo_faltante,
+        corpo.mensagem || "Não foi possível cadastrar o documento no SEI.",
+      );
+      throw new Error(mensagem);
     }
     localStorage.removeItem(chaveResultadoIncertoDocumentoSei());
     const documento = corpo.documento || {};
@@ -3963,7 +4642,7 @@ async function cadastrarDocumentoInternoNoSei(evento) {
     salvarEstadoDocumentoInternoSei(estado);
     cadastroConcluido = true;
     mensagemDocumentoInternoSei("");
-    await prepararEtapaConteudoDocumentoSei(estado);
+    await prepararEtapaConteudoDocumentoSei(estado, { irDiretoAoFormulario: true });
   } catch (erro) {
     mensagemDocumentoInternoSei(erro.message, "erro");
   } finally {
@@ -4121,8 +4800,9 @@ function mensagemPrincipal(texto, tipo) {
     el.textContent = "";
     return;
   }
-  el.className = tipo === "ok" ? "ok" : "erro";
+  el.className = tipo === "ok" ? "ok" : (tipo === "aviso" ? "aviso" : "erro");
   el.textContent = texto;
+  el.classList.remove("oculto");
 }
 
 function abrirPainelSei(item) {
@@ -4334,6 +5014,49 @@ async function carregarProcessos() {
   }
 }
 
+document.getElementById("abrir-ia-abrir")?.addEventListener("click", () => {
+  window.location.href = "/processo-sei-ia";
+});
+
+async function retomarAberturaIaSeHouver() {
+  const bruto = sessionStorage.getItem("gcpd-pos-abertura-ia");
+  if (!bruto) return;
+  sessionStorage.removeItem("gcpd-pos-abertura-ia");
+  let dados;
+  try {
+    dados = JSON.parse(bruto);
+  } catch (_) {
+    return;
+  }
+  if (!dados?.processoId) return;
+  try {
+    const resposta = await fetch(`/api/processos/${dados.processoId}`);
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível abrir o processo criado.");
+    definirEdicao(corpo.processo);
+    if (corpo.processo?.cadastro) aplicarCadastro(corpo.processo.cadastro);
+    documentoSeiAtivoId = String(dados.documentoId || "");
+    const estado = {
+      id_documento: documentoSeiAtivoId,
+      protocolo: String(dados.protocoloDocumento || ""),
+      descricao: dados.descricao || "",
+      status: documentoSeiAtivoId ? "em_andamento" : "id_ausente",
+      alteracao_incerta: false,
+    };
+    if (documentoSeiAtivoId) salvarEstadoDocumentoInternoSei(estado);
+    await abrirPainelDocumentoInternoSei();
+    if (documentoSeiAtivoId) {
+      await prepararEtapaConteudoDocumentoSei(estado, { irDiretoAoFormulario: true });
+    }
+    mensagemPrincipal(
+      `Abertura com IA concluída · SEI ${dados.protocolo || corpo.processo.numero_sei || ""}.`,
+      "ok",
+    );
+  } catch (erro) {
+    mensagemPrincipal(erro.message, "erro");
+  }
+}
+
 document.querySelectorAll(".aba").forEach((aba) => {
   aba.addEventListener("click", () => ativarAba(aba.getAttribute("aria-controls")));
 });
@@ -4415,4 +5138,4 @@ document.getElementById("ia-campo-prompt")?.addEventListener("keydown", (evento)
 carregarAcervo();
 carregarProcessos();
 carregarTagsConfiguracao();
-carregarSessaoSei();
+carregarSessaoSei().then(() => retomarAberturaIaSeHouver());

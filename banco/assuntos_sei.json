@@ -1,134 +1,218 @@
 [
   {
-    "id_sei": "708",
-    "nome": "004.01.05.003 - Processo de contratação de serviço técnico profissional especializado"
-  },
-  {
-    "id_sei": "680",
-    "nome": "001.02.03.008 - Parecer da Ouvidoria"
-  },
-  {
-    "id_sei": "687",
-    "nome": "001.01.01.002 - Processo de elaboração de ato normativo"
-  },
-  {
-    "id_sei": "689",
-    "nome": "006.01.10.003 - Ofício, carta, requerimento, moção ou voto, abaixo-assinado"
-  },
-  {
-    "id_sei": "690",
-    "nome": "014.00.01.001 - Expediente de homologação de Certidão de Tempo de Contribuição - CTC"
-  },
-  {
-    "id_sei": "686",
-    "nome": "004.01.04.002 - Processo de aquisição de material de consumo"
-  },
-  {
-    "id_sei": "691",
-    "nome": "001.03.01.002 - Ata de reunião"
-  },
-  {
-    "id_sei": "688",
-    "nome": "001.01.02.003 - Comprovante de atualização de dados no Cadastro Nacional do Trabalhador - CNT"
-  },
-  {
-    "id_sei": "693",
-    "nome": "010.01.01.010 - TESTE GD"
-  },
-  {
-    "id_sei": "681",
-    "nome": "003.03.01.008 - Prontuário funcional"
-  },
-  {
-    "id_sei": "682",
-    "nome": "003.03.03.008 - Processo de contratação de estagiário"
-  },
-  {
-    "id_sei": "683",
-    "nome": "004.01.04.003 - Processo de aquisição de material permanente"
-  },
-  {
     "id_sei": "679",
+    "codigo": "001.01.01.001",
+    "descricao": "Decreto, estatuto, código, regulamento, regimento, instrução, normativa, norma, resolução, deliberação, portaria",
     "nome": "001.01.01.001 - Decreto, estatuto, código, regulamento, regimento, instrução, normativa, norma, resolução, deliberação, portaria"
   },
   {
-    "id_sei": "700",
-    "nome": "003.03.02.009 - Processo para preenchimento de função-atividade"
+    "id_sei": "687",
+    "codigo": "001.01.01.002",
+    "descricao": "Processo de elaboração de ato normativo",
+    "nome": "001.01.01.002 - Processo de elaboração de ato normativo"
+  },
+  {
+    "id_sei": "688",
+    "codigo": "001.01.02.003",
+    "descricao": "Comprovante de atualização de dados no Cadastro Nacional do Trabalhador - CNT",
+    "nome": "001.01.02.003 - Comprovante de atualização de dados no Cadastro Nacional do Trabalhador - CNT"
+  },
+  {
+    "id_sei": "694",
+    "codigo": "001.01.02.111",
+    "descricao": "Teste - Emissão de CNH - Lista de Permissão para Dirigir (lista, taxas...)",
+    "nome": "001.01.02.111 - Teste - Emissão de CNH - Lista de Permissão para Dirigir (lista, taxas...)"
   },
   {
     "id_sei": "701",
+    "codigo": "001.01.04.002",
+    "descricao": "Expediente de atendimento de requisições, ordens judiciais ou administrativas",
     "nome": "001.01.04.002 - Expediente de atendimento de requisições, ordens judiciais ou administrativas"
   },
   {
-    "id_sei": "705",
-    "nome": "031.03.01.010 - Processo de baixa por pagamento de multa"
+    "id_sei": "719",
+    "codigo": "001.02.02.004",
+    "descricao": "Processo de elaboração e execução de plano, programa ou projeto",
+    "nome": "001.02.02.004 - Processo de elaboração e execução de plano, programa ou projeto"
   },
   {
-    "id_sei": "710",
-    "nome": "103.01.01.005 - Processo de autoavaliação de instituição de ensino superior"
+    "id_sei": "680",
+    "codigo": "001.02.03.008",
+    "descricao": "Parecer da Ouvidoria",
+    "nome": "001.02.03.008 - Parecer da Ouvidoria"
   },
   {
-    "id_sei": "697",
-    "nome": "082.00.03.001 - Processo de fiscalização de gás canalizado"
+    "id_sei": "691",
+    "codigo": "001.03.01.002",
+    "descricao": "Ata de reunião",
+    "nome": "001.03.01.002 - Ata de reunião"
   },
   {
-    "id_sei": "699",
-    "nome": "009.09.09.009 - Confraternizações"
+    "id_sei": "681",
+    "codigo": "003.03.01.008",
+    "descricao": "Prontuário funcional",
+    "nome": "003.03.01.008 - Prontuário funcional"
+  },
+  {
+    "id_sei": "700",
+    "codigo": "003.03.02.009",
+    "descricao": "Processo para preenchimento de função-atividade",
+    "nome": "003.03.02.009 - Processo para preenchimento de função-atividade"
+  },
+  {
+    "id_sei": "682",
+    "codigo": "003.03.03.008",
+    "descricao": "Processo de contratação de estagiário",
+    "nome": "003.03.03.008 - Processo de contratação de estagiário"
+  },
+  {
+    "id_sei": "718",
+    "codigo": "003.03.04.011",
+    "descricao": "Processo de concessão e incorporação de vantagens pecuniárias",
+    "nome": "003.03.04.011 - Processo de concessão e incorporação de vantagens pecuniárias"
+  },
+  {
+    "id_sei": "713",
+    "codigo": "003.05.01.017",
+    "descricao": "Processo de inscrição para consignação em Folha de pagamento",
+    "nome": "003.05.01.017 - Processo de inscrição para consignação em Folha de pagamento"
+  },
+  {
+    "id_sei": "686",
+    "codigo": "004.01.04.002",
+    "descricao": "Processo de aquisição de material de consumo",
+    "nome": "004.01.04.002 - Processo de aquisição de material de consumo"
+  },
+  {
+    "id_sei": "683",
+    "codigo": "004.01.04.003",
+    "descricao": "Processo de aquisição de material permanente",
+    "nome": "004.01.04.003 - Processo de aquisição de material permanente"
+  },
+  {
+    "id_sei": "708",
+    "codigo": "004.01.05.003",
+    "descricao": "Processo de contratação de serviço técnico profissional especializado",
+    "nome": "004.01.05.003 - Processo de contratação de serviço técnico profissional especializado"
   },
   {
     "id_sei": "702",
+    "codigo": "005.02.08.017",
+    "descricao": "Processo de pagamento de restituição",
     "nome": "005.02.08.017 - Processo de pagamento de restituição"
   },
   {
+    "id_sei": "689",
+    "codigo": "006.01.10.003",
+    "descricao": "Ofício, carta, requerimento, moção ou voto, abaixo-assinado",
+    "nome": "006.01.10.003 - Ofício, carta, requerimento, moção ou voto, abaixo-assinado"
+  },
+  {
+    "id_sei": "684",
+    "codigo": "006.01.10.004",
+    "descricao": "Expediente de atendimento",
+    "nome": "006.01.10.004 - Expediente de atendimento"
+  },
+  {
+    "id_sei": "699",
+    "codigo": "009.09.09.009",
+    "descricao": "Confraternizações",
+    "nome": "009.09.09.009 - Confraternizações"
+  },
+  {
+    "id_sei": "698",
+    "codigo": "009.09.09.099",
+    "descricao": "testetsedttete",
+    "nome": "009.09.09.099 - testetsedttete"
+  },
+  {
+    "id_sei": "693",
+    "codigo": "010.01.01.010",
+    "descricao": "TESTE GD",
+    "nome": "010.01.01.010 - TESTE GD"
+  },
+  {
+    "id_sei": "695",
+    "codigo": "010.01.01.011",
+    "descricao": "Assunto de TESTE - SAFI",
+    "nome": "010.01.01.011 - Assunto de TESTE - SAFI"
+  },
+  {
+    "id_sei": "690",
+    "codigo": "014.00.01.001",
+    "descricao": "Expediente de homologação de Certidão de Tempo de Contribuição - CTC",
+    "nome": "014.00.01.001 - Expediente de homologação de Certidão de Tempo de Contribuição - CTC"
+  },
+  {
+    "id_sei": "709",
+    "codigo": "021.01.02.015",
+    "descricao": "Processo de autorização e encerramento de curso - EaD",
+    "nome": "021.01.02.015 - Processo de autorização e encerramento de curso - EaD"
+  },
+  {
+    "id_sei": "717",
+    "codigo": "023.03.01.006",
+    "descricao": "Processo de bloqueio, desbloqueio e baixa definitiva de veículo por danos de média ou grande monta",
+    "nome": "023.03.01.006 - Processo de bloqueio, desbloqueio e baixa definitiva de veículo por danos de média ou grande monta"
+  },
+  {
+    "id_sei": "712",
+    "codigo": "024.00.01.004",
+    "descricao": "Processo de parcelamento do solo para fins residenciais e de núcleos habitacionais",
+    "nome": "024.00.01.004 - Processo de parcelamento do solo para fins residenciais e de núcleos habitacionais"
+  },
+  {
+    "id_sei": "705",
+    "codigo": "031.03.01.010",
+    "descricao": "Processo de baixa por pagamento de multa",
+    "nome": "031.03.01.010 - Processo de baixa por pagamento de multa"
+  },
+  {
     "id_sei": "703",
+    "codigo": "031.03.01.016",
+    "descricao": "Processo de aplicação de penalidade por danos a bens rodoviários",
     "nome": "031.03.01.016 - Processo de aplicação de penalidade por danos a bens rodoviários"
   },
   {
     "id_sei": "704",
+    "codigo": "056.06.04.001",
+    "descricao": "Plano de curso",
     "nome": "056.06.04.001 - Plano de curso"
   },
   {
     "id_sei": "716",
+    "codigo": "082.00.02.007",
+    "descricao": "Processo de cálculo da Taxa de Regulação, Controle e Fiscalização (TRCF)",
     "nome": "082.00.02.007 - Processo de cálculo da Taxa de Regulação, Controle e Fiscalização (TRCF)"
   },
   {
-    "id_sei": "718",
-    "nome": "003.03.04.011 - Processo de concessão e incorporação de vantagens pecuniárias"
-  },
-  {
-    "id_sei": "694",
-    "nome": "001.01.02.111 - Teste - Emissão de CNH - Lista de Permissão para Dirigir (lista, taxas...)"
-  },
-  {
-    "id_sei": "695",
-    "nome": "010.01.01.011 - Assunto de TESTE - SAFI"
-  },
-  {
-    "id_sei": "698",
-    "nome": "009.09.09.099 - testetsedttete"
-  },
-  {
-    "id_sei": "709",
-    "nome": "021.01.02.015 - Processo de autorização e encerramento de curso - EaD"
-  },
-  {
-    "id_sei": "713",
-    "nome": "003.05.01.017 - Processo de inscrição para consignação em Folha de pagamento"
+    "id_sei": "697",
+    "codigo": "082.00.03.001",
+    "descricao": "Processo de fiscalização de gás canalizado",
+    "nome": "082.00.03.001 - Processo de fiscalização de gás canalizado"
   },
   {
     "id_sei": "706",
+    "codigo": "087.02.01.002",
+    "descricao": "Processo de prestação de serviço em metrologia científica e industrial",
     "nome": "087.02.01.002 - Processo de prestação de serviço em metrologia científica e industrial"
   },
   {
-    "id_sei": "712",
-    "nome": "024.00.01.004 - Processo de parcelamento do solo para fins residenciais e de núcleos habitacionais"
+    "id_sei": "710",
+    "codigo": "103.01.01.005",
+    "descricao": "Processo de autoavaliação de instituição de ensino superior",
+    "nome": "103.01.01.005 - Processo de autoavaliação de instituição de ensino superior"
   },
   {
-    "id_sei": "717",
-    "nome": "023.03.01.006 - Processo de bloqueio, desbloqueio e baixa definitiva de veículo por danos de média ou grande monta"
+    "id_sei": "711",
+    "codigo": "103.01.02.006",
+    "descricao": "Processo de renovação de reconhecimento de curso - Presencial e EaD",
+    "nome": "103.01.02.006 - Processo de renovação de reconhecimento de curso - Presencial e EaD"
   },
   {
-    "id_sei": "719",
-    "nome": "001.02.02.004 - Processo de elaboração e execução de plano, programa ou projeto"
+    "id_sei": "715",
+    "codigo": "333333",
+    "descricao": "teste bene3",
+    "nome": "333333 - teste bene3"
   }
 ]

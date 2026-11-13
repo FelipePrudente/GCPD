@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GCPD — PRODESP</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --paper: #ffffff;
+    --ink: #1a2332;
+    --muted: #5a6a7e;
+    --line: #d6e0ea;
+    --accent: #0057a8;          /* azul Prodesp */
+    --accent-dark: #003d75;
+    --accent-light: #e6f0fa;
+    --ok: #0d7a4f;
+    --warn: #b86e00;
+    --danger: #c0392b;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0, 40, 80, 0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #fff;
+    padding: 22px 32px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .cabecalho-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+  header p { margin: 0; opacity: 0.9; font-size: 14px; }
+  .sei-conexao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+  .sei-conexao a, .sei-conexao button {
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .sei-conexao a:hover, .sei-conexao button:hover {
+    background: rgba(255,255,255,0.28);
+  }
+  .container { max-width: 1100px; margin: 28px auto; padding: 0 20px 48px; }
+  .steps { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .step {
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: #e8eef5;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .step.active { background: var(--accent); color: #fff; }
+  .step.done { background: var(--ok); color: #fff; }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 5px; color: var(--ink); }
+  input, select, textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
+  button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: #e8eef5; color: var(--ink); }
+  .btn-secondary:hover { background: #d9e4f0; }
+  .btn-success { background: var(--ok); color: #fff; }
+  .btn-success:hover { background: #0a6240; }
+  .status { padding: 12px 14px; border-radius: 8px; margin: 12px 0; font-size: 14px; }
+  .status.info { background: var(--accent-light); color: var(--accent); }
+  .status.ok { background: #e6f6ef; color: var(--ok); }
+  .status.warn { background: #fff6e6; color: var(--warn); }
+  .status.err { background: #fdecea; color: var(--danger); }
+  .hidden { display: none; }
+  .secao-editor { outline: none; min-height: 180px; }
+  .secao-editor table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .secao-editor th, .secao-editor td { border: 1px solid #ccc; padding: 4px 6px; vertical-align: top; }
+  .secao-editor p { margin: 0.4em 0; }
+  table th { background: #f4f8fc; }
+  small { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="cabecalho-topo">
+    <div>
+      <h1>GCPD — Criar Processo e Documento no SEI</h1>
+      <p>Fluxo guiado — preencha, revise e envie tudo de uma vez.</p>
+    </div>
+    <div class="sei-conexao" aria-live="polite">
+      <span id="sei-sessao-status">Verificando sessão…</span>
+      <a href="/cadastro" title="Formulário Word e configurações">Cadastro completo</a>
+      <button type="button" id="sei-logout">Desconectar</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div style="display:flex; gap:8px; margin-bottom:16px;">
+    <button class="btn-secondary" id="tabPrincipal" onclick="mostrarAba('principal')">Principal</button>
+    <button class="btn-primary" id="tabFluxo" onclick="mostrarAba('fluxo')">Novo Fluxo</button>
+  </div>
+
+  <!-- ABA PRINCIPAL -->
+  <div id="abaPrincipal">
+    <div class="card">
+      <h2 style="margin-top:0">Processos</h2>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+          <thead>
+            <tr style="background:#f4f8fc; text-align:left;">
+              <th style="padding:8px 10px; border-bottom:1px solid var(--line);">Nº Processo SEI</th>
+              <th style="padding:8px 10px; border-bottom:1px solid var(--line);">Assunto</th>
+              <th style="padding:8px 10px; border-bottom:1px solid var(--line);">Status</th>
+              <th style="padding:8px 10px; border-bottom:1px solid var(--line);">Data</th>
+              <th style="padding:8px 10px; border-bottom:1px solid var(--line);">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProcessos">
+            <tr><td colspan="5" style="padding:16px; text-align:center; color:var(--muted);">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA FLUXO (conteúdo atual) -->
+  <div id="abaFluxo" class="hidden">
+  <div class="card" id="cardAbrirIa">
+    <h2 style="margin-top:0">Abrir com IA (1 clique)</h2>
+    <p style="margin:0 0 10px; color:var(--muted); font-size:14px;">
+      Descreva o objeto. A IA monta processo + documento e leva até Preencher Seções.
+    </p>
+    <label for="abrir_ia_descricao">O que precisa abrir?</label>
+    <textarea id="abrir_ia_descricao" placeholder="Ex.: Contratação de serviços técnicos AWS para o projeto X"></textarea>
+    <div id="abrir_ia_resumo" class="status info hidden" style="white-space:pre-wrap;"></div>
+    <div class="actions" style="justify-content:flex-start;">
+      <button type="button" class="btn-secondary hidden" id="btnAbrirIaCancelar" onclick="cancelarAbrirIa()">Cancelar</button>
+      <button type="button" class="btn-success" id="btnAbrirIa" onclick="aoClicarAbrirIaFluxo()">Gerar e abrir no SEI</button>
+    </div>
+  </div>
+
+  <div class="steps" id="steps">
+    <span class="step active" data-step="1">1. Processo</span>
+    <span class="step" data-step="2">2. Documento</span>
+    <span class="step" data-step="3">3. Criar</span>
+    <span class="step" data-step="4">4. Preencher Seções</span>
+  </div>
+
+  <div id="msg" class="status hidden"></div>
+
+  <!-- PASSO 1 -->
+  <div class="card" id="passo1">
+    <h2 style="margin-top:0">Dados do Processo</h2>
+    <label>Tipo de Processo SEI <span style="color:#a33">*</span></label>
+    <select id="tipo_processo">
+      <option value="">Carregando tipos...</option>
+    </select>
+    <div class="row">
+      <div>
+        <label>Assunto / Especificação</label>
+        <input id="especificacao" placeholder="Descrição resumida do processo" />
+      </div>
+      <div>
+        <label>Nível de Acesso</label>
+        <select id="nivel_acesso">
+          <option value="publico">Público</option>
+          <option value="restrito">Restrito</option>
+          <option value="sigiloso">Sigiloso</option>
+        </select>
+      </div>
+    </div>
+    <label>Observações</label>
+    <textarea id="observacoes" placeholder="Observações opcionais"></textarea>
+    <label>Assuntos SEI (obrigatório — selecione um ou mais)</label>
+    <select id="assuntos" multiple size="10" style="min-height:200px">
+      <option value="">Carregando assuntos...</option>
+    </select>
+    <small>Segure Ctrl (ou Cmd) para selecionar vários. A lista vem da tabela assunto_sei.</small>
+    <div class="actions">
+      <button class="btn-primary" onclick="avancarParaDocumento()">Próximo: Documento →</button>
+    </div>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div class="card hidden" id="passo2">
+    <h2 style="margin-top:0">Documento Interno</h2>
+    <label>Tipo de Documento (Série SEI) <span style="color:#a33">*</span></label>
+    <select id="idSerie" onchange="atualizarCamposDocumento()">
+      <option value="">Carregando tipos de documento...</option>
+    </select>
+    <div id="camposExtrasDocumento"></div>
+    <label>Descrição do Documento</label>
+    <input id="doc_descricao" placeholder="Ex.: Relatório de Justificativa" />
+    <label>Nível de Acesso do Documento</label>
+    <select id="doc_nivel">
+      <option value="0">Público</option>
+      <option value="1">Restrito</option>
+      <option value="2">Sigiloso</option>
+    </select>
+    <label>Observação do Documento</label>
+    <textarea id="doc_observacao" placeholder="Opcional"></textarea>
+
+    <div style="margin:16px 0;">
+      <button type="button" class="btn-secondary" onclick="toggleCamposFormulario()">Campos do formulário</button>
+      <div id="camposFormulario" class="hidden" style="margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:8px; background:#faf8f4;">
+        <p style="margin:0 0 10px; font-size:13px; color:var(--muted);">Campos aceitos pela API do SEI (conforme Postman). Preencha apenas os necessários.</p>
+        <label>idUnidadeGeradoraProtocolo</label>
+        <input id="campo_idUnidadeGeradoraProtocolo" placeholder="Ex.: 110000074" />
+        <label>flagProtocolo</label>
+        <input id="campo_flagProtocolo" placeholder="Para reabertura / número" />
+        <label>unidadesReabertura</label>
+        <input id="campo_unidadesReabertura" />
+        <label>idHipoteseLegal</label>
+        <input id="campo_idHipoteseLegal" />
+        <label>grauSigilo</label>
+        <input id="campo_grauSigilo" />
+        <label>assuntos</label>
+        <input id="campo_assuntos" placeholder="IDs separados por vírgula" />
+        <label>interessados</label>
+        <input id="campo_interessados" placeholder="IDs de contato" />
+        <label>destinatarios</label>
+        <input id="campo_destinatarios" placeholder="IDs de contato" />
+        <label>idTextoPadraoInterno</label>
+        <input id="campo_idTextoPadraoInterno" />
+        <label>numeroDocumento (se a API exigir)</label>
+        <input id="campo_numeroDocumento" placeholder="Número do documento" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="irPara(1)">← Voltar</button>
+      <button class="btn-primary" onclick="avancarParaRevisao()">Revisar →</button>
+      <button class="btn-secondary" id="btnCancelarFluxo" onclick="destravarProcesso(); irPara(1);" style="display:none; margin-left:auto;">Cancelar e começar de novo</button>
+    </div>
+  </div>
+
+  <!-- PASSO 3 -->
+  <div class="card hidden" id="passo3">
+    <h2 style="margin-top:0">Revisão e Criação</h2>
+    <div id="resumo"></div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="irPara(2)">← Voltar</button>
+      <button class="btn-success" id="btnEnviar" onclick="enviarTudo()">Criar Processo e Documento</button>
+    </div>
+  </div>
+
+  <!-- PASSO 4 -->
+  <div class="card hidden" id="passo4">
+    <h2 style="margin-top:0">Preencher Seções Editáveis</h2>
+    <div id="infoCriacao" class="status ok"></div>
+    <div id="secoesContainer">
+      <p>Carregando seções do documento...</p>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="carregarSecoes()">Atualizar seções</button>
+      <button class="btn-success" id="btnAplicarSecoes" onclick="aplicarSecoes()">Aplicar alterações nas seções</button>
+    </div>
+  </div>
+  </div>
+</div>
+</div>
+
+<script>
+const API = ""; // mesma origem (Flask)
+let csrf = "";
+let processoCriado = null;
+let documentoCriado = null;
+let secoesAtuais = [];
+
+async function init() {
+  try {
+    const s = await fetch(API + "/api/sei/sessao").then(r => r.json());
+    csrf = s.csrf_token || "";
+    if (!s.autenticado) {
+      window.location.replace("/");
+      return;
+    }
+    const status = document.getElementById("sei-sessao-status");
+    if (status) status.textContent = `Conectado ao SEI como ${s.usuario || "usuário"}`;
+  } catch (e) {
+    window.location.replace("/");
+    return;
+  }
+
+  const botaoLogout = document.getElementById("sei-logout");
+  if (botaoLogout) {
+    botaoLogout.addEventListener("click", async () => {
+      botaoLogout.disabled = true;
+      try {
+        const r = await fetch(API + "/api/sei/logout", {
+          method: "POST",
+          headers: { "X-CSRF-Token": csrf },
+        });
+        if (!r.ok) {
+          const data = await r.json().catch(() => ({}));
+          throw new Error(data.mensagem || "Não foi possível encerrar a sessão SEI.");
+        }
+        window.location.replace("/");
+      } catch (erro) {
+        mostrar(erro.message, "err");
+        botaoLogout.disabled = false;
+      }
+    });
+  }
+
+  // Tipos de processo
+  try {
+    const t = await fetch(API + "/api/tipos-processo-sei").then(r => r.json());
+    const sel = document.getElementById("tipo_processo");
+    sel.innerHTML = '<option value="">Selecione...</option>' +
+      (t.tipos || []).map(x => {
+        const nome = x.nome || x;
+        const idSei = x.id_sei || "";
+        const assuntoId = x.assunto_id_sei || "";
+        const assuntoNome = x.assunto_nome || "";
+        return `<option value="${nome}" data-id-sei="${idSei}" data-assunto-id="${assuntoId}" data-assunto-nome="${(assuntoNome || "").replace(/"/g, "&quot;")}">${nome}</option>`;
+      }).join("");
+    sel.addEventListener("change", () => {
+      const opt = sel.selectedOptions[0];
+      const assuntoNome = opt?.dataset?.assuntoNome || "";
+      const selAssuntos = document.getElementById("assuntos");
+      if (!selAssuntos) return;
+      Array.from(selAssuntos.options).forEach((o) => { o.selected = false; });
+      if (!assuntoNome) return;
+      const alvo = Array.from(selAssuntos.options).find((o) => o.value === assuntoNome);
+      if (alvo) alvo.selected = true;
+    });
+  } catch (e) {
+    document.getElementById("tipo_processo").innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+
+  // Tipos de documento
+  try {
+    const d = await fetch(API + "/api/tipos-documento-sei").then(r => r.json());
+    const sel = document.getElementById("idSerie");
+    sel.innerHTML = '<option value="">Selecione...</option>' +
+      (d.tipos || []).map(x => `<option value="${x.id}">${x.nome || x.id}</option>`).join("");
+  } catch (e) {
+    document.getElementById("idSerie").innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+
+  // Assuntos SEI
+  try {
+    const a = await fetch(API + "/api/assuntos-sei").then(r => r.json());
+    const sel = document.getElementById("assuntos");
+    const lista = a.assuntos || [];
+    if (!lista.length) {
+      sel.innerHTML = '<option value="" disabled>Nenhum assunto cadastrado na tabela assunto_sei</option>';
+      mostrar("Atenção: a tabela de assuntos SEI está vazia. Cadastre os assuntos oficiais antes de criar processos.", "warn");
+    } else {
+      sel.innerHTML = lista.map(x => `<option value="${x.nome}">${x.nome}</option>`).join("");
+    }
+  } catch (e) {
+    document.getElementById("assuntos").innerHTML = '<option value="">Erro ao carregar assuntos</option>';
+  }
+}
+
+function irPara(n) {
+  document.querySelectorAll(".card").forEach(c => c.classList.add("hidden"));
+  document.getElementById("passo" + n).classList.remove("hidden");
+  document.querySelectorAll(".step").forEach(s => {
+    s.classList.remove("active", "done");
+    const sn = parseInt(s.dataset.step);
+    if (sn < n) s.classList.add("done");
+    if (sn === n) s.classList.add("active");
+  });
+  if (n === 3) montarResumo();
+}
+
+function avancarParaDocumento() {
+  const tipo = document.getElementById("tipo_processo").value;
+  const espec = document.getElementById("especificacao").value.trim();
+  const selAssuntos = document.getElementById("assuntos");
+  const assuntos = Array.from(selAssuntos.selectedOptions).map(o => o.value).filter(Boolean);
+
+  if (!tipo) {
+    mostrar("Selecione o tipo de processo.", "err");
+    return;
+  }
+  if (!assuntos.length) {
+    mostrar("Selecione pelo menos um assunto SEI.", "err");
+    return;
+  }
+  mostrar("", "info");
+  document.getElementById("msg").classList.add("hidden");
+  irPara(2);
+}
+
+function atualizarCamposDocumento() {
+  document.getElementById("camposExtrasDocumento").innerHTML = "";
+}
+
+function avancarParaRevisao() {
+  const idSerie = document.getElementById("idSerie").value;
+
+  if (!idSerie) {
+    mostrar("Selecione o tipo de documento (série SEI).", "err");
+    return;
+  }
+  mostrar("", "info");
+  document.getElementById("msg").classList.add("hidden");
+  irPara(3);
+}
+
+function htmlParaTexto(html) {
+  if (!html) return "";
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
+}
+
+function montarResumo() {
+  const p = coletarProcesso();
+  const d = coletarDocumento();
+  document.getElementById("resumo").innerHTML = `
+    <p><strong>Processo:</strong> ${p.tipo_processo_sei || "(não informado)"}</p>
+    <p><strong>Especificação:</strong> ${p.processo_contratacao?.descricao || p.processo_sei?.especificacao || "-"}</p>
+    <p><strong>Nível:</strong> ${p.processo_contratacao?.nivel_acesso || p.processo_sei?.nivel_acesso || "-"}</p>
+    <p><strong>Assuntos:</strong> ${(p.processo_contratacao?.assuntos || []).join(", ") || "(nenhum selecionado)"}</p>
+    <p><strong>Documento:</strong> ${d.descricao || "(não informado)"} (série ${d.idSerie || "-"})</p>
+    <small>Ao confirmar, o sistema criará o processo no SEI e, em seguida, o documento interno.</small>
+  `;
+}
+
+function coletarProcesso() {
+  const tipo = document.getElementById("tipo_processo").value;
+  const espec = document.getElementById("especificacao").value.trim();
+  const nivel = document.getElementById("nivel_acesso").value;
+  const obs = document.getElementById("observacoes").value.trim();
+  const selAssuntos = document.getElementById("assuntos");
+  const assuntos = Array.from(selAssuntos.selectedOptions)
+    .map(opt => opt.value)
+    .filter(v => v && v !== "");
+  return {
+    tipo_processo_sei: tipo,
+    processo_contratacao: {
+      descricao: espec,
+      nivel_acesso: nivel,
+      observacoes: obs,
+      assuntos: assuntos
+    },
+    processo_sei: { especificacao: espec, nivel_acesso: nivel, observacoes: obs, assuntos: assuntos }
+  };
+}
+
+function destacarCampoFaltante(mensagem) {
+  if (!mensagem) return;
+  const m = mensagem.match(/\[([^\]]+)\]/);
+  if (!m) return;
+  let nome = m[1];
+  // Mapeia nomes comuns de erro para o campo real da API
+  if (/unidade/i.test(nome)) nome = "idUnidadeGeradoraProtocolo";
+  const el = document.getElementById("campo_" + nome);
+  if (el) {
+    document.getElementById("camposFormulario").classList.remove("hidden");
+    el.style.borderColor = "#a33";
+    el.focus();
+    mostrar(`Preencha o campo ${nome} e tente novamente.`, "warn");
+  }
+}
+
+function coletarDocumento() {
+  const doc = {
+    idSerie: document.getElementById("idSerie").value,
+    descricao: document.getElementById("doc_descricao").value.trim(),
+    nivelAcesso: document.getElementById("doc_nivel").value
+  };
+  const observacao = document.getElementById("doc_observacao").value.trim();
+  if (observacao) doc.observacao = observacao;
+
+  // Campos extras aceitos pela API
+  const extras = [
+    "flagProtocolo", "unidadesReabertura", "idHipoteseLegal", "grauSigilo",
+    "assuntos", "interessados", "destinatarios",
+    "idUnidadeGeradoraProtocolo", "idTextoPadraoInterno", "numeroDocumento"
+  ];
+  extras.forEach(nome => {
+    const el = document.getElementById("campo_" + nome);
+    if (el && el.value.trim()) {
+      doc[nome] = el.value.trim();
+    }
+  });
+
+  const numeroAntigo = document.getElementById("doc_numero");
+  if (numeroAntigo && numeroAntigo.value.trim() && !doc.numeroDocumento) {
+    doc.numeroDocumento = numeroAntigo.value.trim();
+  }
+  return doc;
+}
+
+function mostrar(texto, tipo = "info") {
+  const el = document.getElementById("msg");
+  el.className = "status " + tipo;
+  el.textContent = texto;
+  el.classList.remove("hidden");
+}
+
+let abrirIaPacoteFluxo = null;
+
+function cancelarAbrirIa() {
+  abrirIaPacoteFluxo = null;
+  const resumo = document.getElementById("abrir_ia_resumo");
+  resumo.classList.add("hidden");
+  resumo.textContent = "";
+  document.getElementById("btnAbrirIaCancelar").classList.add("hidden");
+  document.getElementById("btnAbrirIa").textContent = "Gerar e abrir no SEI";
+}
+
+async function aoClicarAbrirIaFluxo() {
+  const btn = document.getElementById("btnAbrirIa");
+  btn.disabled = true;
+  try {
+    if (!abrirIaPacoteFluxo) {
+      const descricao = (document.getElementById("abrir_ia_descricao").value || "").trim();
+      if (descricao.length < 8) {
+        mostrar("Descreva o objeto com pelo menos 8 caracteres.", "err");
+        return;
+      }
+      mostrar("Consultando a IA…", "info");
+      const r = await fetch(API + "/api/ia/montar-abertura", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descricao }),
+      });
+      const data = await lerJsonResposta(r);
+      if (!data.ok) throw new Error(data.mensagem || "Falha ao montar com IA.");
+      abrirIaPacoteFluxo = data;
+      const p = data.preview || {};
+      const resumo = document.getElementById("abrir_ia_resumo");
+      resumo.textContent =
+        `Processo: ${p.tipo_processo || ""}\n` +
+        `Especificação: ${p.especificacao || ""}\n` +
+        `Assunto: ${p.assunto || ""}\n` +
+        `Documento: ${p.tipo_documento || ""}\n` +
+        `Descrição: ${p.descricao_documento || ""}\n` +
+        `${data.resumo || ""}`;
+      resumo.classList.remove("hidden");
+      document.getElementById("btnAbrirIaCancelar").classList.remove("hidden");
+      btn.textContent = "Confirmar e criar no SEI";
+      mostrar("Revise o resumo e confirme para criar no SEI.", "warn");
+      return;
+    }
+
+    mostrar("Criando processo e documento no SEI…", "info");
+    const r = await fetch(API + "/api/processos/criar-com-documento", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      body: JSON.stringify({
+        processo: abrirIaPacoteFluxo.processo,
+        documento: abrirIaPacoteFluxo.documento,
+      }),
+    });
+    const data = await lerJsonResposta(r);
+    if (data.ok && data.processo && data.documento) {
+      processoCriado = data.processo;
+      documentoCriado = data.documento;
+      document.getElementById("infoCriacao").textContent =
+        `Processo criado: ${data.protocolo || data.processo.numero_sei || ""} | Documento: ${data.documento.id_documento}`;
+      cancelarAbrirIa();
+      irPara(4);
+      await carregarSecoes();
+      mostrar("Abertura com IA concluída. Preencha as seções.", "ok");
+      return;
+    }
+    if (data.protocolo || data.id_procedimento || data.processo) {
+      processoCriado = data.processo || { id: data.processo_id, numero_sei: data.protocolo };
+      documentoCriado = null;
+      mostrar(
+        (data.mensagem || "Processo criado, mas o documento precisa de mais informações.") +
+        " | Protocolo: " + (data.protocolo || ""),
+        "warn"
+      );
+      travarProcesso();
+      // Preenche formulários com o pacote da IA para retry
+      const proc = abrirIaPacoteFluxo.processo || {};
+      const pc = proc.processo_contratacao || {};
+      if (proc.tipo_processo_sei) document.getElementById("tipo_processo").value = proc.tipo_processo_sei;
+      document.getElementById("especificacao").value = pc.descricao || pc.especificacao || "";
+      document.getElementById("observacoes").value = pc.observacoes || "";
+      const doc = abrirIaPacoteFluxo.documento || {};
+      if (doc.idSerie) document.getElementById("idSerie").value = doc.idSerie;
+      document.getElementById("doc_descricao").value = doc.descricao || "";
+      document.getElementById("doc_observacao").value = doc.observacao || "";
+      irPara(2);
+      destacarCampoFaltante(data.mensagem);
+      const btnDoc = document.querySelector("#passo2 .btn-primary");
+      if (btnDoc) {
+        btnDoc.textContent = "Tentar cadastrar documento →";
+        btnDoc.onclick = tentarCadastrarDocumento;
+      }
+      return;
+    }
+    throw new Error(data.mensagem || "Erro ao criar processo/documento.");
+  } catch (e) {
+    mostrar(e.message || "Falha na abertura com IA.", "err");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function enviarTudo() {
+  const btn = document.getElementById("btnEnviar");
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+  mostrar("Criando processo no SEI...", "info");
+
+  const payload = {
+    processo: coletarProcesso(),
+    documento: coletarDocumento()
+  };
+
+  try {
+    const r = await fetch(API + "/api/processos/criar-com-documento", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf
+      },
+      body: JSON.stringify(payload)
+    });
+    const raw = await r.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (_) {
+      throw new Error(
+        r.status >= 500
+          ? "Erro interno no servidor ao criar o processo. Veja o log do Flask."
+          : "Resposta inválida do servidor (não era JSON)."
+      );
+    }
+    if (data.ok && data.processo && data.documento) {
+      processoCriado = data.processo;
+      documentoCriado = data.documento;
+      document.getElementById("infoCriacao").textContent =
+        `Processo criado: ${data.protocolo || data.processo.numero_sei || ""} | Documento: ${data.documento.id_documento}`;
+      irPara(4);
+      await carregarSecoes();
+    } else if (data.protocolo || data.id_procedimento) {
+      // Processo criado, documento falhou → trava processo e volta para o documento
+      processoCriado = data.processo || { id: data.processo_id, numero_sei: data.protocolo };
+      documentoCriado = null;
+      mostrar(
+        (data.mensagem || "Processo criado, mas o documento precisa de mais informações.") +
+        " | Protocolo: " + (data.protocolo || ""),
+        "warn"
+      );
+      travarProcesso();
+      irPara(2);
+      destacarCampoFaltante(data.mensagem);
+      // Troca o botão do passo 2 para "Tentar cadastrar documento"
+      const btnDoc = document.querySelector("#passo2 .btn-primary");
+      if (btnDoc) {
+        btnDoc.textContent = "Tentar cadastrar documento →";
+        btnDoc.onclick = tentarCadastrarDocumento;
+      }
+    } else {
+      mostrar(data.mensagem || "Erro desconhecido", data.resultado_incerto ? "warn" : "err");
+      btn.disabled = false;
+      btn.textContent = "Tentar novamente";
+    }
+  } catch (e) {
+    mostrar("Erro de comunicação: " + e.message, "err");
+    btn.disabled = false;
+    btn.textContent = "Criar Processo e Documento";
+  }
+}
+
+function travarProcesso() {
+  ["tipo_processo", "especificacao", "nivel_acesso", "observacoes", "assuntos"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = true;
+  });
+  const btn = document.querySelector("#passo1 .btn-primary");
+  if (btn) btn.disabled = true;
+  const btnCancelar = document.getElementById("btnCancelarFluxo");
+  if (btnCancelar) btnCancelar.style.display = "inline-block";
+}
+
+function destravarProcesso() {
+  ["tipo_processo", "especificacao", "nivel_acesso", "observacoes", "assuntos"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = false;
+  });
+  const btn = document.querySelector("#passo1 .btn-primary");
+  if (btn) btn.disabled = false;
+  const btnCancelar = document.getElementById("btnCancelarFluxo");
+  if (btnCancelar) btnCancelar.style.display = "none";
+  processoCriado = null;
+  documentoCriado = null;
+  // Restaura o botão do passo 2
+  const btnDoc = document.querySelector("#passo2 .btn-primary");
+  if (btnDoc) {
+    btnDoc.textContent = "Revisar →";
+    btnDoc.onclick = avancarParaRevisao;
+  }
+}
+
+async function tentarCadastrarDocumento() {
+  if (!processoCriado || !processoCriado.id) {
+    mostrar("Processo não encontrado. Comece novamente.", "err");
+    return;
+  }
+  const doc = coletarDocumento();
+  mostrar("Tentando cadastrar o documento no processo existente...", "info");
+  try {
+    const r = await fetch(`${API}/api/processos/${processoCriado.id}/documentos/criar-no-sei`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf
+      },
+      body: JSON.stringify(doc)
+    });
+    const data = await r.json();
+    if (data.ok && data.documento) {
+      documentoCriado = data.documento;
+      mostrar("Documento cadastrado com sucesso!", "ok");
+      document.getElementById("infoCriacao").textContent =
+        `Processo: ${processoCriado.numero_sei || ""} | Documento: ${data.documento.id_documento}`;
+      irPara(4);
+      await carregarSecoes();
+    } else {
+      const payloadEnviado = JSON.stringify(doc, null, 2);
+      mostrar((data.mensagem || "Ainda falta informação para o documento.") + "\n\nPayload enviado:\n" + payloadEnviado, "err");
+      destacarCampoFaltante(data.mensagem);
+    }
+  } catch (e) {
+    mostrar("Erro: " + e.message, "err");
+  }
+}
+
+async function gerarComIA(btn) {
+  const container = btn.closest("div");
+  const editor = container.parentElement.querySelector(".secao-editor");
+  const promptInput = container.querySelector(".prompt-ia");
+  const prompt = (promptInput.value || "").trim();
+  if (!prompt) {
+    mostrar("Descreva o que a IA deve preencher.", "warn");
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "Gerando...";
+  try {
+    const r = await fetch(API + "/api/ia/gerar-secao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+      body: JSON.stringify({
+        prompt: prompt,
+        contexto: editor.innerText.slice(0, 2000),
+        tipo_documento: document.getElementById("doc_descricao")?.value || ""
+      })
+    });
+    const data = await r.json();
+    if (data.ok && data.html) {
+      editor.innerHTML = data.html;
+      mostrar("Seção preenchida pela IA. Revise e ajuste se necessário.", "ok");
+    } else {
+      mostrar(data.mensagem || "Falha ao gerar com IA.", "err");
+    }
+  } catch (e) {
+    mostrar("Erro: " + e.message, "err");
+  }
+  btn.disabled = false;
+  btn.textContent = "Gerar com IA";
+}
+
+async function lerJsonResposta(r) {
+  const raw = await r.text();
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    throw new Error(
+      r.status >= 500
+        ? "Erro interno no servidor. Reinicie o Flask e tente novamente."
+        : "Resposta inválida do servidor (não era JSON)."
+    );
+  }
+}
+
+async function carregarSecoes() {
+  if (!processoCriado || !documentoCriado) return;
+  const container = document.getElementById("secoesContainer");
+  container.innerHTML = "<p>Carregando seções...</p>";
+  try {
+    const r = await fetch(`${API}/api/processos/${processoCriado.id}/documentos/${documentoCriado.id_documento}/secoes`);
+    const data = await lerJsonResposta(r);
+    if (!data.ok) {
+      container.innerHTML = `<p class="status err">${data.mensagem || "Erro ao listar seções"}</p>`;
+      return;
+    }
+    secoesAtuais = data.secoes || [];
+    const editaveis = secoesAtuais.filter(s => !s.somente_leitura);
+    if (!editaveis.length) {
+      container.innerHTML = "<p>Nenhuma seção editável encontrada neste documento.</p>";
+      return;
+    }
+    container.innerHTML = editaveis.map(s => {
+      return `
+        <div style="margin-bottom:16px; padding:12px; border:1px solid var(--line); border-radius:8px;">
+          <label>Seção ${s.indice + 1}: ${s.nome || ""}</label>
+          <div contenteditable="true"
+               data-indice="${s.indice}"
+               data-id-modelo="${s.id_secao_modelo || ""}"
+               class="secao-editor"
+               style="min-height:140px; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; font-size:14px; line-height:1.5; outline:none;">
+            ${s.conteudo_html || "<p></p>"}
+          </div>
+          <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+            <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:13px;" onclick="gerarComIA(this)">Gerar com IA</button>
+            <input type="text" placeholder="Descreva o que preencher (ex.: 1200 HST AWS projeto X, 180 dias)" style="flex:1; padding:6px 8px; font-size:13px;" class="prompt-ia" />
+          </div>
+          <small>A IA preenche texto e tabelas diretamente neste editor.</small>
+        </div>`;
+    }).join("");
+  } catch (e) {
+    container.innerHTML = `<p class="status err">Erro: ${e.message}</p>`;
+  }
+}
+
+async function aplicarSecoes() {
+  if (!processoCriado || !documentoCriado) return;
+  const btn = document.getElementById("btnAplicarSecoes");
+  btn.disabled = true;
+  btn.textContent = "Aplicando...";
+  const editores = document.querySelectorAll("#secoesContainer .secao-editor[data-indice]");
+  let ok = 0, erros = [];
+  for (const editor of editores) {
+    const indice = parseInt(editor.dataset.indice, 10);
+    const idModelo = editor.dataset.idModelo;
+    // Envia o HTML exatamente como está (preserva formatação)
+    const conteudoHtml = editor.innerHTML.trim() || "<p></p>";
+
+    try {
+      const r = await fetch(`${API}/api/processos/${processoCriado.id}/documentos/${documentoCriado.id_documento}/secoes/alterar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf
+        },
+        body: JSON.stringify({
+          indice_secao: indice,
+          id_secao_modelo: idModelo,
+          conteudo_html: conteudoHtml
+        })
+      });
+      const data = await r.json();
+      if (data.ok) ok++;
+      else erros.push(data.mensagem || "Erro na seção " + indice);
+    } catch (e) {
+      erros.push(e.message);
+    }
+  }
+  if (erros.length === 0) {
+    mostrar(`Todas as ${ok} seções foram atualizadas com sucesso!`, "ok");
+  } else {
+    mostrar(`${ok} seção(ões) ok. Erros: ${erros.join(" | ")}`, "warn");
+  }
+  btn.disabled = false;
+  btn.textContent = "Aplicar alterações nas seções";
+}
+
+function mostrarAba(aba) {
+  document.getElementById("abaPrincipal").classList.toggle("hidden", aba !== "principal");
+  document.getElementById("abaFluxo").classList.toggle("hidden", aba !== "fluxo");
+  document.getElementById("tabPrincipal").className = aba === "principal" ? "btn-primary" : "btn-secondary";
+  document.getElementById("tabFluxo").className = aba === "fluxo" ? "btn-primary" : "btn-secondary";
+  if (aba === "principal") carregarListaProcessos();
+}
+
+function statusAmigavel(status, numeroSei) {
+  const s = (status || "").toLowerCase();
+  if (numeroSei && (s === "enviado" || s === "criando_sei")) return "Enviado ao SEI";
+  if (s === "nao_enviado" || s === "criacao_indeterminada") return "Pendente de Envio";
+  if (s.includes("documento") || s === "pendente_documento") return "Pendente Documento";
+  return status || "—";
+}
+
+async function carregarListaProcessos() {
+  const tbody = document.getElementById("tabelaProcessos");
+  tbody.innerHTML = '<tr><td colspan="5" style="padding:16px; text-align:center;">Carregando...</td></tr>';
+  try {
+    const r = await fetch(API + "/api/processos");
+    const data = await r.json();
+    const lista = data.processos || [];
+    if (!lista.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px; text-align:center; color:var(--muted);">Nenhum processo encontrado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = lista.map(p => `
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid var(--line);">${p.numero_sei || "—"}</td>
+        <td style="padding:8px 10px; border-bottom:1px solid var(--line);">${p.assunto || p.especificacao || "—"}</td>
+        <td style="padding:8px 10px; border-bottom:1px solid var(--line);">${statusAmigavel(p.status, p.numero_sei)}</td>
+        <td style="padding:8px 10px; border-bottom:1px solid var(--line);">${(p.criado_em || "").slice(0,16).replace("T"," ") || "—"}</td>
+        <td style="padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap;">
+          <button title="Editar" onclick="editarProcesso(${p.id})" style="background:none; border:0; cursor:pointer; padding:4px; color:var(--accent);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button title="Excluir" onclick="excluirProcesso(${p.id})" style="background:none; border:0; cursor:pointer; padding:4px; color:var(--danger); margin-left:4px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+        </td>
+      </tr>
+    `).join("");
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:16px; color:#a33;">Erro ao carregar: ${e.message}</td></tr>`;
+  }
+}
+
+async function editarProcesso(id) {
+  try {
+    const r = await fetch(`${API}/api/processos/${id}`);
+    const data = await r.json();
+    const p = data.processo || data;
+    if (!p || !p.id) {
+      mostrar("Processo não encontrado.", "err");
+      return;
+    }
+    processoCriado = p;
+    // Preenche o formulário com os dados salvos
+    if (p.cadastro) {
+      const c = p.cadastro;
+      if (c.tipo_processo_sei) document.getElementById("tipo_processo").value = c.tipo_processo_sei;
+      const espec = c.processo_contratacao?.descricao || c.processo_sei?.especificacao || "";
+      document.getElementById("especificacao").value = espec;
+      document.getElementById("observacoes").value = c.processo_contratacao?.observacoes || c.processo_sei?.observacoes || "";
+    }
+    mostrarAba("fluxo");
+    if (p.numero_sei) {
+      // Já tem processo no SEI → vai para documento
+      travarProcesso();
+      irPara(2);
+    } else {
+      irPara(1);
+    }
+  } catch (e) {
+    mostrar("Erro ao abrir processo: " + e.message, "err");
+  }
+}
+
+async function excluirProcesso(id) {
+  if (!confirm("Excluir este processo? Esta ação não pode ser desfeita.")) return;
+  try {
+    const r = await fetch(`${API}/api/processos/${id}`, { method: "DELETE" });
+    const data = await r.json();
+    if (data.ok) {
+      carregarListaProcessos();
+    } else {
+      alert(data.mensagem || "Não foi possível excluir.");
+    }
+  } catch (e) {
+    alert("Erro: " + e.message);
+  }
+}
+
+init();
+mostrarAba("principal");
+</script>
+</body>
+</html>

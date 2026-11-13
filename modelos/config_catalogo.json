@@ -1,43 +1,17 @@
 {
   "documentos": [
     {
-      "id": "termo_de_referencia_tagueado",
-      "nome": "Termo_de_Referencia_TAGUEADO",
-      "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Documento\"><header class=\"card-bloco-cabecalho\"><h3>Documento</h3></header><div class=\"card-bloco-corpo\"><p>Governo do Estado de São Paulo</p>\n<p>Companhia de Processamento de Dados do Estado de São Paulo</p>\n<p>{{unidade_cabecalho}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>Nº do Processo: {{n_processo_sei}}</p>\n<p>Interessado: {{interessado}}</p>\n<p>Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>{{sigla_relatorio}} {{versao}}</p>\n<p>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO</p>\n<p>EM {{tecnologia}}</p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p>{{mes_ano}}</p>\n<p>1. INTRODUÇÃO</p>\n<p>Este Termo de Referência fornece as especificações técnicas mínimas que a proponente deverá atender para a prestação dos serviços de Apoio Técnico Especializado. (Texto padrão fixo.)</p>\n<p>2. ESCOPO E ESTRATÉGIA DE CONTRATAÇÃO DOS SERVIÇOS</p>\n<p>2.1 Do Objeto</p>\n<p>Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, pelo período de {{prazo_meses}} meses.</p>\n<p>Catálogo da tecnologia (por grupo de serviços):</p>\n<p>{{catalogo_tecnologia}}</p>\n<p>(Lista cadastrada por grupo — ex.: Computação | EC2, Lambda… — sem inventar serviço novo.)</p>\n<p>2.2 Ambiente Tecnológico da Prodesp</p>\n<p>Catálogo padrão da PRODESP: sistemas operacionais, bancos de dados, linguagens, servidores, portais, nuvem (AWS, Azure, Google Cloud, Huawei, Prodesp VCloud), observabilidade e a nota de que poderão ser pedidas versões superiores. (Texto/tabela padrão fixo.)</p>\n<p>2.3 Metodologia, Disciplinas e Artefatos</p>\n<p>Metodologia, artefatos, Scrum, BPM e plano de projeto. Percentuais de esforço: requisitos 25%, design 10%, implementação 40%, testes 15%, homologação 5% e implantação 5%. (Texto padrão fixo.)</p>\n<p>2.4 Planejamento de Projetos</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.5 Modalidades de Remuneração</p>\n<p>Modalidades: Análise de Pontos de Função (APF), Horas de Serviço Técnico (HST) e sprint ou release. (Texto padrão fixo.)</p>\n<p>2.6 Remuneração por Análise de Pontos de Função</p>\n<p>Quando o dimensionamento for em Pontos de Função, o valor será calculado pela fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou produtividade mínima o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>Métodos admitidos: IFPUG, SFP, NESMA, COSMIC{{incluir_snap}}.</p>\n<p>Roteiro SISP versão {{versao_sisp}}.</p>\n<p>2.7 Remuneração por Horas de Serviço Técnico</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.8 Remuneração por Sprints</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.9 Tecnologias e Forma de Medição</p>\n<p>(Texto padrão fixo sobre quando usar PF ou HST.)</p>\n<p>2.10 Proposta Comercial</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.11 Formação de Lotes</p>\n<p>A contratação será definida em lote único para tecnologias {{tecnologia}}, conforme o quadro a seguir (mesmo quadro do Relatório de Justificativa):</p>\n<p>{{quadro_lotes}}</p>\n<p>(Tabela: ITEM | PERFIL | EXPERIÊNCIA MÍNIMA (ANOS) | HORAS | PROPORÇÃO DO VALOR-HORA.)</p>\n<p>Item de referência do desconto: \"{{perfil_referencia}}\".</p>\n<p>3. QUALIFICAÇÕES E COMPETÊNCIAS</p>\n<p>3.1 Qualificações</p>\n<p>3.1.1 a 3.1.4, 3.1.6 e 3.1.7 — comprovação de experiência, formação superior e substituição em até 5 (cinco) dias úteis. (Texto padrão fixo.)</p>\n<p>3.1.5 Quadro de experiência mínima — reaproveita os perfis do item 2.11.</p>\n<p>3.1.8 Domínio mínimo da plataforma:</p>\n<p>{{dominio_plataforma}}</p>\n<p>(Lista de serviços/módulos da tecnologia, a partir do catálogo do objeto.)</p>\n<p>3.2 Perfis Técnicos</p>\n<p>Para execução dos serviços serão requeridos os Perfis Técnicos relacionados no quadro do subitem 2.11, com as qualificações e competências descritas a seguir.</p>\n<p>{{descricao_perfis}}</p>\n<p>(Texto da IA por perfil: atuação + experiência e domínio — limitado aos perfis e à tecnologia cadastrados.)</p>\n<p>3.3 Certificações</p>\n<p>Regime da exigência: {{regime_certificacao}}</p>\n<p>Certificações: {{certificacoes}}</p>\n<p>(Ex.: obrigatória no ato da contratação, ou exemplificativa na ordem de serviço.)</p>\n<p>3.4 Métodos ágeis</p>\n<p>Declaração de capacidade em Scrum, XP, FDD ou ASD. (Texto padrão fixo.)</p>\n<p>4. EXECUÇÃO E ENTREGA DOS SERVIÇOS</p>\n<p>4.1 a 4.5 Ordem de serviço, local, horário, teletrabalho e representantes</p>\n<p>Ordem de serviço (assinatura em até 2 dias úteis), local de execução, horário, teletrabalho e representantes técnicos. (Texto padrão fixo.)</p>\n<p>4.6 Descrição dos serviços por item (quando aplicável)</p>\n<p>{{descricao_itens}}</p>\n<p>(Texto da IA por item do lote, a partir do catálogo e dos perfis, sem criar serviço novo. Pode ficar vazio se o escopo já estiver concentrado no item 2.1.)</p>\n<p>4.7 a 4.9 Entrega, recebimento, SLA, ICE e aceite</p>\n<p>Entrega, recebimento, qualidade, ICE de 90% e aceite final. (Texto padrão fixo, com numeração única.)</p>\n<p>5. PROTEÇÃO E GOVERNANÇA</p>\n<p>5.1 a 5.5 Subcontratação, garantia, conhecimento, propriedade e dados</p>\n<p>Subcontratação até 30%, garantia de 90 dias, transferência de conhecimento, propriedade intelectual e proteção de dados (comunicação de incidente em até 24 horas). (Texto padrão fixo.)</p>\n<p>5.6 Vedação a consórcio</p>\n<p>Vedação a consórcio, com fundamento em execução integrada, habitualidade, subordinação e mercado apto a atender sozinho. (Texto padrão fixo.)</p>\n<p>6. ELABORAÇÃO</p>\n<p>{{texto_elaboracao}}</p>\n<p>7. APROVAÇÃO</p>\n<p>{{local_data}}</p>\n<p>{{lista_aprovadores}}</p><p>{{lista_aprovadores}}<br></p>\n<p>(Lista repetível: NOME | MATRÍCULA | CARGO.)</p></div></section>\n</article>",
+      "id": "autoriza_o",
+      "nome": "Autorização",
+      "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Introdução\"><header class=\"card-bloco-cabecalho\"><h3>Introdução</h3></header><div class=\"card-bloco-corpo\"><p style=\"text-align: center;\"><b>RELATÓRIO DE JUSTIFICATIVA</b></p><p style=\"text-align: left;\"><b>Nº do Processo</b>:&nbsp;{{n_proc_sei}}</p><p style=\"text-align: left;\"><b>Interessado: </b>CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO -</p><p style=\"text-align: left;\">PRODESP</p><p style=\"text-align: left;\"><b>Assunto: </b>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM</p><p style=\"text-align: left;\">TECNOLOGIAS AWS</p><p style=\"text-align: left;\">CIA. DE PROCESSAMENTO DE DADOS DO ESTADO DE SÃO PAULO</p><p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p><p style=\"text-align: left;\">REL.GEN.Rel.GEN{{introducao}}</p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Objetivo\"><header class=\"card-bloco-cabecalho\"><h3>Objetivo</h3></header><div class=\"card-bloco-corpo\"><p>{{objetivo}}</p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Financeiro\"><header class=\"card-bloco-cabecalho\"><h3>Financeiro</h3></header><div class=\"card-bloco-corpo\"><p>{{tabela_finc}}</p></div></section>\n</article>",
       "tags": [
         {
-          "id": "unidade_cabecalho",
-          "rotulo": "Unidade Cabecalho",
-          "grupo": "Documento",
+          "id": "introducao",
+          "rotulo": "Introducao",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "n_processo_sei",
-          "rotulo": "N Processo Sei",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "interessado",
-          "rotulo": "Interessado",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
+          "tipo": "texto",
           "largura": 4,
           "consulta_ia": "",
           "colunas": [],
@@ -45,74 +19,22 @@
           "somar": ""
         },
         {
-          "id": "tecnologia",
-          "rotulo": "Tecnologia",
-          "grupo": "Documento",
+          "id": "objetivo",
+          "rotulo": "Objetivo",
+          "grupo": "Objetivo",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 2,
+          "tipo": "texto",
+          "largura": 4,
           "consulta_ia": "",
           "colunas": [],
           "agrupar_por": "",
           "somar": ""
         },
         {
-          "id": "sigla_relatorio",
-          "rotulo": "Sigla Relatorio",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "versao",
-          "rotulo": "Versao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "mes_ano",
-          "rotulo": "Mes Ano",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "prazo_meses",
-          "rotulo": "Prazo Meses",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "catalogo_tecnologia",
-          "rotulo": "Catalogo Tecnologia",
-          "grupo": "Documento",
+          "id": "tabela_finc",
+          "rotulo": "Financeiro",
+          "grupo": "Financeiro",
           "reuso_em": [],
           "calculado": false,
           "tipo": "tabela",
@@ -139,214 +61,13 @@
           "somar": "horas"
         },
         {
-          "id": "regra_vma",
-          "rotulo": "Regra Vma",
-          "grupo": "Documento",
+          "id": "n_proc_sei",
+          "rotulo": "Nº Processo SEI",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "texto",
+          "tipo": "numero",
           "largura": 2,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "horas_por_pf",
-          "rotulo": "Horas Por Pf",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "tabela",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [
-            {
-              "id": "item",
-              "rotulo": "Item",
-              "tipo": "texto"
-            },
-            {
-              "id": "perfil",
-              "rotulo": "Perfil técnico",
-              "tipo": "texto"
-            },
-            {
-              "id": "experiencia",
-              "rotulo": "Experiência mínima (anos)",
-              "tipo": "numero"
-            },
-            {
-              "id": "horas",
-              "rotulo": "Total de horas",
-              "tipo": "numero"
-            }
-          ],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "incluir_snap",
-          "rotulo": "Incluir Snap",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "versao_sisp",
-          "rotulo": "Versao Sisp",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "quadro_lotes",
-          "rotulo": "Quadro Lotes",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "tabela",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [
-            {
-              "id": "item",
-              "rotulo": "Item",
-              "tipo": "texto"
-            },
-            {
-              "id": "perfil",
-              "rotulo": "Perfil técnico",
-              "tipo": "texto"
-            }
-          ],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "perfil_referencia",
-          "rotulo": "Perfil Referencia",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "dominio_plataforma",
-          "rotulo": "Dominio Plataforma",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "descricao_perfis",
-          "rotulo": "Descricao Perfis",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "regime_certificacao",
-          "rotulo": "Regime Certificacao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "certificacoes",
-          "rotulo": "Certificacoes",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "descricao_itens",
-          "rotulo": "Descricao Itens",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "texto_elaboracao",
-          "rotulo": "Texto Elaboracao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "local_data",
-          "rotulo": "Local Data",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "lista_aprovadores",
-          "rotulo": "Lista Aprovadores",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 4,
           "consulta_ia": "",
           "colunas": [],
           "agrupar_por": "",
@@ -354,401 +75,41 @@
         }
       ],
       "grupos": [
-        "Documento"
+        "Introdução",
+        "Objetivo",
+        "Financeiro"
       ],
       "secoes": [
         {
-          "grupo": "Documento",
-          "html": "<p>Governo do Estado de São Paulo</p>\n<p>Companhia de Processamento de Dados do Estado de São Paulo</p>\n<p>{{unidade_cabecalho}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>Nº do Processo: {{n_processo_sei}}</p>\n<p>Interessado: {{interessado}}</p>\n<p>Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p>\n<p>TERMO DE REFERÊNCIA</p>\n<p>{{sigla_relatorio}} {{versao}}</p>\n<p>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO</p>\n<p>EM {{tecnologia}}</p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p>{{mes_ano}}</p>\n<p>1. INTRODUÇÃO</p>\n<p>Este Termo de Referência fornece as especificações técnicas mínimas que a proponente deverá atender para a prestação dos serviços de Apoio Técnico Especializado. (Texto padrão fixo.)</p>\n<p>2. ESCOPO E ESTRATÉGIA DE CONTRATAÇÃO DOS SERVIÇOS</p>\n<p>2.1 Do Objeto</p>\n<p>Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, pelo período de {{prazo_meses}} meses.</p>\n<p>Catálogo da tecnologia (por grupo de serviços):</p>\n<p>{{catalogo_tecnologia}}</p>\n<p>(Lista cadastrada por grupo — ex.: Computação | EC2, Lambda… — sem inventar serviço novo.)</p>\n<p>2.2 Ambiente Tecnológico da Prodesp</p>\n<p>Catálogo padrão da PRODESP: sistemas operacionais, bancos de dados, linguagens, servidores, portais, nuvem (AWS, Azure, Google Cloud, Huawei, Prodesp VCloud), observabilidade e a nota de que poderão ser pedidas versões superiores. (Texto/tabela padrão fixo.)</p>\n<p>2.3 Metodologia, Disciplinas e Artefatos</p>\n<p>Metodologia, artefatos, Scrum, BPM e plano de projeto. Percentuais de esforço: requisitos 25%, design 10%, implementação 40%, testes 15%, homologação 5% e implantação 5%. (Texto padrão fixo.)</p>\n<p>2.4 Planejamento de Projetos</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.5 Modalidades de Remuneração</p>\n<p>Modalidades: Análise de Pontos de Função (APF), Horas de Serviço Técnico (HST) e sprint ou release. (Texto padrão fixo.)</p>\n<p>2.6 Remuneração por Análise de Pontos de Função</p>\n<p>Quando o dimensionamento for em Pontos de Função, o valor será calculado pela fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou produtividade mínima o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>Métodos admitidos: IFPUG, SFP, NESMA, COSMIC{{incluir_snap}}.</p>\n<p>Roteiro SISP versão {{versao_sisp}}.</p>\n<p>2.7 Remuneração por Horas de Serviço Técnico</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.8 Remuneração por Sprints</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.9 Tecnologias e Forma de Medição</p>\n<p>(Texto padrão fixo sobre quando usar PF ou HST.)</p>\n<p>2.10 Proposta Comercial</p>\n<p>(Texto padrão fixo.)</p>\n<p>2.11 Formação de Lotes</p>\n<p>A contratação será definida em lote único para tecnologias {{tecnologia}}, conforme o quadro a seguir (mesmo quadro do Relatório de Justificativa):</p>\n<p>{{quadro_lotes}}</p>\n<p>(Tabela: ITEM | PERFIL | EXPERIÊNCIA MÍNIMA (ANOS) | HORAS | PROPORÇÃO DO VALOR-HORA.)</p>\n<p>Item de referência do desconto: \"{{perfil_referencia}}\".</p>\n<p>3. QUALIFICAÇÕES E COMPETÊNCIAS</p>\n<p>3.1 Qualificações</p>\n<p>3.1.1 a 3.1.4, 3.1.6 e 3.1.7 — comprovação de experiência, formação superior e substituição em até 5 (cinco) dias úteis. (Texto padrão fixo.)</p>\n<p>3.1.5 Quadro de experiência mínima — reaproveita os perfis do item 2.11.</p>\n<p>3.1.8 Domínio mínimo da plataforma:</p>\n<p>{{dominio_plataforma}}</p>\n<p>(Lista de serviços/módulos da tecnologia, a partir do catálogo do objeto.)</p>\n<p>3.2 Perfis Técnicos</p>\n<p>Para execução dos serviços serão requeridos os Perfis Técnicos relacionados no quadro do subitem 2.11, com as qualificações e competências descritas a seguir.</p>\n<p>{{descricao_perfis}}</p>\n<p>(Texto da IA por perfil: atuação + experiência e domínio — limitado aos perfis e à tecnologia cadastrados.)</p>\n<p>3.3 Certificações</p>\n<p>Regime da exigência: {{regime_certificacao}}</p>\n<p>Certificações: {{certificacoes}}</p>\n<p>(Ex.: obrigatória no ato da contratação, ou exemplificativa na ordem de serviço.)</p>\n<p>3.4 Métodos ágeis</p>\n<p>Declaração de capacidade em Scrum, XP, FDD ou ASD. (Texto padrão fixo.)</p>\n<p>4. EXECUÇÃO E ENTREGA DOS SERVIÇOS</p>\n<p>4.1 a 4.5 Ordem de serviço, local, horário, teletrabalho e representantes</p>\n<p>Ordem de serviço (assinatura em até 2 dias úteis), local de execução, horário, teletrabalho e representantes técnicos. (Texto padrão fixo.)</p>\n<p>4.6 Descrição dos serviços por item (quando aplicável)</p>\n<p>{{descricao_itens}}</p>\n<p>(Texto da IA por item do lote, a partir do catálogo e dos perfis, sem criar serviço novo. Pode ficar vazio se o escopo já estiver concentrado no item 2.1.)</p>\n<p>4.7 a 4.9 Entrega, recebimento, SLA, ICE e aceite</p>\n<p>Entrega, recebimento, qualidade, ICE de 90% e aceite final. (Texto padrão fixo, com numeração única.)</p>\n<p>5. PROTEÇÃO E GOVERNANÇA</p>\n<p>5.1 a 5.5 Subcontratação, garantia, conhecimento, propriedade e dados</p>\n<p>Subcontratação até 30%, garantia de 90 dias, transferência de conhecimento, propriedade intelectual e proteção de dados (comunicação de incidente em até 24 horas). (Texto padrão fixo.)</p>\n<p>5.6 Vedação a consórcio</p>\n<p>Vedação a consórcio, com fundamento em execução integrada, habitualidade, subordinação e mercado apto a atender sozinho. (Texto padrão fixo.)</p>\n<p>6. ELABORAÇÃO</p>\n<p>{{texto_elaboracao}}</p>\n<p>7. APROVAÇÃO</p>\n<p>{{local_data}}</p>\n<p>{{lista_aprovadores}}</p><p>{{lista_aprovadores}}<br></p>\n<p>(Lista repetível: NOME | MATRÍCULA | CARGO.)</p>"
+          "grupo": "Introdução",
+          "html": "<p style=\"text-align: center;\"><b>RELATÓRIO DE JUSTIFICATIVA</b></p><p style=\"text-align: left;\"><b>Nº do Processo</b>:&nbsp;{{n_proc_sei}}</p><p style=\"text-align: left;\"><b>Interessado: </b>CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO -</p><p style=\"text-align: left;\">PRODESP</p><p style=\"text-align: left;\"><b>Assunto: </b>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM</p><p style=\"text-align: left;\">TECNOLOGIAS AWS</p><p style=\"text-align: left;\">CIA. DE PROCESSAMENTO DE DADOS DO ESTADO DE SÃO PAULO</p><p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p><p style=\"text-align: left;\">REL.GEN.Rel.GEN{{introducao}}</p>"
+        },
+        {
+          "grupo": "Objetivo",
+          "html": "<p>{{objetivo}}</p>"
+        },
+        {
+          "grupo": "Financeiro",
+          "html": "<p>{{tabela_finc}}</p>"
         }
       ],
-      "origem": "upload",
-      "arquivo_origem": "termo_de_referencia_tagueado.docx",
-      "atualizado_em": 1793728181
+      "origem": "manual",
+      "arquivo_origem": "",
+      "atualizado_em": 1794509983
     },
     {
-      "id": "relatorio_de_justificativa_v3",
-      "nome": "Relatorio de Justificativa V3",
-      "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Documento\"><header class=\"card-bloco-cabecalho\"><h3>Documento</h3></header><div class=\"card-bloco-corpo\"><p>Governo do Estado de São Paulo</p>\n<p>Companhia de Processamento de Dados do Estado de São Paulo</p>\n<p>{{unidade_cabecalho}}</p>\n<p>RELATÓRIO DE JUSTIFICATIVA</p>\n<p>Nº do Processo: {{n_processo_sei}}</p>\n<p>Interessado: CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO - PRODESP</p>\n<p>Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p>\n<p>RELATÓRIO DE JUSTIFICATIVA</p>\n<p>{{sigla_relatorio}} {{versao}}</p>\n<p>LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO</p>\n<p>ESPECIALIZADO EM {{tecnologia}}</p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p>{{mes_ano}}</p>\n<p>1. OBJETIVO</p>\n<p>Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando {{tecnologia}}.</p>\n<p>2. CONSIDERAÇÕES</p>\n<p>2.1 Definições</p>\n<p>2.1.1 {{definicao_da_plataforma}}</p>\n<p>(Texto integral redigido pela IA a partir da tecnologia informada.)</p>\n<p>2.2 Unidades de Medidas para Desenvolvimento dos Serviços</p>\n<p>2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).</p>\n<p>2.2.2 A escolha da forma de medição se dará de acordo com as características de cada projeto, considerando-se os requisitos da tecnologia que será utilizada, conforme detalhado no subitem “2.2.5 Tecnologias e Forma de Medição”.</p>\n<p>a) Serviços que podem ser desenvolvidos com medição em Pontos de Função, a critério da PRODESP também poderão ser contratados em Horas de Serviço Técnico (HST), mediante solicitação por intermédio de Ordem de Serviço.</p>\n<p>b) A medição em Horas de Serviço Técnico (HST) atenderá preferencialmente serviços de manutenção de Sistemas e Aplicativos, devido à impossibilidade de produção dos artefatos necessários para realização das manutenções em Pontos de Função, dentro dos prazos de urgência requeridos.</p>\n<p>2.2.3 O valor unitário do Ponto de Função será calculado conforme fórmula apresentada no subitem “3.5 Contratação de Projetos em Pontos de Função”.</p>\n<p>2.2.4 A execução de serviços contratados em Horas de Serviço Técnico (HST) ocorrerá somente nas dependências da PRODESP, de seus Clientes ou em regime de Teletrabalho (Home Office) quando requerido pela PRODESP, e a CONTRATADA deverá apresentar um Relatório de Serviço Técnico (RST), mensal, por ocasião do faturamento dos serviços.</p>\n<p>2.2.4.1 Independentemente do local de trabalho a CONTRATADA deverá fornecer às suas expensas todos os recursos necessários para a execução dos serviços, dentre os quais destacam-se: hardware, software, meios de comunicação etc.</p>\n<p>2.2.5 Tecnologias e Forma de Medição:</p>\n<p>Será passível de medição em PF quando envolver linguagens de programação que utilizem requisitos funcionais definidos e mensuráveis em Pontos de Função. Para recursos tecnológicos que envolva apenas recursos de configuração e parametrização deve-se adotar HST, sempre que possível.</p>\n<p>2.3 Situação Atual</p>\n<p>{{situacao_atual}}</p>\n<p>(Texto integral redigido pela IA. Fato cadastral que não pode ser inventado:)</p>\n<p>{{existe_contrato_vigente}}</p>\n<p>3. PROCEDIMENTOS ADOTADOS</p>\n<p>3.1 Justificativa Para a Licitação</p>\n<p>{{justificativa}}</p>\n<p>(Texto integral redigido pela IA. Fatos cadastrais que não podem ser inventados:)</p>\n<p>{{fatos_que_nao_podem_ser_inventados}}</p>\n<p>3.1.2 Demanda Atual de Serviços</p>\n<p>Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.</p>\n<p>Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:</p>\n<p>{{lista_cliente_projeto}}</p>\n<p>(Tabela: colunas CLIENTE | PROJETO/SISTEMA — uma linha por demanda.)</p>\n<p>Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos, o que será feito por ocasião da apresentação do relatório que justificará a emissão da Ordem de Serviço.</p>\n<p>3.2 Demanda</p>\n<p>A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos últimos 12 meses, além de novas demandas em estágio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir:</p>\n<p>{{quadro_demanda}}</p>\n<p>(Tabela repetível por item/lote: ITEM | PERFIL | EXPERIÊNCIA MÍNIMA (ANOS) | TOTAL DE HORAS.)</p>\n<p>3.3 Da Licitação</p>\n<p>Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de {{total_horas}} ({{total_por_extenso}}) horas, apresentados no quadro abaixo.</p>\n<p>{{quadro_licitacao}}</p>\n<p>(Mesmo quadro do 3.2, acrescido da coluna PROPORÇÃO DO VALOR-HORA.)</p>\n<p>3.4 Critérios para Contratação</p>\n<p>3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência \"{{perfil_referencia}}\".</p>\n<p>3.5 Contratação de Projetos em Pontos de Função</p>\n<p>3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>(Os itens 3.5.1, 3.5.3, 3.5.4 e 3.5.5 permanecem no texto padrão fixo.)</p>\n<p>3.6 Proposta Comercial</p>\n<p>A proposta comercial observará o item de referência \"{{perfil_referencia}}\", conforme critérios do edital.</p>\n<p>3.7 Perfis Técnicos</p>\n<p>3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.7.4 Qualquer profissional alocado deverá ser substituído em até 5 (cinco) dias úteis.</p>\n<p>3.7.5 Todos os profissionais deverão possuir graduação Superior em pelo menos um dos cursos previstos no texto padrão.</p>\n<p>3.8 Comprovação Técnica</p>\n<p>Para garantir que os serviços que serão prestados estarão aderentes aos processos de desenvolvimento de software, voltados à qualidade e alinhados com as melhores práticas do mercado, a LICITANTE que sagrar-se vencedora deverá atender às seguintes exigências.</p>\n<p>(Declarações gerais de capacidade própria, métodos ágeis, regras de atestados a 50% do volume, sigilo, diligência, tradução e grupo empresarial: texto padrão fixo.)</p>\n<p>Bloco variável por tecnologia:</p>\n<p>Parceria com o fabricante: {{parceria_fabricante}}</p>\n<p>Estudo de mercado: {{estudo_de_mercado}}</p>\n<p>Atestados específicos e horas mínimas: {{atestados_especificos}}</p>\n<p>Equivalência dos atestados em Pontos de Função: {{horas_por_pf}} horas por ponto de função.</p>\n<p>3.9 Qualificação Econômico-Financeira</p>\n<p>Certidão negativa de falência, balanço patrimonial e patrimônio líquido mínimo de 10% (dez por cento) do valor estimado da contratação. (Texto padrão fixo.)</p>\n<p>3.10 Planilha de Composição de Custos e Preços</p>\n<p>Critérios da letra a à letra k, inclusive salário por perfil, regime tributário, encargos, benefícios da CCT, lucro e taxa de administração. (Texto padrão fixo.)</p>\n<p>3.11 Assinatura do contrato</p>\n<p>3.11.1 Representante Técnico — a LICITANTE deverá designar um Representante Técnico que atuará como o preposto. (Texto padrão fixo.)</p>\n<p>3.11.2 Comprovação de Parceiro Certificado: {{parceria_fabricante}}</p>\n<p>3.11.3 Reconhecimento em Estudo de Mercado: {{estudo_de_mercado}}</p>\n<p>Comprovação de profissional certificado: {{certificacoes}}</p>\n<p>3.11.4 CMMI nível 3 ou MPS.BR nível C, e 3.11.5 ISO 9001 e ISO/IEC 27001. (Texto padrão fixo, se confirmado que o nível exigido não muda.)</p>\n<p>4. OBRIGAÇÕES</p>\n<p>4.1.1 Garantia Contratual — A contratada deverá apresentar garantia de 5% do valor do contrato, em até 15 dias após a assinatura.</p>\n<p>4.1.2 Substituição de profissional em até 5 (cinco) dias úteis, entre as demais obrigações da contratada e da PRODESP. (Texto padrão fixo.)</p>\n<p>5. MODELOS DE FORMULÁRIOS</p>\n<p>5.1 Modelo da Ordem de Serviço de Apoio Técnico Especializado - ATE</p>\n<p>5.2 Modelo do Plano do Projeto – SoW (Statement Of Work)</p>\n<p>5.3 Modelo de Termo de Recebimento de Serviços</p>\n<p>5.4 Modelo do Termo de Aceite de Serviços</p>\n<p>5.5 Modelo da Planilha de Composição de Custos e Preços</p>\n<p>5.6 Modelo da Planilha de Apuração de Qualificação Técnica Operacional</p>\n<p>5.7 Modelo da Proposta Comercial</p>\n<p>5.8 Termo de Confidencialidade Sigilo e Uso</p>\n<p>(Anexos 01 a 08: modelos padrão em branco.)</p>\n<p>6. RECURSOS FINANCEIROS</p>\n<p>Serão utilizados recursos financeiros de origem corporativa para a emissão do DCO (Documento de Comprovação Orçamentária) destinado a esta contratação, porém a execução dos serviços se dará mediante a emissão de Ordens de Serviços que serão vinculadas ao referido DCO, podendo as despesas serem cobertas por ESP, Recurso Corporativo, Investimento, Condomínio etc.</p>\n<p>7. GESTOR E FISCAL DO CONTRATO</p>\n<p>Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.</p>\n<p>8. CONCLUSÃO</p>\n<p>Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de {{total_horas}} ({{total_por_extenso}}) horas de serviços de Apoio Técnico Especializado em {{tecnologia}}, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de {{prazo_meses}} meses a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.</p>\n<p>9. ELABORAÇÃO</p>\n<p>Este relatório foi elaborado pela {{area_elaboradora}}, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.</p>\n<p>10. APROVAÇÃO</p>\n<p>{{lista_aprovadores}}</p>\n<p>(Lista repetível: NOME | MATRÍCULA | CARGO.)</p></div></section>\n</article>",
+      "id": "relat_rio_de_justificativa",
+      "nome": "Relatório de Justificativa",
+      "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Introdução\"><header class=\"card-bloco-cabecalho\"><h3>Introdução</h3></header><div class=\"card-bloco-corpo\"><div style=\"text-align: center;\"><b>Governo do Estado de São Paulo</b></div><p></p><div style=\"text-align: center;\"><b>Companhia de Processamento de Dados do Estado de São Paulo</b></div><div style=\"text-align: center;\"><b>Gerência de Software e Serviços</b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b>RELATÓRIO DE JUSTIFICATIVA</b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b><br></b></div><div><b>Nº do Processo:&nbsp;{{numero_sei}}</b></div><div><b>Interessado:</b>&nbsp;{{interessado}}</div><div><b>Assunto:</b>&nbsp;{{assunto_processo}}&nbsp;EM TECNOLOGIAS&nbsp;{{tecnologia}}</div><div><br></div><div style=\"text-align: center;\"><b>CIA. DE PROCESSAMENTO DE DADOS DO ESTADO DE SÃO PAULO</b></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</div><div style=\"text-align: center;\">REL.GEN.{{numero_rel}}.{{num_versao}}</div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\">LICITAÇÃO PARA&nbsp;{{assunto_processo}}&nbsp;EM TECNOLOGIAS&nbsp;{{tecnologia}}</div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div>DDS - Diretoria de Desenvolvimento de Sistemas</div><div>SCL – Superintendência de Sistemas Estruturantes</div><div>GEN - Gerência de Engenharia de Software e Serviços</div><div><br></div><div style=\"text-align: center;\">{{data}}</div><div style=\"text-align: center;\"><br></div></div></section>\n<section class=\"card-bloco\" data-grupo=\"Objetivo\"><header class=\"card-bloco-cabecalho\"><h3>Objetivo</h3></header><div class=\"card-bloco-corpo\"><p class=\"Texto_Justificado\"><strong>1. OBJETIVO</strong></p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;<strong>{{ob_horas}}&nbsp; Horas</strong> de Serviço Técnico (HST), em Tecnologia {{ob_tecnologia}}, para atender o Projeto&nbsp;{{ob_projeto}} .</p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;{{ob_horas_pf}}&nbsp;&nbsp;<strong>Horas</strong> de Serviço Técnico (HST), correspondente a&nbsp;&nbsp;<strong>{{ob_pf}}&nbsp; Pontos de Função</strong>, em Tecnologia {{ob_tecnologia}}, para atender o Projeto {{ob_projeto}}.</p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;{{ob_ue}} <strong>&nbsp;Unidades de Execução - UE</strong>, em Tecnologia {{ob_tecnologia}}, para atender o Projeto {{ob_projeto}}..</p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Escopo da Contratação\"><header class=\"card-bloco-cabecalho\"><h3>Escopo da Contratação</h3></header><div class=\"card-bloco-corpo\"><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>2. ESCOPO DA CONTRATAÇÃO:</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">&nbsp;Informações essenciais do projeto:</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nome do projeto:&nbsp;{{ob_projeto}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp; &nbsp; {{esc_objetivo}}&nbsp;</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp; &nbsp; &nbsp;Prazo:{{esc_prazo}} Dias</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tecnologia utilizada:{{ob_tecnologia}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">&nbsp;Linguagem utilizada (quando se aplicar):&nbsp;{{esc_linguagem}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>Informações do projeto (Horas ou PF ou UE):</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>{{esc_tabela}}<br></strong></p><p></p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Resumo das Atividades\"><header class=\"card-bloco-cabecalho\"><h3>Resumo das Atividades</h3></header><div class=\"card-bloco-corpo\"><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>3. RESUMO DAS ATIVIDADES:</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">Prestação de apoio técnico especializado de informática no Projeto&nbsp;{{ob_projeto}}, utilizando Tecnologia&nbsp;{{ob_tecnologia}} , objetivando {{rativ_desc_objetivo}}.</p><p></p></div></section>\n</article>",
       "tags": [
         {
-          "id": "unidade_cabecalho",
-          "rotulo": "Unidade Cabecalho",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "n_processo_sei",
-          "rotulo": "N Processo Sei",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "tecnologia",
-          "rotulo": "Tecnologia",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "sigla_relatorio",
-          "rotulo": "Sigla Relatorio",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "versao",
-          "rotulo": "Versao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "mes_ano",
-          "rotulo": "Mes Ano",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "definicao_da_plataforma",
-          "rotulo": "Definicao Da Plataforma",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "situacao_atual",
-          "rotulo": "Situacao Atual",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "existe_contrato_vigente",
-          "rotulo": "Existe Contrato Vigente",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "justificativa",
-          "rotulo": "Justificativa",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "fatos_que_nao_podem_ser_inventados",
-          "rotulo": "Fatos Que Nao Podem Ser Inventados",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "lista_cliente_projeto",
-          "rotulo": "Lista Cliente Projeto",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "quadro_demanda",
-          "rotulo": "Quadro Demanda",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "total_horas",
-          "rotulo": "Total Horas",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "total_por_extenso",
-          "rotulo": "Total Por Extenso",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "quadro_licitacao",
-          "rotulo": "Quadro Licitacao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "perfil_referencia",
-          "rotulo": "Perfil Referencia",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "regra_vma",
-          "rotulo": "Regra Vma",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "horas_por_pf",
-          "rotulo": "Horas Por Pf",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "parceria_fabricante",
-          "rotulo": "Parceria Fabricante",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "estudo_de_mercado",
-          "rotulo": "Estudo De Mercado",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "atestados_especificos",
-          "rotulo": "Atestados Especificos",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "certificacoes",
-          "rotulo": "Certificacoes",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "prazo_meses",
-          "rotulo": "Prazo Meses",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "area_elaboradora",
-          "rotulo": "Area Elaboradora",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "lista_aprovadores",
-          "rotulo": "Lista Aprovadores",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        }
-      ],
-      "grupos": [
-        "Documento"
-      ],
-      "secoes": [
-        {
-          "grupo": "Documento",
-          "html": "<p>Governo do Estado de São Paulo</p>\n<p>Companhia de Processamento de Dados do Estado de São Paulo</p>\n<p>{{unidade_cabecalho}}</p>\n<p>RELATÓRIO DE JUSTIFICATIVA</p>\n<p>Nº do Processo: {{n_processo_sei}}</p>\n<p>Interessado: CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO - PRODESP</p>\n<p>Assunto: CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p>\n<p>RELATÓRIO DE JUSTIFICATIVA</p>\n<p>{{sigla_relatorio}} {{versao}}</p>\n<p>LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO</p>\n<p>ESPECIALIZADO EM {{tecnologia}}</p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p>{{mes_ano}}</p>\n<p>1. OBJETIVO</p>\n<p>Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando {{tecnologia}}.</p>\n<p>2. CONSIDERAÇÕES</p>\n<p>2.1 Definições</p>\n<p>2.1.1 {{definicao_da_plataforma}}</p>\n<p>(Texto integral redigido pela IA a partir da tecnologia informada.)</p>\n<p>2.2 Unidades de Medidas para Desenvolvimento dos Serviços</p>\n<p>2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).</p>\n<p>2.2.2 A escolha da forma de medição se dará de acordo com as características de cada projeto, considerando-se os requisitos da tecnologia que será utilizada, conforme detalhado no subitem “2.2.5 Tecnologias e Forma de Medição”.</p>\n<p>a) Serviços que podem ser desenvolvidos com medição em Pontos de Função, a critério da PRODESP também poderão ser contratados em Horas de Serviço Técnico (HST), mediante solicitação por intermédio de Ordem de Serviço.</p>\n<p>b) A medição em Horas de Serviço Técnico (HST) atenderá preferencialmente serviços de manutenção de Sistemas e Aplicativos, devido à impossibilidade de produção dos artefatos necessários para realização das manutenções em Pontos de Função, dentro dos prazos de urgência requeridos.</p>\n<p>2.2.3 O valor unitário do Ponto de Função será calculado conforme fórmula apresentada no subitem “3.5 Contratação de Projetos em Pontos de Função”.</p>\n<p>2.2.4 A execução de serviços contratados em Horas de Serviço Técnico (HST) ocorrerá somente nas dependências da PRODESP, de seus Clientes ou em regime de Teletrabalho (Home Office) quando requerido pela PRODESP, e a CONTRATADA deverá apresentar um Relatório de Serviço Técnico (RST), mensal, por ocasião do faturamento dos serviços.</p>\n<p>2.2.4.1 Independentemente do local de trabalho a CONTRATADA deverá fornecer às suas expensas todos os recursos necessários para a execução dos serviços, dentre os quais destacam-se: hardware, software, meios de comunicação etc.</p>\n<p>2.2.5 Tecnologias e Forma de Medição:</p>\n<p>Será passível de medição em PF quando envolver linguagens de programação que utilizem requisitos funcionais definidos e mensuráveis em Pontos de Função. Para recursos tecnológicos que envolva apenas recursos de configuração e parametrização deve-se adotar HST, sempre que possível.</p>\n<p>2.3 Situação Atual</p>\n<p>{{situacao_atual}}</p>\n<p>(Texto integral redigido pela IA. Fato cadastral que não pode ser inventado:)</p>\n<p>{{existe_contrato_vigente}}</p>\n<p>3. PROCEDIMENTOS ADOTADOS</p>\n<p>3.1 Justificativa Para a Licitação</p>\n<p>{{justificativa}}</p>\n<p>(Texto integral redigido pela IA. Fatos cadastrais que não podem ser inventados:)</p>\n<p>{{fatos_que_nao_podem_ser_inventados}}</p>\n<p>3.1.2 Demanda Atual de Serviços</p>\n<p>Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.</p>\n<p>Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:</p>\n<p>{{lista_cliente_projeto}}</p>\n<p>(Tabela: colunas CLIENTE | PROJETO/SISTEMA — uma linha por demanda.)</p>\n<p>Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos, o que será feito por ocasião da apresentação do relatório que justificará a emissão da Ordem de Serviço.</p>\n<p>3.2 Demanda</p>\n<p>A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos últimos 12 meses, além de novas demandas em estágio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir:</p>\n<p>{{quadro_demanda}}</p>\n<p>(Tabela repetível por item/lote: ITEM | PERFIL | EXPERIÊNCIA MÍNIMA (ANOS) | TOTAL DE HORAS.)</p>\n<p>3.3 Da Licitação</p>\n<p>Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de {{total_horas}} ({{total_por_extenso}}) horas, apresentados no quadro abaixo.</p>\n<p>{{quadro_licitacao}}</p>\n<p>(Mesmo quadro do 3.2, acrescido da coluna PROPORÇÃO DO VALOR-HORA.)</p>\n<p>3.4 Critérios para Contratação</p>\n<p>3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência \"{{perfil_referencia}}\".</p>\n<p>3.5 Contratação de Projetos em Pontos de Função</p>\n<p>3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>(Os itens 3.5.1, 3.5.3, 3.5.4 e 3.5.5 permanecem no texto padrão fixo.)</p>\n<p>3.6 Proposta Comercial</p>\n<p>A proposta comercial observará o item de referência \"{{perfil_referencia}}\", conforme critérios do edital.</p>\n<p>3.7 Perfis Técnicos</p>\n<p>3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.7.4 Qualquer profissional alocado deverá ser substituído em até 5 (cinco) dias úteis.</p>\n<p>3.7.5 Todos os profissionais deverão possuir graduação Superior em pelo menos um dos cursos previstos no texto padrão.</p>\n<p>3.8 Comprovação Técnica</p>\n<p>Para garantir que os serviços que serão prestados estarão aderentes aos processos de desenvolvimento de software, voltados à qualidade e alinhados com as melhores práticas do mercado, a LICITANTE que sagrar-se vencedora deverá atender às seguintes exigências.</p>\n<p>(Declarações gerais de capacidade própria, métodos ágeis, regras de atestados a 50% do volume, sigilo, diligência, tradução e grupo empresarial: texto padrão fixo.)</p>\n<p>Bloco variável por tecnologia:</p>\n<p>Parceria com o fabricante: {{parceria_fabricante}}</p>\n<p>Estudo de mercado: {{estudo_de_mercado}}</p>\n<p>Atestados específicos e horas mínimas: {{atestados_especificos}}</p>\n<p>Equivalência dos atestados em Pontos de Função: {{horas_por_pf}} horas por ponto de função.</p>\n<p>3.9 Qualificação Econômico-Financeira</p>\n<p>Certidão negativa de falência, balanço patrimonial e patrimônio líquido mínimo de 10% (dez por cento) do valor estimado da contratação. (Texto padrão fixo.)</p>\n<p>3.10 Planilha de Composição de Custos e Preços</p>\n<p>Critérios da letra a à letra k, inclusive salário por perfil, regime tributário, encargos, benefícios da CCT, lucro e taxa de administração. (Texto padrão fixo.)</p>\n<p>3.11 Assinatura do contrato</p>\n<p>3.11.1 Representante Técnico — a LICITANTE deverá designar um Representante Técnico que atuará como o preposto. (Texto padrão fixo.)</p>\n<p>3.11.2 Comprovação de Parceiro Certificado: {{parceria_fabricante}}</p>\n<p>3.11.3 Reconhecimento em Estudo de Mercado: {{estudo_de_mercado}}</p>\n<p>Comprovação de profissional certificado: {{certificacoes}}</p>\n<p>3.11.4 CMMI nível 3 ou MPS.BR nível C, e 3.11.5 ISO 9001 e ISO/IEC 27001. (Texto padrão fixo, se confirmado que o nível exigido não muda.)</p>\n<p>4. OBRIGAÇÕES</p>\n<p>4.1.1 Garantia Contratual — A contratada deverá apresentar garantia de 5% do valor do contrato, em até 15 dias após a assinatura.</p>\n<p>4.1.2 Substituição de profissional em até 5 (cinco) dias úteis, entre as demais obrigações da contratada e da PRODESP. (Texto padrão fixo.)</p>\n<p>5. MODELOS DE FORMULÁRIOS</p>\n<p>5.1 Modelo da Ordem de Serviço de Apoio Técnico Especializado - ATE</p>\n<p>5.2 Modelo do Plano do Projeto – SoW (Statement Of Work)</p>\n<p>5.3 Modelo de Termo de Recebimento de Serviços</p>\n<p>5.4 Modelo do Termo de Aceite de Serviços</p>\n<p>5.5 Modelo da Planilha de Composição de Custos e Preços</p>\n<p>5.6 Modelo da Planilha de Apuração de Qualificação Técnica Operacional</p>\n<p>5.7 Modelo da Proposta Comercial</p>\n<p>5.8 Termo de Confidencialidade Sigilo e Uso</p>\n<p>(Anexos 01 a 08: modelos padrão em branco.)</p>\n<p>6. RECURSOS FINANCEIROS</p>\n<p>Serão utilizados recursos financeiros de origem corporativa para a emissão do DCO (Documento de Comprovação Orçamentária) destinado a esta contratação, porém a execução dos serviços se dará mediante a emissão de Ordens de Serviços que serão vinculadas ao referido DCO, podendo as despesas serem cobertas por ESP, Recurso Corporativo, Investimento, Condomínio etc.</p>\n<p>7. GESTOR E FISCAL DO CONTRATO</p>\n<p>Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.</p>\n<p>8. CONCLUSÃO</p>\n<p>Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de {{total_horas}} ({{total_por_extenso}}) horas de serviços de Apoio Técnico Especializado em {{tecnologia}}, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de {{prazo_meses}} meses a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.</p>\n<p>9. ELABORAÇÃO</p>\n<p>Este relatório foi elaborado pela {{area_elaboradora}}, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.</p>\n<p>10. APROVAÇÃO</p>\n<p>{{lista_aprovadores}}</p>\n<p>(Lista repetível: NOME | MATRÍCULA | CARGO.)</p>"
-        }
-      ],
-      "origem": "upload",
-      "arquivo_origem": "relatorio_de_justificativa_v3.docx",
-      "atualizado_em": 1794053356
-    },
-    {
-      "id": "relatorio_justificativa_v4",
-      "nome": "Relatorio_Justificativa_v4",
-      "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Documento\"><header class=\"card-bloco-cabecalho\"><h3>Documento</h3></header><div class=\"card-bloco-corpo\"><p style=\"text-align: center;\"><b>Governo do Estado de São Paulo</b></p>\n<p style=\"text-align: center;\"><b>Companhia de Processamento de Dados do Estado de São Paulo</b></p>\n<p style=\"text-align: center;\">{{unidade_cabecalho}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p>\n<p><b>Nº do Processo: </b>{{n_processo_sei}}</p>\n<p><b>Interessado:</b> {{interessado}}</p>\n<p><b>Assunto:</b> CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p><p><br></p><p><br></p>\n<p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p>\n<p style=\"text-align: center;\">{{sigla_relatorio}} {{versao}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p>LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p style=\"text-align: center;\">{{mes_ano}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p>1. OBJETIVO</p>\n<p>Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando {{tecnologia}}.</p>\n<p>2. CONSIDERAÇÕES</p>\n<p>2.1 Definições</p>\n<p>2.1.1 {{definicao_da_plataforma}}</p>\n<p>2.2 Unidades de Medidas para Desenvolvimento dos Serviços</p>\n<p>2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).</p>\n<p>2.2.2 A escolha da forma de medição se dará de acordo com as características de cada projeto, considerando-se os requisitos da tecnologia que será utilizada, conforme detalhado no subitem “2.2.5 Tecnologias e Forma de Medição”.</p>\n<p>a) Serviços que podem ser desenvolvidos com medição em Pontos de Função, a critério da PRODESP também poderão ser contratados em Horas de Serviço Técnico (HST), mediante solicitação por intermédio de Ordem de Serviço.</p>\n<p>b) A medição em Horas de Serviço Técnico (HST) atenderá preferencialmente serviços de manutenção de Sistemas e Aplicativos, devido à impossibilidade de produção dos artefatos necessários para realização das manutenções em Pontos de Função, dentro dos prazos de urgência requeridos.</p>\n<p>2.2.3 O valor unitário do Ponto de Função será calculado conforme fórmula apresentada no subitem “3.5 Contratação de Projetos em Pontos de Função”.</p>\n<p>2.2.4 A execução de serviços contratados em Horas de Serviço Técnico (HST) ocorrerá somente nas dependências da PRODESP, de seus Clientes ou em regime de Teletrabalho (Home Office) quando requerido pela PRODESP, e a CONTRATADA deverá apresentar um Relatório de Serviço Técnico (RST), mensal, por ocasião do faturamento dos serviços.</p>\n<p>2.2.4.1 Independentemente do local de trabalho a CONTRATADA deverá fornecer às suas expensas todos os recursos necessários para a execução dos serviços, dentre os quais destacam-se: hardware, software, meios de comunicação etc.</p>\n<p>2.2.5 Tecnologias e Forma de Medição:</p>\n<p>Será passível de medição em PF quando envolver linguagens de programação que utilizem requisitos funcionais definidos e mensuráveis em Pontos de Função. Para recursos tecnológicos que envolva apenas recursos de configuração e parametrização deve-se adotar HST, sempre que possível.</p>\n<p>2.3 Situação Atual</p>\n<p>{{situacao_atual}}</p>\n<p>(Texto integral redigido pela IA. Fato cadastral que não pode ser inventado:)</p>\n<p>{{existe_contrato_vigente}}</p>\n<p>3. PROCEDIMENTOS ADOTADOS</p>\n<p>3.1 Justificativa Para a Licitação</p>\n<p>{{justificativa}}</p>\n<p>{{fatos_relevantes}}</p>\n<p>3.1.2 Demanda Atual de Serviços</p>\n<p>Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.</p>\n<p>Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:</p>\n<p>{{lista_cliente_projeto}}</p>\n<p>Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos, o que será feito por ocasião da apresentação do relatório que justificará a emissão da Ordem de Serviço.</p>\n<p>3.2 Demanda</p>\n<p>A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos últimos 12 meses, além de novas demandas em estágio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir:</p>\n<p>{{quadro_demanda}}</p>\n<p>3.3 Da Licitação</p>\n<p>Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de {{total_horas}} ({{total_por_extenso}}) horas, apresentados no quadro abaixo.</p>\n<p>{{quadro_licitacao}}</p>\n<p>3.4 Critérios para Contratação</p>\n<p>3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência \"{{perfil_referencia}}\".</p>\n<p>3.5 Contratação de Projetos em Pontos de Função</p>\n<p>3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>3.6 Proposta Comercial</p>\n<p>A proposta comercial observará o item de referência \"{{perfil_referencia}}\", conforme critérios do edital.</p>\n<p>3.7 Perfis Técnicos</p>\n<p>3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.7.4 Qualquer profissional alocado deverá ser substituído em até 5 (cinco) dias úteis.</p>\n<p>3.7.5 Todos os profissionais deverão possuir graduação Superior em pelo menos um dos cursos previstos no texto padrão.</p>\n<p>3.8 Comprovação Técnica</p>\n<p>Para garantir que os serviços que serão prestados estarão aderentes aos processos de desenvolvimento de software, voltados à qualidade e alinhados com as melhores práticas do mercado, a LICITANTE que sagrar-se vencedora deverá atender às seguintes exigências.</p>\n<p>Bloco variável por tecnologia:</p>\n<p>Parceria com o fabricante: {{parceria_fabricante}}</p>\n<p>Estudo de mercado: {{estudo_de_mercado}}</p>\n<p>Atestados específicos e horas mínimas: {{atestados_especificos}}</p>\n<p>Equivalência dos atestados em Pontos de Função: {{horas_por_pf}} horas por ponto de função.</p>\n<p>3.9 Qualificação Econômico-Financeira</p>\n<p>Certidão negativa de falência, balanço patrimonial e patrimônio líquido mínimo de 10% (dez por cento) do valor estimado da contratação.</p>\n<p>3.10 Planilha de Composição de Custos e Preços</p>\n<p>Critérios da letra a à letra k, inclusive salário por perfil, regime tributário, encargos, benefícios da CCT, lucro e taxa de administração.</p>\n<p>3.11 Assinatura do contrato</p>\n<p>3.11.1 Representante Técnico — a LICITANTE deverá designar um Representante Técnico que atuará como o preposto.</p>\n<p>3.11.2 Comprovação de Parceiro Certificado: {{parceria_fabricante}}</p>\n<p>3.11.3 Reconhecimento em Estudo de Mercado: {{estudo_de_mercado}}</p>\n<p>Comprovação de profissional certificado: {{certificacoes}}</p>\n<p>3.11.4 CMMI nível 3 ou MPS.BR nível C, e 3.11.5 ISO 9001 e ISO/IEC 27001.</p>\n<p>4. OBRIGAÇÕES</p>\n<p>4.1.1 Garantia Contratual — A contratada deverá apresentar garantia de 5% do valor do contrato, em até 15 dias após a assinatura.</p>\n<p>4.1.2 Substituição de profissional em até 5 (cinco) dias úteis, entre as demais obrigações da contratada e da PRODESP.</p>\n<p>5. MODELOS DE FORMULÁRIOS</p>\n<p>5.1 Modelo da Ordem de Serviço de Apoio Técnico Especializado - ATE</p>\n<p>5.2 Modelo do Plano do Projeto – SoW (Statement Of Work)</p>\n<p>5.3 Modelo de Termo de Recebimento de Serviços</p>\n<p>5.4 Modelo do Termo de Aceite de Serviços</p>\n<p>5.5 Modelo da Planilha de Composição de Custos e Preços</p>\n<p>5.6 Modelo da Planilha de Apuração de Qualificação Técnica Operacional</p>\n<p>5.7 Modelo da Proposta Comercial</p>\n<p>5.8 Termo de Confidencialidade Sigilo e Uso</p>\n<p>6. RECURSOS FINANCEIROS</p>\n<p>Serão utilizados recursos financeiros de origem corporativa para a emissão do DCO (Documento de Comprovação Orçamentária) destinado a esta contratação, porém a execução dos serviços se dará mediante a emissão de Ordens de Serviços que serão vinculadas ao referido DCO, podendo as despesas serem cobertas por ESP, Recurso Corporativo, Investimento, Condomínio etc.</p>\n<p>7. GESTOR E FISCAL DO CONTRATO</p>\n<p>Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.</p>\n<p>8. CONCLUSÃO</p>\n<p>Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de {{total_horas}} ({{total_por_extenso}}) horas de serviços de Apoio Técnico Especializado em {{tecnologia}}, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de {{prazo_meses}} meses a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.</p>\n<p>9. ELABORAÇÃO</p>\n<p>Este relatório foi elaborado pela {{area_elaboradora}}, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.</p>\n<p>10. APROVAÇÃO</p><p>{{aprovador_1}}<br></p><p>{{aprovador_2}}<br></p>\n<p></p></div></section>\n</article>",
-      "tags": [
-        {
-          "id": "unidade_cabecalho",
-          "rotulo": "Unidade Cabecalho",
-          "grupo": "Documento",
+          "id": "numero_sei",
+          "rotulo": "Número Processo SEI",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto_curto",
           "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "n_processo_sei",
-          "rotulo": "N Processo Sei",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 2,
           "consulta_ia": "",
           "colunas": [],
           "agrupar_por": "",
@@ -757,7 +118,7 @@
         {
           "id": "interessado",
           "rotulo": "Interessado",
-          "grupo": "Documento",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto_curto",
@@ -768,74 +129,9 @@
           "somar": ""
         },
         {
-          "id": "tecnologia",
-          "rotulo": "Tecnologia",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "sigla_relatorio",
-          "rotulo": "Sigla Relatorio",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "versao",
-          "rotulo": "Versao",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "mes_ano",
-          "rotulo": "Mes Ano",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 1,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "definicao_da_plataforma",
-          "rotulo": "Definicao Da Plataforma",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "situacao_atual",
-          "rotulo": "Situacao Atual",
-          "grupo": "Documento",
+          "id": "assunto_processo",
+          "rotulo": "Assunto",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto",
@@ -846,9 +142,9 @@
           "somar": ""
         },
         {
-          "id": "existe_contrato_vigente",
-          "rotulo": "Existe Contrato Vigente",
-          "grupo": "Documento",
+          "id": "numero_rel",
+          "rotulo": "Número Relatório",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto_curto",
@@ -859,12 +155,38 @@
           "somar": ""
         },
         {
-          "id": "justificativa",
-          "rotulo": "Justificativa",
-          "grupo": "Documento",
+          "id": "num_versao",
+          "rotulo": "Nº Versão",
+          "grupo": "Introdução",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "ia_web",
+          "tipo": "texto_curto",
+          "largura": 1,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "data",
+          "rotulo": "Mês e Ano",
+          "grupo": "Introdução",
+          "reuso_em": [],
+          "calculado": false,
+          "tipo": "texto_curto",
+          "largura": 2,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "tecnologia",
+          "rotulo": "Tecnologia",
+          "grupo": "Introdução",
+          "reuso_em": [],
+          "calculado": false,
+          "tipo": "texto_curto",
           "largura": 4,
           "consulta_ia": "",
           "colunas": [],
@@ -872,80 +194,9 @@
           "somar": ""
         },
         {
-          "id": "fatos_relevantes",
-          "rotulo": "Fatos Relevantes",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "lista_cliente_projeto",
-          "rotulo": "Lista Cliente Projeto",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "tabela",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [
-            {
-              "id": "cliente",
-              "rotulo": "Cliente",
-              "tipo": "texto"
-            },
-            {
-              "id": "projeto_sistema",
-              "rotulo": "Projeto/Sistema",
-              "tipo": "texto"
-            }
-          ],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "quadro_demanda",
-          "rotulo": "Quadro Demanda",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "tabela",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [
-            {
-              "id": "item",
-              "rotulo": "Item",
-              "tipo": "texto"
-            },
-            {
-              "id": "perfil",
-              "rotulo": "Perfil técnico",
-              "tipo": "texto"
-            },
-            {
-              "id": "experiencia",
-              "rotulo": "Experiência mínima (anos)",
-              "tipo": "numero"
-            },
-            {
-              "id": "horas",
-              "rotulo": "Total de horas",
-              "tipo": "numero"
-            }
-          ],
-          "agrupar_por": "",
-          "somar": "horas"
-        },
-        {
-          "id": "total_horas",
-          "rotulo": "Total Horas",
-          "grupo": "Documento",
+          "id": "ob_horas",
+          "rotulo": "Quantidade de horas para contratação",
+          "grupo": "Objetivo",
           "reuso_em": [],
           "calculado": false,
           "tipo": "numero",
@@ -956,10 +207,29 @@
           "somar": ""
         },
         {
-          "id": "total_por_extenso",
-          "rotulo": "Total Por Extenso",
-          "grupo": "Documento",
-          "reuso_em": [],
+          "id": "ob_tecnologia",
+          "rotulo": "Detalhes da Tecnologia",
+          "grupo": "Objetivo",
+          "reuso_em": [
+            "Escopo da Contratação",
+            "Resumo das Atividades"
+          ],
+          "calculado": false,
+          "tipo": "texto",
+          "largura": 4,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "ob_projeto",
+          "rotulo": "Nome do Projeto",
+          "grupo": "Objetivo",
+          "reuso_em": [
+            "Escopo da Contratação",
+            "Resumo das Atividades"
+          ],
           "calculado": false,
           "tipo": "texto_curto",
           "largura": 4,
@@ -969,56 +239,48 @@
           "somar": ""
         },
         {
-          "id": "quadro_licitacao",
-          "rotulo": "Quadro Licitacao",
-          "grupo": "Documento",
+          "id": "ob_pf",
+          "rotulo": "Quantidade de Pontos de Função",
+          "grupo": "Objetivo",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "tabela",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [
-            {
-              "id": "item",
-              "rotulo": "Item",
-              "tipo": "texto"
-            },
-            {
-              "id": "experiencia",
-              "rotulo": "Experiência mínima (anos)",
-              "tipo": "numero"
-            },
-            {
-              "id": "total_horas_estimadas_licitacao",
-              "rotulo": "Total de horas estimadas Licitação",
-              "tipo": "numero"
-            },
-            {
-              "id": "proporcao_valor_hora",
-              "rotulo": "Proporção Valor de hora",
-              "tipo": "numero"
-            }
-          ],
-          "agrupar_por": "",
-          "somar": "total_horas_estimadas_licitacao"
-        },
-        {
-          "id": "perfil_referencia",
-          "rotulo": "Perfil Referencia",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
+          "tipo": "texto_curto",
+          "largura": 1,
           "consulta_ia": "",
           "colunas": [],
           "agrupar_por": "",
           "somar": ""
         },
         {
-          "id": "regra_vma",
-          "rotulo": "Regra Vma",
-          "grupo": "Documento",
+          "id": "ob_ue",
+          "rotulo": "Quantidade de Unidade de Execução",
+          "grupo": "Objetivo",
+          "reuso_em": [],
+          "calculado": false,
+          "tipo": "texto_curto",
+          "largura": 1,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "ob_horas_pf",
+          "rotulo": "Horas Ponto de Função",
+          "grupo": "Objetivo",
+          "reuso_em": [],
+          "calculado": false,
+          "tipo": "texto_curto",
+          "largura": 2,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "esc_objetivo",
+          "rotulo": "Objetivo da Contratação",
+          "grupo": "Escopo da Contratação",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto",
@@ -1029,9 +291,22 @@
           "somar": ""
         },
         {
-          "id": "horas_por_pf",
-          "rotulo": "Horas Por Pf",
-          "grupo": "Documento",
+          "id": "esc_prazo",
+          "rotulo": "Prazo (Dias Corridos)",
+          "grupo": "Escopo da Contratação",
+          "reuso_em": [],
+          "calculado": false,
+          "tipo": "numero",
+          "largura": 1,
+          "consulta_ia": "",
+          "colunas": [],
+          "agrupar_por": "",
+          "somar": ""
+        },
+        {
+          "id": "esc_linguagem",
+          "rotulo": "Linguagem Utilizada (se aplicável)",
+          "grupo": "Escopo da Contratação",
           "reuso_em": [],
           "calculado": false,
           "tipo": "texto_curto",
@@ -1042,104 +317,52 @@
           "somar": ""
         },
         {
-          "id": "parceria_fabricante",
-          "rotulo": "Parceria Fabricante",
-          "grupo": "Documento",
+          "id": "esc_tabela",
+          "rotulo": "Tabela Descritiva",
+          "grupo": "Escopo da Contratação",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "texto_curto",
+          "tipo": "tabela",
           "largura": 4,
           "consulta_ia": "",
-          "colunas": [],
+          "colunas": [
+            {
+              "id": "sistemaservico",
+              "rotulo": "Sistema/Serviço",
+              "tipo": "texto"
+            },
+            {
+              "id": "atividades",
+              "rotulo": "Atividades",
+              "tipo": "texto"
+            },
+            {
+              "id": "disciplinasprevistas",
+              "rotulo": "Disciplinas Previstas",
+              "tipo": "texto"
+            },
+            {
+              "id": "entregaveis",
+              "rotulo": "Entregáveis",
+              "tipo": "texto"
+            },
+            {
+              "id": "quantidadehoras",
+              "rotulo": "Quantidade de Horas",
+              "tipo": "numero"
+            }
+          ],
           "agrupar_por": "",
-          "somar": ""
+          "somar": "quantidadehoras"
         },
         {
-          "id": "estudo_de_mercado",
-          "rotulo": "Estudo De Mercado",
-          "grupo": "Documento",
+          "id": "rativ_desc_objetivo",
+          "rotulo": "Descrição do Objetivo",
+          "grupo": "Resumo das Atividades",
           "reuso_em": [],
           "calculado": false,
-          "tipo": "ia_web",
+          "tipo": "texto",
           "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "atestados_especificos",
-          "rotulo": "Atestados Especificos",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "certificacoes",
-          "rotulo": "Certificacoes",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "ia_web",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "prazo_meses",
-          "rotulo": "Prazo Meses",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 2,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "area_elaboradora",
-          "rotulo": "Area Elaboradora",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "aprovador_1",
-          "rotulo": "Aprovador",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 4,
-          "consulta_ia": "",
-          "colunas": [],
-          "agrupar_por": "",
-          "somar": ""
-        },
-        {
-          "id": "aprovador_2",
-          "rotulo": "Aprovador",
-          "grupo": "Documento",
-          "reuso_em": [],
-          "calculado": false,
-          "tipo": "texto_curto",
-          "largura": 2,
           "consulta_ia": "",
           "colunas": [],
           "agrupar_por": "",
@@ -1147,18 +370,33 @@
         }
       ],
       "grupos": [
-        "Documento"
+        "Introdução",
+        "Objetivo",
+        "Escopo da Contratação",
+        "Resumo das Atividades"
       ],
       "secoes": [
         {
-          "grupo": "Documento",
-          "html": "<p style=\"text-align: center;\"><b>Governo do Estado de São Paulo</b></p>\n<p style=\"text-align: center;\"><b>Companhia de Processamento de Dados do Estado de São Paulo</b></p>\n<p style=\"text-align: center;\">{{unidade_cabecalho}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p>\n<p><b>Nº do Processo: </b>{{n_processo_sei}}</p>\n<p><b>Interessado:</b> {{interessado}}</p>\n<p><b>Assunto:</b> CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p><p><br></p><p><br></p>\n<p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p>\n<p style=\"text-align: center;\">{{sigla_relatorio}} {{versao}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p>LICITAÇÃO PARA CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM {{tecnologia}}</p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p>\n<p>DDS - Diretoria de Desenvolvimento de Sistemas</p>\n<p>SCL – Superintendência de Sistemas Estruturantes</p>\n<p>GEN - Gerência de Engenharia de Software e Serviços</p>\n<p style=\"text-align: center;\">{{mes_ano}}</p><p style=\"text-align: center;\"><br></p><p style=\"text-align: center;\"><br></p>\n<p>1. OBJETIVO</p>\n<p>Justificar a necessidade de abertura de Processo Licitatório para contratação de Serviços de Apoio Técnico Especializado contemplando design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas da PRODESP utilizando {{tecnologia}}.</p>\n<p>2. CONSIDERAÇÕES</p>\n<p>2.1 Definições</p>\n<p>2.1.1 {{definicao_da_plataforma}}</p>\n<p>2.2 Unidades de Medidas para Desenvolvimento dos Serviços</p>\n<p>2.2.1 A medição dos serviços poderá ser baseada em Análise de Pontos de Função (APF) ou em Horas de Serviço Técnico (HST).</p>\n<p>2.2.2 A escolha da forma de medição se dará de acordo com as características de cada projeto, considerando-se os requisitos da tecnologia que será utilizada, conforme detalhado no subitem “2.2.5 Tecnologias e Forma de Medição”.</p>\n<p>a) Serviços que podem ser desenvolvidos com medição em Pontos de Função, a critério da PRODESP também poderão ser contratados em Horas de Serviço Técnico (HST), mediante solicitação por intermédio de Ordem de Serviço.</p>\n<p>b) A medição em Horas de Serviço Técnico (HST) atenderá preferencialmente serviços de manutenção de Sistemas e Aplicativos, devido à impossibilidade de produção dos artefatos necessários para realização das manutenções em Pontos de Função, dentro dos prazos de urgência requeridos.</p>\n<p>2.2.3 O valor unitário do Ponto de Função será calculado conforme fórmula apresentada no subitem “3.5 Contratação de Projetos em Pontos de Função”.</p>\n<p>2.2.4 A execução de serviços contratados em Horas de Serviço Técnico (HST) ocorrerá somente nas dependências da PRODESP, de seus Clientes ou em regime de Teletrabalho (Home Office) quando requerido pela PRODESP, e a CONTRATADA deverá apresentar um Relatório de Serviço Técnico (RST), mensal, por ocasião do faturamento dos serviços.</p>\n<p>2.2.4.1 Independentemente do local de trabalho a CONTRATADA deverá fornecer às suas expensas todos os recursos necessários para a execução dos serviços, dentre os quais destacam-se: hardware, software, meios de comunicação etc.</p>\n<p>2.2.5 Tecnologias e Forma de Medição:</p>\n<p>Será passível de medição em PF quando envolver linguagens de programação que utilizem requisitos funcionais definidos e mensuráveis em Pontos de Função. Para recursos tecnológicos que envolva apenas recursos de configuração e parametrização deve-se adotar HST, sempre que possível.</p>\n<p>2.3 Situação Atual</p>\n<p>{{situacao_atual}}</p>\n<p>(Texto integral redigido pela IA. Fato cadastral que não pode ser inventado:)</p>\n<p>{{existe_contrato_vigente}}</p>\n<p>3. PROCEDIMENTOS ADOTADOS</p>\n<p>3.1 Justificativa Para a Licitação</p>\n<p>{{justificativa}}</p>\n<p>{{fatos_relevantes}}</p>\n<p>3.1.2 Demanda Atual de Serviços</p>\n<p>Para confirmar a necessidade de nova contratação foi efetuada consulta às gerências das áreas de desenvolvimento e de operações para manifestarem-se sobre a existência de demandas/projetos/sistemas que utilizarão as referidas tecnologias.</p>\n<p>Constatou-se que existem projetos em fase de estudo que poderão utilizar os serviços que serão contratados, assim como diversos sistemas que requerem a utilização de serviços de Apoio Técnico Especializado nestas Tecnologias para sua manutenção evolutiva, dos quais destacamos os seguintes:</p>\n<p>{{lista_cliente_projeto}}</p>\n<p>Como a utilização do Apoio Técnico Especializado se dará por intermédio de demandas, que serão apresentadas pelas gerências de Desenvolvimento de Sistemas e de Operações, no decorrer da vigência dos contratos, na fase atual não é possível fechar o cronograma de execução dos projetos, o que será feito por ocasião da apresentação do relatório que justificará a emissão da Ordem de Serviço.</p>\n<p>3.2 Demanda</p>\n<p>A demanda apresentada foi apurada frente ao volume de serviços, sistemas e plataformas demandados pela Prodesp nos últimos 12 meses, além de novas demandas em estágio de prospecção e negociação comercial pela Prodesp, conforme demonstrado no quadro a seguir:</p>\n<p>{{quadro_demanda}}</p>\n<p>3.3 Da Licitação</p>\n<p>Para a realização dos serviços de Apoio Técnico Especializado previstos, foi estimado um total de {{total_horas}} ({{total_por_extenso}}) horas, apresentados no quadro abaixo.</p>\n<p>{{quadro_licitacao}}</p>\n<p>3.4 Critérios para Contratação</p>\n<p>3.4.1 A elaboração do edital de licitação e do contrato de prestação de serviços deverá ser baseada neste relatório e no TERMO DE REFERÊNCIA - Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.4.2 O critério de julgamento será o de menor valor total do lote, obtido mediante aplicação da relação de proporcionalidade do maior desconto ofertado sobre o item de referência \"{{perfil_referencia}}\".</p>\n<p>3.5 Contratação de Projetos em Pontos de Função</p>\n<p>3.5.2 Quando o dimensionamento de projetos for realizado em Pontos de Função, o valor do Ponto de Função será calculado de acordo com a seguinte fórmula:</p>\n<p>VPF = VMA * PROD</p>\n<p>VMA = {{regra_vma}}</p>\n<p>A PRODESP adota como taxa de entrega ou de produtividade mínima, nas tecnologias previstas neste documento, o fator de {{horas_por_pf}} Horas por Ponto de Função.</p>\n<p>3.6 Proposta Comercial</p>\n<p>A proposta comercial observará o item de referência \"{{perfil_referencia}}\", conforme critérios do edital.</p>\n<p>3.7 Perfis Técnicos</p>\n<p>3.7.1 Para execução dos serviços contratados serão requeridos os Perfis Técnicos relacionados no quadro apresentados no subitem 3.3., acima, com as Qualificações e Competências descritas no TERMO DE REFERÊNCIA – Contratação de Serviços de Apoio Técnico Especializado em {{tecnologia}}, juntado ao processo.</p>\n<p>3.7.4 Qualquer profissional alocado deverá ser substituído em até 5 (cinco) dias úteis.</p>\n<p>3.7.5 Todos os profissionais deverão possuir graduação Superior em pelo menos um dos cursos previstos no texto padrão.</p>\n<p>3.8 Comprovação Técnica</p>\n<p>Para garantir que os serviços que serão prestados estarão aderentes aos processos de desenvolvimento de software, voltados à qualidade e alinhados com as melhores práticas do mercado, a LICITANTE que sagrar-se vencedora deverá atender às seguintes exigências.</p>\n<p>Bloco variável por tecnologia:</p>\n<p>Parceria com o fabricante: {{parceria_fabricante}}</p>\n<p>Estudo de mercado: {{estudo_de_mercado}}</p>\n<p>Atestados específicos e horas mínimas: {{atestados_especificos}}</p>\n<p>Equivalência dos atestados em Pontos de Função: {{horas_por_pf}} horas por ponto de função.</p>\n<p>3.9 Qualificação Econômico-Financeira</p>\n<p>Certidão negativa de falência, balanço patrimonial e patrimônio líquido mínimo de 10% (dez por cento) do valor estimado da contratação.</p>\n<p>3.10 Planilha de Composição de Custos e Preços</p>\n<p>Critérios da letra a à letra k, inclusive salário por perfil, regime tributário, encargos, benefícios da CCT, lucro e taxa de administração.</p>\n<p>3.11 Assinatura do contrato</p>\n<p>3.11.1 Representante Técnico — a LICITANTE deverá designar um Representante Técnico que atuará como o preposto.</p>\n<p>3.11.2 Comprovação de Parceiro Certificado: {{parceria_fabricante}}</p>\n<p>3.11.3 Reconhecimento em Estudo de Mercado: {{estudo_de_mercado}}</p>\n<p>Comprovação de profissional certificado: {{certificacoes}}</p>\n<p>3.11.4 CMMI nível 3 ou MPS.BR nível C, e 3.11.5 ISO 9001 e ISO/IEC 27001.</p>\n<p>4. OBRIGAÇÕES</p>\n<p>4.1.1 Garantia Contratual — A contratada deverá apresentar garantia de 5% do valor do contrato, em até 15 dias após a assinatura.</p>\n<p>4.1.2 Substituição de profissional em até 5 (cinco) dias úteis, entre as demais obrigações da contratada e da PRODESP.</p>\n<p>5. MODELOS DE FORMULÁRIOS</p>\n<p>5.1 Modelo da Ordem de Serviço de Apoio Técnico Especializado - ATE</p>\n<p>5.2 Modelo do Plano do Projeto – SoW (Statement Of Work)</p>\n<p>5.3 Modelo de Termo de Recebimento de Serviços</p>\n<p>5.4 Modelo do Termo de Aceite de Serviços</p>\n<p>5.5 Modelo da Planilha de Composição de Custos e Preços</p>\n<p>5.6 Modelo da Planilha de Apuração de Qualificação Técnica Operacional</p>\n<p>5.7 Modelo da Proposta Comercial</p>\n<p>5.8 Termo de Confidencialidade Sigilo e Uso</p>\n<p>6. RECURSOS FINANCEIROS</p>\n<p>Serão utilizados recursos financeiros de origem corporativa para a emissão do DCO (Documento de Comprovação Orçamentária) destinado a esta contratação, porém a execução dos serviços se dará mediante a emissão de Ordens de Serviços que serão vinculadas ao referido DCO, podendo as despesas serem cobertas por ESP, Recurso Corporativo, Investimento, Condomínio etc.</p>\n<p>7. GESTOR E FISCAL DO CONTRATO</p>\n<p>Os funcionários que atuarão como Gestor e Fiscal dos contratos serão indicados pela área demandante no decorrer do processo.</p>\n<p>8. CONCLUSÃO</p>\n<p>Considerando a necessidade de garantir a continuidade dos serviços prestados aos nossos clientes e de atender a novas demandas de projetos, solicitamos a autorização para a abertura de processo licitatório visando à contratação de {{total_horas}} ({{total_por_extenso}}) horas de serviços de Apoio Técnico Especializado em {{tecnologia}}, para atividades de design, desenvolvimento, configuração, implantação, manutenção e suporte de sistemas de informação e plataformas tecnológicas, a serem utilizadas em um período de {{prazo_meses}} meses a partir da data de assinatura do contrato, definido em lote único, com valor total a ser estimado na pesquisa de preços.</p>\n<p>9. ELABORAÇÃO</p>\n<p>Este relatório foi elaborado pela {{area_elaboradora}}, da Superintendência de Sistemas Estruturantes vinculada à Diretoria de Desenvolvimento de Sistemas.</p>\n<p>10. APROVAÇÃO</p><p>{{aprovador_1}}<br></p><p>{{aprovador_2}}<br></p>\n<p></p>"
+          "grupo": "Introdução",
+          "html": "<div style=\"text-align: center;\"><b>Governo do Estado de São Paulo</b></div><p></p><div style=\"text-align: center;\"><b>Companhia de Processamento de Dados do Estado de São Paulo</b></div><div style=\"text-align: center;\"><b>Gerência de Software e Serviços</b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b>RELATÓRIO DE JUSTIFICATIVA</b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b><br></b></div><div><b>Nº do Processo:&nbsp;{{numero_sei}}</b></div><div><b>Interessado:</b>&nbsp;{{interessado}}</div><div><b>Assunto:</b>&nbsp;{{assunto_processo}}&nbsp;EM TECNOLOGIAS&nbsp;{{tecnologia}}</div><div><br></div><div style=\"text-align: center;\"><b>CIA. DE PROCESSAMENTO DE DADOS DO ESTADO DE SÃO PAULO</b></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</div><div style=\"text-align: center;\">REL.GEN.{{numero_rel}}.{{num_versao}}</div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\">LICITAÇÃO PARA&nbsp;{{assunto_processo}}&nbsp;EM TECNOLOGIAS&nbsp;{{tecnologia}}</div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div>DDS - Diretoria de Desenvolvimento de Sistemas</div><div>SCL – Superintendência de Sistemas Estruturantes</div><div>GEN - Gerência de Engenharia de Software e Serviços</div><div><br></div><div style=\"text-align: center;\">{{data}}</div><div style=\"text-align: center;\"><br></div>"
+        },
+        {
+          "grupo": "Objetivo",
+          "html": "<p class=\"Texto_Justificado\"><strong>1. OBJETIVO</strong></p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;<strong>{{ob_horas}}&nbsp; Horas</strong> de Serviço Técnico (HST), em Tecnologia {{ob_tecnologia}}, para atender o Projeto&nbsp;{{ob_projeto}} .</p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;{{ob_horas_pf}}&nbsp;&nbsp;<strong>Horas</strong> de Serviço Técnico (HST), correspondente a&nbsp;&nbsp;<strong>{{ob_pf}}&nbsp; Pontos de Função</strong>, em Tecnologia {{ob_tecnologia}}, para atender o Projeto {{ob_projeto}}.</p><p class=\"Texto_Justificado\">O presente relatório tem por objetivo justificar a necessidade de contratação de&nbsp;{{ob_ue}} <strong>&nbsp;Unidades de Execução - UE</strong>, em Tecnologia {{ob_tecnologia}}, para atender o Projeto {{ob_projeto}}..</p>"
+        },
+        {
+          "grupo": "Escopo da Contratação",
+          "html": "<p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>2. ESCOPO DA CONTRATAÇÃO:</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">&nbsp;Informações essenciais do projeto:</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nome do projeto:&nbsp;{{ob_projeto}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp; &nbsp; {{esc_objetivo}}&nbsp;</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp; &nbsp; &nbsp;Prazo:{{esc_prazo}} Dias</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tecnologia utilizada:{{ob_tecnologia}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">&nbsp;Linguagem utilizada (quando se aplicar):&nbsp;{{esc_linguagem}}</p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>Informações do projeto (Horas ou PF ou UE):</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>{{esc_tabela}}<br></strong></p><p></p>"
+        },
+        {
+          "grupo": "Resumo das Atividades",
+          "html": "<p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\"><strong>3. RESUMO DAS ATIVIDADES:</strong></p><p class=\"Texto_Justificado\" style=\"font-family: Calibri; text-align: justify; overflow-wrap: normal; margin: 6pt; color: rgb(0, 0, 0);\">Prestação de apoio técnico especializado de informática no Projeto&nbsp;{{ob_projeto}}, utilizando Tecnologia&nbsp;{{ob_tecnologia}} , objetivando {{rativ_desc_objetivo}}.</p><p></p>"
         }
       ],
-      "origem": "upload",
-      "arquivo_origem": "relatorio_justificativa_v4.docx",
-      "atualizado_em": 1794227554
+      "origem": "manual",
+      "arquivo_origem": "",
+      "atualizado_em": 1794582813
     }
   ],
-  "ativo": "relatorio_justificativa_v4"
+  "ativo": "relat_rio_de_justificativa"
 }

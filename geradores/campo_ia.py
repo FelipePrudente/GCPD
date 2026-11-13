@@ -607,14 +607,17 @@ def _erro_http_detalhe(erro):
     return texto
 
 
-def _gemini_generate(chave, modelo, prompt):
+def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=True):
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
         f"{urllib.parse.quote(modelo)}:generateContent?key={urllib.parse.quote(chave)}"
     )
+    config = {"temperature": 0.2, "maxOutputTokens": max_tokens}
+    if thinking:
+        config["thinkingConfig"] = {"thinkingBudget": 0}
     corpo = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.35, "maxOutputTokens": 3072},
+        "generationConfig": config,
     }
     pedido = urllib.request.Request(
         url,
@@ -623,10 +626,13 @@ def _gemini_generate(chave, modelo, prompt):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(pedido, timeout=90) as resp:
+        with urllib.request.urlopen(pedido, timeout=25) as resp:
             dados = json.loads(resp.read().decode("utf-8"))
     except Exception as erro:
-        raise RuntimeError(_erro_http_detalhe(erro)) from erro
+        detalhe = _erro_http_detalhe(erro)
+        if thinking and ("thinking" in detalhe.lower() or "400" in detalhe):
+            return _gemini_generate(chave, modelo, prompt, max_tokens=max_tokens, thinking=False)
+        raise RuntimeError(detalhe) from erro
     partes = (
         dados.get("candidates", [{}])[0]
         .get("content", {})
@@ -640,38 +646,27 @@ def _chamar_gemini(consulta, textos, cfg):
     if not chave:
         return None
     modelo = str(cfg.get("modelo_google") or "gemini-3.5-flash").strip() or "gemini-3.5-flash"
-    # Contas novas: gemini-2.x pode estar descontinuado; preferir 3.5/3.8.
-    candidatos = []
-    for nome in (
-        modelo,
-        "gemini-3.5-flash",
-        "gemini-3.5-flash-lite",
-        "gemini-3.8-flash",
-        "gemini-flash-latest",
-        "gemini-pro-latest",
-    ):
-        if nome and nome not in candidatos:
-            candidatos.append(nome)
-    contexto = "\n".join(f"- {t}" for t in (textos or [])[:8]) or "(sem trechos web)"
+    candidatos = [modelo]
+    if modelo != "gemini-3.5-flash-lite":
+        candidatos.append("gemini-3.5-flash-lite")
+    contexto = "\n".join(f"- {t}" for t in (textos or [])[:4]) or "(sem trechos web)"
     if _parece_pedido_salario(consulta):
         instrucao = (
             "Este pedido é de PESQUISA SALARIAL. Informe faixas em R$ (mensal CLT se possível), "
             "cite a fonte e o recorte (cidade/ano) quando existir nos trechos. "
             "Se a pergunta mencionar LinkedIn e não houver valor LinkedIn nos trechos, declare "
             "isso e use a melhor fonte pública disponível (ex.: Robert Half). "
-            "Resposta em 1 a 3 parágrafos objetivos, até 2500 caracteres."
+            "Resposta em 1 ou 2 parágrafos objetivos, até 900 caracteres."
         )
     elif _parece_pedido_completo(consulta):
         instrucao = (
-            "Este pedido exige resposta COMPLETA e formal para documento público: "
-            "escreva 2 a 5 parágrafos (até 2500 caracteres), com definição clara e, "
-            "se couber, uma lista de capacidades ao final. Não entregue só 3 bullets curtos."
+            "Resposta formal e direta para documento público: "
+            "1 ou 2 parágrafos, até 900 caracteres."
         )
     else:
         instrucao = (
-            "Se a pergunta for lista (certificações, funções), responda de forma objetiva, "
-            "uma linha por item. Se pedir justificativa ou definição, use texto corrido "
-            "formal completo (até 2500 caracteres)."
+            "Responda de forma objetiva e curta, até 900 caracteres. "
+            "Lista: uma linha por item. Texto: um parágrafo."
         )
     prompt = (
         f"{_PROMPT_SISTEMA}\n\n"
@@ -680,34 +675,24 @@ def _chamar_gemini(consulta, textos, cfg):
         f"{instrucao}"
     )
     ultimo_erro = ""
-    for nome in candidatos:
-        tentativas = 2
-        for tentativa in range(tentativas):
-            try:
-                texto = _gemini_generate(chave, nome, prompt)
-                parseado = _parse_resposta_llm(texto, consulta)
+    for indice, nome in enumerate(candidatos):
+        try:
+            texto = _gemini_generate(chave, nome, prompt, max_tokens=800)
+            parseado = _parse_resposta_llm(texto, consulta)
 
-                if isinstance(parseado, dict):
-                    parseado["fonte"] = f"Google Gemini ({nome})"
-                    return parseado
-                if parseado:
-                    return {"itens": parseado, "fonte": f"Google Gemini ({nome})", "modelo": nome}
-                ultimo_erro = f"Modelo {nome} retornou vazio."
-                break
-            except Exception as erro:
-                ultimo_erro = str(erro)
-                baixo = ultimo_erro.lower()
-                if "404" in ultimo_erro or "no longer available" in baixo or "not_found" in baixo:
-                    break  # próximo modelo
-                if ("503" in ultimo_erro or "high demand" in baixo or "unavailable" in baixo) and tentativa + 1 < tentativas:
-                    import time
-                    time.sleep(1.5 * (tentativa + 1))
-                    continue
-                if "429" in ultimo_erro or "quota" in baixo:
-                    # Quota: tenta outro modelo da lista.
-                    break
-                # Outros erros: ainda tenta próximo modelo.
-                break
+            if isinstance(parseado, dict):
+                parseado["fonte"] = f"Google Gemini ({nome})"
+                return parseado
+            if parseado:
+                return {"itens": parseado, "fonte": f"Google Gemini ({nome})", "modelo": nome}
+            ultimo_erro = f"Modelo {nome} retornou vazio."
+        except Exception as erro:
+            ultimo_erro = str(erro)
+            baixo = ultimo_erro.lower()
+            modelo_indisponivel = "404" in ultimo_erro or "no longer available" in baixo or "not_found" in baixo
+            if modelo_indisponivel and indice == 0:
+                continue
+            break
     return {"erro": ultimo_erro or "Gemini não retornou conteúdo.", "fonte": "Google Gemini"}
 
 
@@ -732,7 +717,7 @@ def _chamar_openai(consulta, textos, cfg):
     corpo = {
         "model": modelo,
         "temperature": 0.3,
-        "max_tokens": 2048,
+        "max_tokens": 800,
         "messages": [
             {"role": "system", "content": _PROMPT_SISTEMA},
             {
@@ -751,7 +736,7 @@ def _chamar_openai(consulta, textos, cfg):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(pedido, timeout=60) as resp:
+        with urllib.request.urlopen(pedido, timeout=25) as resp:
             dados = json.loads(resp.read().decode("utf-8"))
         texto = dados["choices"][0]["message"]["content"].strip()
     except Exception as erro:
