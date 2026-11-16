@@ -59,13 +59,20 @@ def _estado_base(estado=None):
         "tema": "",
         "tipo_processo": None,
         "documento": None,
+        "documentos": [],
         "documento_sugerido": None,
+        "documentos_sugeridos": [],
         "assunto": None,
         "assunto_sugerido": None,
         "aguardando_confirmacao": "",
+        "multiselecao_documentos": False,
     }
     if isinstance(estado, dict):
         base.update({chave: estado.get(chave, valor) for chave, valor in base.items()})
+    if not isinstance(base.get("documentos"), list):
+        base["documentos"] = []
+    if not isinstance(base.get("documentos_sugeridos"), list):
+        base["documentos_sugeridos"] = []
     return base
 
 
@@ -238,26 +245,25 @@ def _buscar_doc(identificador, tipos_doc):
     return ranked[0]["item"] if ranked else None
 
 
-def _sugerir_documento(tipo_processo, pedido, tipos_doc):
+def _sugerir_documentos(tipo_processo, pedido, tipos_doc, limite=3):
+    """Retorna até `limite` documentos sugeridos + origem da sugestão."""
+    limite = max(1, min(int(limite or 3), 3))
     nome_tipo = _texto((tipo_processo or {}).get("nome"))
-    historico = banco.documentos_mais_usados_por_tipo_processo(nome_tipo, limite=5)
+    historico = banco.documentos_mais_usados_por_tipo_processo(nome_tipo, limite=limite)
     if historico:
-        return historico[0], historico, "historico"
+        return historico[:limite], "historico"
     padrao_id = DOC_HABITO.get(nome_tipo)
     if padrao_id:
         achado = next((d for d in tipos_doc if str(d.get("id")) == padrao_id), None)
         if achado:
-            return achado, [achado], "habito"
-    ranked = _ranquear(pedido, tipos_doc, limite=6, minimo_exato=200, minimo_similar=50)
+            return [achado], "habito"
+    ranked = _ranquear(pedido, tipos_doc, limite=limite, minimo_exato=200, minimo_similar=50)
     if ranked:
-        return ranked[0]["item"], [r["item"] for r in ranked], "pedido"
-    fallback = next((d for d in tipos_doc if d.get("nome") == "Relatório de Justificativa - OS"), None)
-    if fallback:
-        return fallback, [fallback], "padrao"
-    return (tipos_doc[0] if tipos_doc else None), tipos_doc[:6], "padrao"
+        return [r["item"] for r in ranked[:limite]], "pedido"
+    return [], "nenhum"
 
 
-def _resposta(mensagem, estado, opcoes=None, pacote=None):
+def _resposta(mensagem, estado, opcoes=None, pacote=None, multiselecao=False, selecionados=None):
     return {
         "ok": True,
         "mensagem": mensagem,
@@ -265,6 +271,8 @@ def _resposta(mensagem, estado, opcoes=None, pacote=None):
         "estado": estado,
         "etapa": estado.get("etapa"),
         "pacote": pacote,
+        "multiselecao": bool(multiselecao),
+        "selecionados": list(selecionados or []),
     }
 
 
@@ -309,85 +317,105 @@ def _com_demais_processos(opcoes):
     return lista
 
 
-def _listar_todos_documentos(estado, tipos_doc, mensagem=""):
+def _guardar_documentos_estado(estado, docs):
+    lista = []
+    vistos = set()
+    for item in docs or []:
+        if not isinstance(item, dict):
+            continue
+        doc_id = str(item.get("id") or "").strip()
+        if not doc_id or doc_id in vistos:
+            continue
+        vistos.add(doc_id)
+        lista.append({"id": doc_id, "nome": item.get("nome") or doc_id})
+    estado["documentos"] = lista
+    estado["documento"] = lista[0] if lista else None
+    return lista
+
+
+def _listar_todos_documentos(estado, tipos_doc, mensagem="", preselecionados=None):
     estado["etapa"] = ETAPA_DOCUMENTO
-    estado["aguardando_confirmacao"] = ""
-    estado["documento_sugerido"] = None
+    estado["aguardando_confirmacao"] = "documentos_multi"
+    estado["multiselecao_documentos"] = True
+    ids_sel = [str(x) for x in (preselecionados or []) if str(x).strip()]
     opcoes = [_opcao_documento(item) for item in (tipos_doc or [])]
+    opcoes.append({
+        "tipo": "acao",
+        "id": "confirmar_documentos",
+        "valor": "confirmar_documentos",
+        "rotulo": "Confirmar documentos selecionados",
+    })
     return _resposta(
         mensagem
-        or "Aqui estão todos os tipos de documento. Escolha o que deseja usar:",
+        or "Marque um ou mais tipos de documento e clique em **Confirmar documentos selecionados**:",
         estado,
         opcoes,
+        multiselecao=True,
+        selecionados=ids_sel,
     )
 
 
 def _iniciar_documento(estado, tipos_doc):
     tipo = estado.get("tipo_processo") or {}
-    sugerido, lista, origem = _sugerir_documento(tipo, estado.get("pedido") or "", tipos_doc)
+    sugeridos, origem = _sugerir_documentos(tipo, estado.get("pedido") or "", tipos_doc, limite=3)
     estado["etapa"] = ETAPA_DOCUMENTO
-    estado["documento_sugerido"] = {
-        "id": str(sugerido.get("id")),
-        "nome": sugerido.get("nome"),
-    } if sugerido and origem in {"historico", "habito", "pedido"} else None
-    estado["aguardando_confirmacao"] = "documento" if estado["documento_sugerido"] else ""
-    opcoes = []
-    if sugerido and origem in {"historico", "habito"}:
-        usos = sugerido.get("usos") if origem == "historico" else None
+    estado["multiselecao_documentos"] = False
+    estado["documentos_sugeridos"] = [
+        {"id": str(item.get("id")), "nome": item.get("nome"), "usos": item.get("usos") or 0}
+        for item in sugeridos
+        if item and item.get("id")
+    ]
+    estado["documento_sugerido"] = (
+        dict(estado["documentos_sugeridos"][0]) if estado["documentos_sugeridos"] else None
+    )
+    estado["aguardando_confirmacao"] = "documento" if estado["documentos_sugeridos"] else ""
+
+    if estado["documentos_sugeridos"] and origem in {"historico", "habito", "pedido"}:
+        linhas = []
+        for item in estado["documentos_sugeridos"]:
+            usos = item.get("usos")
+            extra = f" ({usos}x)" if usos else ""
+            linhas.append(f"- **{item.get('nome')}**{extra}")
+        lista_txt = "\n".join(linhas)
+        qtd = len(estado["documentos_sugeridos"])
         if origem == "historico":
-            texto = (
+            intro = (
                 f"Beleza — processo **{tipo.get('nome')}** anotado.\n\n"
-                f"Verifiquei aqui e, quando usam esse processo, o documento mais comum é "
-                f"**{sugerido.get('nome')}**"
-                + (f" ({usos}x)" if usos else "")
-                + ". É isso mesmo?"
+                f"Verifiquei os documentos mais usados nesse tipo de processo"
+                f"{' (até 3)' if qtd > 1 else ''}:\n{lista_txt}\n\n"
+                f"{'Posso criar esses documentos no processo?' if qtd > 1 else 'É isso mesmo?'}"
+            )
+        elif origem == "habito":
+            intro = (
+                f"Fechado: **{tipo.get('nome')}**.\n\n"
+                f"Nesse tipo de processo costuma acompanhar:\n{lista_txt}\n\n"
+                "Posso seguir com isso?"
             )
         else:
-            texto = (
-                f"Fechado: **{tipo.get('nome')}**.\n\n"
-                f"Nesse tipo de processo o documento que costuma acompanhar é "
-                f"**{sugerido.get('nome')}**. Posso seguir com ele?"
+            intro = (
+                f"Processo **{tipo.get('nome')}** escolhido.\n\n"
+                f"Pelo seu pedido, estes documentos combinam melhor:\n{lista_txt}\n\n"
+                "Posso criar esses documentos?"
             )
         opcoes = [
             {"tipo": "acao", "id": "sim", "valor": "sim", "rotulo": "Sim, pode ser"},
             {"tipo": "acao", "id": "nao", "valor": "nao", "rotulo": "Não, quero outro"},
             _botao_ver_documentos(),
         ]
-        for item in lista[:5]:
-            if str(item.get("id")) == str(sugerido.get("id")):
-                continue
-            opcoes.append(_opcao_documento(item, usos=item.get("usos")))
-        return _resposta(texto, estado, opcoes)
+        return _resposta(intro, estado, opcoes)
 
-    if sugerido and origem == "pedido":
-        texto = (
-            f"Processo **{tipo.get('nome')}** escolhido.\n\n"
-            f"No seu pedido, o documento que mais combina é **{sugerido.get('nome')}**. "
-            "É esse, ou prefere ver a lista completa?"
-        )
-        opcoes = [
-            _opcao_documento(sugerido, exato=True),
-            _botao_ver_documentos(),
-        ]
-        for item in lista[1:6]:
-            opcoes.append(_opcao_documento(item))
-        return _resposta(texto, estado, opcoes)
-
-    # Sem documento habitual: não força um padrão; oferece ver a lista completa.
+    # Sem sugestão: lista completa com multi-seleção (nada pré-marcado).
     texto = (
         f"Processo **{tipo.get('nome')}** ok.\n\n"
-        "Não achei um documento habitual para ele. "
-        "Clique em **Ver todos os tipos de documento** para escolher, "
-        "ou selecione uma das opções abaixo se aparecer."
+        "Não achei documentos habituais para ele. "
+        "Marque um ou mais tipos de documento abaixo e confirme a seleção:"
     )
-    opcoes = [_botao_ver_documentos()]
-    for item in (lista or [])[:6]:
-        # Evita apresentar o fallback genérico como se fosse habitual.
-        if origem == "padrao":
-            continue
-        opcoes.append(_opcao_documento(item))
-    estado["aguardando_confirmacao"] = ""
-    return _resposta(texto, estado, opcoes)
+    return _listar_todos_documentos(
+        estado,
+        tipos_doc,
+        texto,
+        preselecionados=[],
+    )
 
 
 def _rotulo_assunto_curto(assunto):
@@ -405,7 +433,8 @@ def _rotulo_assunto_curto(assunto):
 def _assunto_pos_processo(estado):
     """Depois do processo confirmado: documento ou revisão, conforme o que já existe."""
     tipos_doc = banco.listar_tipos_documento_sei()
-    if estado.get("documento") and estado["documento"].get("id"):
+    docs = estado.get("documentos") or []
+    if (docs and docs[0].get("id")) or (estado.get("documento") and estado["documento"].get("id")):
         return _fechar_pacote(estado)
     return _iniciar_documento(estado, tipos_doc)
 
@@ -569,9 +598,17 @@ def _fechar_pacote(estado):
     if tipo:
         _guardar_tipo_processo(estado, tipo)
         tipo = estado.get("tipo_processo") or tipo
-    doc = _buscar_doc((estado.get("documento") or {}).get("id"), tipos_doc)
-    if not doc:
+    docs_estado = estado.get("documentos") or []
+    if not docs_estado and estado.get("documento"):
+        docs_estado = [estado.get("documento")]
+    docs = []
+    for item in docs_estado:
+        achado = _buscar_doc((item or {}).get("id"), tipos_doc)
+        if achado:
+            docs.append(achado)
+    if not docs:
         return _iniciar_documento(estado, tipos_doc)
+    _guardar_documentos_estado(estado, docs)
     # Só fecha o pacote com assunto já confirmado/escolhido pelo usuário.
     if not (estado.get("assunto") and estado["assunto"].get("id_sei")):
         return _iniciar_assunto(estado)
@@ -582,19 +619,22 @@ def _fechar_pacote(estado):
     pacote = montar_pacote_confirmado(
         estado.get("pedido") or "",
         tipo_pacote,
-        doc,
+        docs[0],
         assunto=assunto,
         fonte="Assistente conversacional",
+        tipos_doc=docs,
     )
     estado["assunto"] = {"id_sei": assunto.get("id_sei"), "nome": assunto.get("nome")}
     estado["etapa"] = ETAPA_PRONTO
     estado["aguardando_confirmacao"] = ""
-    return _resposta(
-        "Pronto! Montei o resumo com o processo, o documento e o assunto. "
-        "Dá uma olhada e, se estiver tudo certo, confirme a criação no SEI.",
-        estado,
-        pacote=pacote,
+    estado["multiselecao_documentos"] = False
+    qtd = len(docs)
+    texto = (
+        f"Pronto! Montei o resumo com o processo, "
+        f"{'os documentos' if qtd > 1 else 'o documento'} e o assunto. "
+        "Dá uma olhada e, se estiver tudo certo, confirme a criação no SEI."
     )
+    return _resposta(texto, estado, pacote=pacote)
 
 
 def _alternativas_processo(pedido, tipos, excluir_nome=""):
@@ -723,39 +763,90 @@ def _tratar_documento(mensagem, escolha, estado):
     tipos = banco.listar_tipos_processo_sei()
     tipos_doc = banco.listar_tipos_documento_sei()
 
-    if escolha and escolha.get("tipo") == "documento" and escolha.get("valor"):
-        doc = _buscar_doc(escolha.get("valor"), tipos_doc)
-        if not doc:
-            return _resposta("Não achei esse documento. Escolhe um da lista?", estado)
-        estado["documento"] = {"id": str(doc.get("id")), "nome": doc.get("nome")}
-        return _fechar_pacote(estado)
-
     if escolha and escolha.get("tipo") == "acao":
-        valor_bruto = _texto(escolha.get("valor")).casefold()
+        valor_bruto = _texto(escolha.get("valor")).casefold().replace(" ", "_")
         valor = _normalizar(escolha.get("valor"))
-        if valor in AFIRMACOES and estado.get("documento_sugerido"):
-            estado["documento"] = dict(estado["documento_sugerido"])
+
+        if valor_bruto in {"confirmar_documentos", "confirmar_documentos_selecionados"}:
+            ids = escolha.get("ids") or escolha.get("documentos") or []
+            if isinstance(ids, str):
+                ids = [ids]
+            docs = []
+            for ident in ids:
+                achado = _buscar_doc(ident, tipos_doc)
+                if achado:
+                    docs.append(achado)
+            if not docs:
+                return _listar_todos_documentos(
+                    estado,
+                    tipos_doc,
+                    "Selecione ao menos um documento e confirme:",
+                    preselecionados=[],
+                )
+            _guardar_documentos_estado(estado, docs)
+            estado["multiselecao_documentos"] = False
             return _fechar_pacote(estado)
-        if (
-            valor in NEGACOES
-            or valor == "nao"
-            or valor_bruto in {"ver_documentos", "ver documentos"}
-            or valor == "ver documentos"
-        ):
+
+        if valor in AFIRMACOES and (estado.get("documentos_sugeridos") or estado.get("documento_sugerido")):
+            sugeridos = estado.get("documentos_sugeridos") or [estado.get("documento_sugerido")]
+            docs = []
+            for item in sugeridos:
+                if not item:
+                    continue
+                achado = _buscar_doc(item.get("id"), tipos_doc)
+                if achado:
+                    docs.append(achado)
+            if docs:
+                _guardar_documentos_estado(estado, docs)
+                return _fechar_pacote(estado)
+
+        if valor in NEGACOES or valor == "nao" or valor_bruto == "nao":
+            estado["documento_sugerido"] = None
+            estado["documentos_sugeridos"] = []
             return _listar_todos_documentos(
                 estado,
                 tipos_doc,
-                "Sem problema. Aqui estão todos os tipos de documento — escolha um:",
+                "Sem problema. Marque os tipos de documento que deseja criar e confirme:",
+                preselecionados=[],
             )
+
+        if valor_bruto in {"ver_documentos", "ver_documentos"} or valor == "ver documentos":
+            ids_pre = [
+                str(item.get("id"))
+                for item in (estado.get("documentos_sugeridos") or [])
+                if item and item.get("id")
+            ]
+            return _listar_todos_documentos(
+                estado,
+                tipos_doc,
+                (
+                    "Aqui estão todos os tipos de documento. "
+                    "Os sugeridos já vêm marcados — ajuste a seleção e confirme:"
+                    if ids_pre
+                    else "Aqui estão todos os tipos de documento. Marque os desejados e confirme:"
+                ),
+                preselecionados=ids_pre,
+            )
+
+    # Clique único em documento (fora do modo multi): trata como seleção única.
+    if (
+        escolha
+        and escolha.get("tipo") == "documento"
+        and escolha.get("valor")
+        and not estado.get("multiselecao_documentos")
+        and estado.get("aguardando_confirmacao") != "documentos_multi"
+    ):
+        doc = _buscar_doc(escolha.get("valor"), tipos_doc)
+        if not doc:
+            return _resposta("Não achei esse documento. Escolhe um da lista?", estado)
+        _guardar_documentos_estado(estado, [doc])
+        return _fechar_pacote(estado)
 
     texto = _texto(mensagem)
     if estado.get("aguardando_confirmacao") == "documento":
-        if _eh_afirmacao(texto) and estado.get("documento_sugerido"):
-            estado["documento"] = dict(estado["documento_sugerido"])
-            return _fechar_pacote(estado)
+        if _eh_afirmacao(texto) and (estado.get("documentos_sugeridos") or estado.get("documento_sugerido")):
+            return _tratar_documento("", {"tipo": "acao", "valor": "sim"}, estado)
         if _eh_negacao(texto):
-            estado["aguardando_confirmacao"] = ""
-            estado["documento_sugerido"] = None
             return _tratar_documento("", {"tipo": "acao", "valor": "nao"}, estado)
 
     if estado.get("aguardando_confirmacao") == "processo":
@@ -773,21 +864,19 @@ def _tratar_documento(mensagem, escolha, estado):
 
     if texto:
         ranked = _ranquear(texto, tipos_doc, limite=8, minimo_exato=200, minimo_similar=50)
-        if len(ranked) == 1 and ranked[0]["exato"]:
-            doc = ranked[0]["item"]
-            estado["documento"] = {"id": str(doc.get("id")), "nome": doc.get("nome")}
-            return _fechar_pacote(estado)
         if ranked:
-            return _resposta(
-                "Encontrei estes documentos. Qual deles você quer?",
+            return _listar_todos_documentos(
                 estado,
-                [_opcao_documento(r["item"], r["score"], r["exato"]) for r in ranked],
+                tipos_doc,
+                "Encontrei estes documentos. Marque os que deseja e confirme:",
+                preselecionados=[str(ranked[0]["item"].get("id"))] if ranked else [],
             )
-        return _resposta(
-            f"Não encontrei documento com **{_tema_amigavel(texto)}**. "
-            "Tenta outra palavra (Ofício, Contrato, Relatório…) ou escolhe na lista:",
+        return _listar_todos_documentos(
             estado,
-            [_opcao_documento(item) for item in tipos_doc[:10]],
+            tipos_doc,
+            f"Não encontrei documento com **{_tema_amigavel(texto)}**. "
+            "Marque na lista completa e confirme:",
+            preselecionados=[],
         )
 
     return _iniciar_documento(estado, tipos_doc)
@@ -855,7 +944,10 @@ def conversar(mensagem="", estado=None, escolha=None):
     if escolha and escolha.get("tipo") == "acao":
         if estado.get("etapa") == ETAPA_ASSUNTO or estado.get("aguardando_confirmacao") == "assunto":
             return _tratar_assunto(mensagem, escolha, estado)
-        if estado.get("etapa") == ETAPA_DOCUMENTO or estado.get("aguardando_confirmacao") == "documento":
+        if estado.get("etapa") == ETAPA_DOCUMENTO or estado.get("aguardando_confirmacao") in {
+            "documento",
+            "documentos_multi",
+        }:
             return _tratar_documento(mensagem, escolha, estado)
 
     if estado.get("etapa") == ETAPA_ASSUNTO:

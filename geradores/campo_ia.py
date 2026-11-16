@@ -439,7 +439,7 @@ def _destilar(consulta, textos):
 LIMITE_RESPOSTA_IA = 2500
 
 _PROMPT_SISTEMA = (
-    "Você redige respostas para um formulário de contratação pública (PRODESP/SP), "
+    "Você redige respostas para um Doc. Modelo de contratação pública (PRODESP/SP), "
     "em português do Brasil, tom formal e técnico. "
     "Calibre o tamanho conforme o pedido: "
     "(1) Lista curta — certificações, tecnologias, nomes/siglas: uma por linha, sem prosa. "
@@ -608,9 +608,10 @@ def _erro_http_detalhe(erro):
 
 
 def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=True):
+    # Chaves AQ. (AI Studio) exigem o header x-goog-api-key.
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{urllib.parse.quote(modelo)}:generateContent?key={urllib.parse.quote(chave)}"
+        f"{urllib.parse.quote(modelo, safe='')}:generateContent"
     )
     config = {"temperature": 0.2, "maxOutputTokens": max_tokens}
     if thinking:
@@ -622,11 +623,14 @@ def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=True):
     pedido = urllib.request.Request(
         url,
         data=json.dumps(corpo).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": str(chave or "").strip(),
+        },
         method="POST",
     )
     try:
-        with urllib.request.urlopen(pedido, timeout=25) as resp:
+        with urllib.request.urlopen(pedido, timeout=45) as resp:
             dados = json.loads(resp.read().decode("utf-8"))
     except Exception as erro:
         detalhe = _erro_http_detalhe(erro)

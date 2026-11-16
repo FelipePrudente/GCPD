@@ -413,63 +413,141 @@ def gerar_documento_catalogo_html(dados, doc_config):
 
 def normalizar_caracteres_para_sei(texto):
     """
-    Troca caracteres tipográficos do Word por equivalentes ASCII/Latin-1 seguros
-    para a API do SEI (en dash, em dash, aspas curvas, reticências, etc.).
+    Troca caracteres tipográficos (Word/IA/navegador) por equivalentes ASCII/Latin-1
+    seguros para a API do SEI.
+
+    O SEI de homologação já rejeitou hífens Unicode (en dash U+2013 etc.) no payload;
+    por isso todas as variantes de traço viram hífen ASCII U+002D.
+    Também remove controles e caracteres fora de Latin-1 que costumam corromper a seção.
 
     Ex.: "SCL – Superintendência" → "SCL - Superintendência"
     """
     if not texto:
         return ""
+    # Entidades tipográficas que às vezes chegam literais no HTML do catálogo.
+    bruto = str(texto)
+    entidades = (
+        ("&ndash;", "-"),
+        ("&mdash;", "-"),
+        ("&minus;", "-"),
+        ("&#8211;", "-"),
+        ("&#x2013;", "-"),
+        ("&#X2013;", "-"),
+        ("&#8212;", "-"),
+        ("&#x2014;", "-"),
+        ("&#X2014;", "-"),
+        ("&nbsp;", " "),
+        ("&hellip;", "..."),
+        ("&lsquo;", "'"),
+        ("&rsquo;", "'"),
+        ("&ldquo;", '"'),
+        ("&rdquo;", '"'),
+    )
+    for origem, destino in entidades:
+        bruto = bruto.replace(origem, destino)
+
     mapa = {
+        # Hífens / traços (todas → ASCII '-')
+        "\u2010": "-",   # ‐ hyphen
+        "\u2011": "-",   # ‑ non-breaking hyphen
+        "\u2012": "-",   # ‒ figure dash
         "\u2013": "-",   # – en dash
         "\u2014": "-",   # — em dash
         "\u2015": "-",   # ― horizontal bar
         "\u2212": "-",   # − minus sign
+        "\uFE58": "-",   # ﹘ small em dash
+        "\uFE63": "-",   # ﹣ small hyphen-minus
+        "\uFF0D": "-",   # － fullwidth hyphen-minus
+        "\u2E3A": "-",   # ⸺ two-em dash
+        "\u2E3B": "-",   # ⸻ three-em dash
+        # Aspas
         "\u2018": "'",   # ‘
         "\u2019": "'",   # ’
         "\u201a": "'",   # ‚
         "\u201b": "'",   # ‛
+        "\u2032": "'",   # ′
         "\u201c": '"',   # “
         "\u201d": '"',   # ”
         "\u201e": '"',   # „
         "\u201f": '"',   # ‟
-        "\u2026": "...", # …
+        "\u2033": '"',   # ″
+        # Espaços / invisíveis
         "\u00a0": " ",   # non-breaking space
         "\u202f": " ",   # narrow no-break space
         "\u2007": " ",   # figure space
+        "\u2008": " ",   # punctuation space
         "\u2009": " ",   # thin space
+        "\u200a": " ",   # hair space
         "\u200b": "",    # zero-width space
+        "\u200c": "",    # ZWNJ
+        "\u200d": "",    # ZWJ
+        "\u2060": "",    # word joiner
         "\ufeff": "",    # BOM
         "\u00ad": "",    # soft hyphen
+        # Outros tipográficos comuns
+        "\u2026": "...", # …
+        "\u2022": "-",   # • bullet
+        "\u00b7": "-",   # · middle dot
+        "\u2192": "->",  # →
+        "\u2190": "<-",  # ←
+        "\u00d7": "x",   # ×
     }
     saida = []
-    for ch in str(texto):
+    for ch in bruto:
         if ch in mapa:
             saida.append(mapa[ch])
-        else:
-            # Remove controles (exceto \n \r \t)
-            codigo = ord(ch)
-            if codigo < 32 and ch not in "\n\r\t":
-                continue
-            saida.append(ch)
+            continue
+        codigo = ord(ch)
+        # Controles (exceto \n \r \t)
+        if codigo < 32 and ch not in "\n\r\t":
+            continue
+        # Latin-1 (ISO-8859-1) cobre PT-BR; fora disso o SEI costuma falhar/corromper.
+        if codigo > 255:
+            continue
+        saida.append(ch)
     return "".join(saida)
+
+
+def _texto_entidades_sei(texto):
+    """
+    Codifica texto no estilo do editor SEI: entidades nomeadas para acentos
+    (&oacute;, &ccedil;, &nbsp;…) e escape de & < >.
+    """
+    mapa = html_lib.entities.codepoint2name
+    partes = []
+    for ch in str(texto or ""):
+        codigo = ord(ch)
+        if ch == "&":
+            partes.append("&amp;")
+        elif ch == "<":
+            partes.append("&lt;")
+        elif ch == ">":
+            partes.append("&gt;")
+        elif ch == '"':
+            partes.append("&quot;")
+        elif ch == "\xa0":
+            partes.append("&nbsp;")
+        elif codigo > 127:
+            nome = mapa.get(codigo)
+            if nome:
+                partes.append(f"&{nome};")
+            else:
+                partes.append(f"&#{codigo};")
+        else:
+            partes.append(ch)
+    return "".join(partes)
 
 
 def html_para_secao_sei(html_bruto):
     """
     Converte HTML do catálogo/Word para o subset que o SEI grava de fato.
 
-    Testes na homologação PRODESP:
-    - <p>texto simples</p> → grava e aparece
-    - HTML completo do Word → erro Slim ou seção vazia (só "0.1.")
-    - Caracteres tipográficos (en dash –) → também quebravam o payload
-
-    Formato de saída (compatível com o editor de seções do SEI):
-    - <p class="Texto_Justificado">…</p>
-    - <strong>, <em>, <u>, <br>
-    - <ul>/<ol>/<li>
-    - <table border="1" cellpadding="1" cellspacing="1"> com th/td simples
-    - tipografia normalizada (en dash → hífen, aspas retas, etc.)
+    Formato aceito pelo editor de seções (homologação PRODESP):
+    - <p class="Texto_Justificado">…</p> separados por \\r\\n\\r\\n
+    - acentos como entidades (&oacute;, &ccedil;…)
+    - <strong>, <em>, <u>, <br />
+    - <ul>/<ol>/<li> e tabelas border=1 cellpadding=1 cellspacing=1
+    - sem DOCTYPE / html / head / body / h1 de capa
     """
     html = str(html_bruto or "").strip()
     if not html:
@@ -480,19 +558,23 @@ def html_para_secao_sei(html_bruto):
     html = re.sub(r"(?is)<head\b[^>]*>.*?</head>", "", html)
     html = re.sub(r"(?is)<script\b[^>]*>.*?</script>", "", html)
     html = re.sub(r"(?is)<style\b[^>]*>.*?</style>", "", html)
-    html = re.sub(r"(?is)</?(html|body|article|section|header|footer|main|div|span)\b[^>]*>", "", html)
+    html = re.sub(
+        r"(?is)</?(html|body|article|section|header|footer|main|div)\b[^>]*>",
+        "",
+        html,
+    )
     # Título do formulário — no SEI já existe seção só-leitura com o título
     html = re.sub(r"(?is)<h1\b[^>]*>.*?</h1>", "", html, count=1)
+    # <hr> não existe no subset do SEI
+    html = re.sub(r"(?is)<hr\b[^>]*/?>", "", html)
 
     class _ConversorSEI(HTMLParser):
         PERMITIDAS = {
-            "p", "strong", "em", "b", "i", "u", "br",
+            "p", "strong", "em", "b", "i", "u", "br", "span",
             "ul", "ol", "li",
             "table", "thead", "tbody", "tfoot", "tr", "th", "td",
             "h2", "h3", "h4", "h5", "h6",
         }
-        INLINE = {"strong", "em", "b", "i", "u", "br"}
-        BLOCO = {"p", "ul", "ol", "li", "table", "tr", "h2", "h3", "h4", "h5", "h6"}
 
         def __init__(self):
             super().__init__(convert_charrefs=True)
@@ -500,6 +582,19 @@ def html_para_secao_sei(html_bruto):
             self.abertas = []
             self.bloqueadas = []
             self._em_celula = False
+            self._em_bloco = False
+            self._texto_solto = []
+
+        def _flush_texto_solto(self):
+            if self._em_bloco or self._em_celula:
+                return
+            bruto = "".join(self._texto_solto)
+            self._texto_solto = []
+            limpo = " ".join(bruto.split()).strip()
+            if limpo:
+                self.partes.append(
+                    f'<p class="Texto_Justificado">{_texto_entidades_sei(limpo)}</p>'
+                )
 
         def handle_starttag(self, tag, attrs):
             tag = tag.lower()
@@ -513,52 +608,79 @@ def html_para_secao_sei(html_bruto):
             if tag not in self.PERMITIDAS:
                 return
 
-            # Títulos viram parágrafo em negrito
+            self._flush_texto_solto()
+            attrs_map = {str(k).lower(): str(v or "") for k, v in (attrs or [])}
+
             if tag in {"h2", "h3", "h4", "h5", "h6"}:
                 self.partes.append('<p class="Texto_Justificado"><strong>')
                 self.abertas.append(("h", tag))
+                self._em_bloco = True
                 return
 
             if tag == "p":
                 self.partes.append('<p class="Texto_Justificado">')
                 self.abertas.append(("p", tag))
+                self._em_bloco = True
+                return
+
+            if tag == "span":
+                estilo = attrs_map.get("style", "").strip()
+                # Só preserva estilos simples usados no template SEI (cor).
+                if estilo and re.fullmatch(
+                    r"(?i)\s*color\s*:\s*#[0-9a-f]{3,8}\s*;?\s*", estilo
+                ):
+                    cor = re.search(r"(?i)#[0-9a-f]{3,8}", estilo)
+                    if cor:
+                        self.partes.append(
+                            f'<span style="color:{cor.group(0).lower()};">'
+                        )
+                        self.abertas.append(("span", tag))
+                        return
+                # span sem estilo útil: transparente (não abre tag)
+                self.abertas.append(("span_skip", tag))
                 return
 
             if tag == "table":
                 self.partes.append(
-                    '<table border="1" cellpadding="4" cellspacing="0" '
-                    'style="border-collapse:collapse; width:100%; border:1px solid #000000;">'
+                    '<table border="1" cellpadding="1" cellspacing="1" '
+                    'style="width: 810px;">'
                 )
                 self.abertas.append(("table", tag))
+                self._em_bloco = True
                 return
 
             if tag == "th":
-                # SEI preserva melhor cabeçalho como <td> com fundo + negrito
-                # (o template oficial da seção usa td, não th)
                 self.partes.append(
-                    '<td style="background-color:#d6e3bc; border:1px solid #000000; '
-                    'text-align:center; font-weight:bold;"><strong>'
+                    '<td style="background-color:#d6e3bc; text-align:center;">'
+                    "<strong>"
                 )
                 self.abertas.append(("th", tag))
                 self._em_celula = True
                 return
 
             if tag == "td":
-                self.partes.append(
-                    '<td style="border:1px solid #000000; vertical-align:top;">'
-                )
+                self.partes.append("<td>")
                 self.abertas.append(("td", tag))
                 self._em_celula = True
                 return
 
             if tag == "br":
-                self.partes.append("<br>")
+                self.partes.append("<br />")
                 return
 
-            # tags simples: strong, em, b, i, u, ul, ol, li, thead, tbody, tfoot, tr
+            if tag in {"b"}:
+                self.partes.append("<strong>")
+                self.abertas.append(("strong", tag))
+                return
+            if tag in {"i"}:
+                self.partes.append("<em>")
+                self.abertas.append(("em", tag))
+                return
+
             self.partes.append(f"<{tag}>")
-            if tag not in {"br"}:
-                self.abertas.append((tag, tag))
+            self.abertas.append((tag, tag))
+            if tag in {"ul", "ol", "li", "tr", "thead", "tbody", "tfoot"}:
+                self._em_bloco = True
 
         def handle_endtag(self, tag):
             tag = tag.lower()
@@ -568,33 +690,41 @@ def html_para_secao_sei(html_bruto):
                 return
             if tag not in self.PERMITIDAS:
                 return
-
-            if tag in {"h2", "h3", "h4", "h5", "h6"}:
-                self.partes.append("</strong></p>")
-                # fecha o marcador correspondente se ainda estiver no topo
-                if self.abertas and self.abertas[-1][0] == "h":
-                    self.abertas.pop()
-                return
-
             if tag == "br":
                 return
-
             if not self.abertas:
                 return
-            # fecha tags abertas até achar a correspondente
+
             while self.abertas:
-                tipo, _ = self.abertas.pop()
+                tipo, origem = self.abertas.pop()
                 if tipo == "h":
                     self.partes.append("</strong></p>")
+                    self._em_bloco = False
                 elif tipo == "th":
                     self.partes.append("</strong></td>")
+                    self._em_celula = False
                 elif tipo == "p":
                     self.partes.append("</p>")
+                    self._em_bloco = False
+                elif tipo == "span_skip":
+                    pass
+                elif tipo == "span":
+                    self.partes.append("</span>")
+                elif tipo in {"strong", "em"} and origem in {"b", "i", tag}:
+                    self.partes.append(f"</{tipo}>")
                 else:
                     self.partes.append(f"</{tipo}>")
-                if tipo in {"th", "td"}:
-                    self._em_celula = False
-                if tipo == tag or (tipo == "h" and tag.startswith("h")):
+                    if tipo in {"table", "ul", "ol"}:
+                        self._em_bloco = False
+                    if tipo in {"th", "td"}:
+                        self._em_celula = False
+                if (
+                    tipo == tag
+                    or (tipo == "h" and tag.startswith("h"))
+                    or (tipo == "strong" and tag == "b")
+                    or (tipo == "em" and tag == "i")
+                    or (tipo == "span_skip" and tag == "span")
+                ):
                     break
 
         def handle_data(self, data):
@@ -603,12 +733,14 @@ def html_para_secao_sei(html_bruto):
             texto = normalizar_caracteres_para_sei(data)
             if not texto:
                 return
-            # Colapsa espaços, mas preserva quebras dentro de células/parágrafos
             texto = re.sub(r"[ \t]+", " ", texto)
-            self.partes.append(html_lib.escape(texto))
+            if not self._em_bloco and not self._em_celula and not self.abertas:
+                self._texto_solto.append(texto)
+                return
+            self.partes.append(_texto_entidades_sei(texto))
 
         def resultado(self):
-            # fecha o que ficou aberto
+            self._flush_texto_solto()
             while self.abertas:
                 tipo, _ = self.abertas.pop()
                 if tipo == "h":
@@ -617,20 +749,33 @@ def html_para_secao_sei(html_bruto):
                     self.partes.append("</strong></td>")
                 elif tipo == "p":
                     self.partes.append("</p>")
+                elif tipo == "span":
+                    self.partes.append("</span>")
+                elif tipo == "span_skip":
+                    pass
                 else:
                     self.partes.append(f"</{tipo}>")
             bruto = "".join(self.partes)
-            # Limpeza leve
-            bruto = re.sub(r"(?is)<p class=\"Texto_Justificado\">\s*</p>", "", bruto)
-            bruto = re.sub(r"\s+\n", "\n", bruto)
+            bruto = re.sub(
+                r'(?is)<p class="Texto_Justificado">\s*</p>', "", bruto
+            )
+            # Blocos separados como no conteúdo nativo do SEI
+            bruto = re.sub(r"</p>\s*<p ", "</p>\r\n\r\n<p ", bruto)
+            bruto = re.sub(r"</p>\s*<table", "</p>\r\n\r\n<table", bruto)
+            bruto = re.sub(r"</table>\s*<p ", "</table>\r\n\r\n<p ", bruto)
+            bruto = re.sub(r"</ul>\s*<p ", "</ul>\r\n\r\n<p ", bruto)
+            bruto = re.sub(r"</ol>\s*<p ", "</ol>\r\n\r\n<p ", bruto)
             return bruto.strip()
+
+    # Pré-normaliza tipografia Word no HTML bruto (hífens/aspas), sem
+    # tocar em tags ASCII.
+    html = normalizar_caracteres_para_sei(html)
 
     parser = _ConversorSEI()
     try:
         parser.feed(html)
         parser.close()
     except Exception:
-        # Fallback seguro: texto puro em parágrafos
         return _fallback_paragrafos(html)
     saida = parser.resultado()
     if not saida:
@@ -648,9 +793,9 @@ def _fallback_paragrafos(html_bruto):
         limpa = " ".join(linha.split()).strip()
         if limpa:
             paragrafos.append(
-                f'<p class="Texto_Justificado">{html_lib.escape(limpa)}</p>'
+                f'<p class="Texto_Justificado">{_texto_entidades_sei(limpa)}</p>'
             )
-    return "\r\n".join(paragrafos)
+    return "\r\n\r\n".join(paragrafos)
 
 
 def gerar_documento_catalogo(dados, doc_config, caminho):
