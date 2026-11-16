@@ -4991,10 +4991,94 @@ async function excluirProcessosPorIds(ids, codigos = []) {
   }
 }
 
-function desenharProcessos(lista) {
+const PROCESSOS_POR_PAGINA = 30;
+let processosListaCompleta = [];
+let processosPaginaAtual = 1;
+
+function termoFiltroProcessos() {
+  return String(document.getElementById("filtro-processos")?.value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function textoBuscaProcesso(item) {
+  return [
+    item.codigo,
+    item.numero_sei,
+    item.tipo_processo_sei,
+    item.tipo,
+    item.assunto,
+    item.status,
+    item.id,
+  ]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function filtrarProcessos(lista, termo) {
+  if (!termo) return lista;
+  return lista.filter((item) => textoBuscaProcesso(item).includes(termo));
+}
+
+function atualizarControlesPaginacaoProcessos(totalFiltrado) {
+  const nav = document.getElementById("paginacao-processos");
+  const info = document.getElementById("processos-pagina-info");
+  const btnAnt = document.getElementById("processos-pagina-anterior");
+  const btnProx = document.getElementById("processos-pagina-proxima");
+  const resumo = document.getElementById("filtro-processos-resumo");
+  const totalPaginas = Math.max(1, Math.ceil(totalFiltrado / PROCESSOS_POR_PAGINA));
+  if (processosPaginaAtual > totalPaginas) processosPaginaAtual = totalPaginas;
+  if (processosPaginaAtual < 1) processosPaginaAtual = 1;
+
+  const temFiltro = Boolean(termoFiltroProcessos());
+  if (resumo) {
+    if (!processosListaCompleta.length) {
+      resumo.textContent = "";
+    } else if (temFiltro) {
+      resumo.textContent = `${totalFiltrado} de ${processosListaCompleta.length} processo(s)`;
+    } else {
+      resumo.textContent = `${processosListaCompleta.length} processo(s)`;
+    }
+  }
+
+  if (!nav || !info || !btnAnt || !btnProx) return;
+  if (totalFiltrado <= PROCESSOS_POR_PAGINA) {
+    nav.hidden = true;
+    return;
+  }
+  nav.hidden = false;
+  const inicio = (processosPaginaAtual - 1) * PROCESSOS_POR_PAGINA + 1;
+  const fim = Math.min(processosPaginaAtual * PROCESSOS_POR_PAGINA, totalFiltrado);
+  info.textContent = `Página ${processosPaginaAtual} de ${totalPaginas} · ${inicio}–${fim} de ${totalFiltrado}`;
+  btnAnt.disabled = processosPaginaAtual <= 1;
+  btnProx.disabled = processosPaginaAtual >= totalPaginas;
+}
+
+function atualizarListaProcessos() {
+  const filtrados = filtrarProcessos(processosListaCompleta, termoFiltroProcessos());
+  atualizarControlesPaginacaoProcessos(filtrados.length);
+  const inicio = (processosPaginaAtual - 1) * PROCESSOS_POR_PAGINA;
+  desenharProcessos(filtrados.slice(inicio, inicio + PROCESSOS_POR_PAGINA), {
+    totalFiltrado: filtrados.length,
+    totalGeral: processosListaCompleta.length,
+  });
+}
+
+function desenharProcessos(lista, meta = {}) {
   const corpo = document.getElementById("lista-processos");
+  const marcarTodos = document.getElementById("processos-marcar-todos");
+  if (marcarTodos) marcarTodos.checked = false;
   if (!lista.length) {
-    corpo.innerHTML = `<tr class="vazio"><td colspan="7">Nenhum processo criado no SEI ainda. Use Novo cadastro para iniciar.</td></tr>`;
+    const semCadastro = !(meta.totalGeral > 0);
+    const msg = semCadastro
+      ? "Nenhum processo criado no SEI ainda. Use Novo cadastro para iniciar."
+      : "Nenhum processo corresponde ao filtro informado.";
+    corpo.innerHTML = `<tr class="vazio"><td colspan="7">${msg}</td></tr>`;
     atualizarBotaoExcluirProcessos();
     return;
   }
@@ -5073,8 +5157,12 @@ async function carregarProcessos() {
     if (!Array.isArray(corpo.processos)) {
       throw new Error("A resposta do servidor não contém uma lista de processos válida.");
     }
-    desenharProcessos(corpo.processos);
+    processosListaCompleta = corpo.processos;
+    processosPaginaAtual = 1;
+    atualizarListaProcessos();
   } catch (erro) {
+    processosListaCompleta = [];
+    processosPaginaAtual = 1;
     const linha = document.createElement("tr");
     linha.className = "vazio";
     const celula = document.createElement("td");
@@ -5084,6 +5172,10 @@ async function carregarProcessos() {
       : "Não foi possível carregar os processos.";
     linha.append(celula);
     document.getElementById("lista-processos").replaceChildren(linha);
+    const nav = document.getElementById("paginacao-processos");
+    if (nav) nav.hidden = true;
+    const resumo = document.getElementById("filtro-processos-resumo");
+    if (resumo) resumo.textContent = "";
     atualizarBotaoExcluirProcessos();
   }
 }
@@ -5157,6 +5249,22 @@ document.getElementById("processos-marcar-todos")?.addEventListener("change", (e
     input.checked = marcado;
   });
   atualizarBotaoExcluirProcessos();
+});
+document.getElementById("filtro-processos")?.addEventListener("input", () => {
+  processosPaginaAtual = 1;
+  atualizarListaProcessos();
+});
+document.getElementById("processos-pagina-anterior")?.addEventListener("click", () => {
+  if (processosPaginaAtual <= 1) return;
+  processosPaginaAtual -= 1;
+  atualizarListaProcessos();
+});
+document.getElementById("processos-pagina-proxima")?.addEventListener("click", () => {
+  const totalFiltrado = filtrarProcessos(processosListaCompleta, termoFiltroProcessos()).length;
+  const totalPaginas = Math.max(1, Math.ceil(totalFiltrado / PROCESSOS_POR_PAGINA));
+  if (processosPaginaAtual >= totalPaginas) return;
+  processosPaginaAtual += 1;
+  atualizarListaProcessos();
 });
 
 preencherFormularioProcessoSei();
