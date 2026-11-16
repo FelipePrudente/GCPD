@@ -569,6 +569,43 @@ def _tag_abertura_paragrafo_sei(alinhamento="left", negrito=False):
     return abertura
 
 
+def _desembrulhar_divs_por_classe(html, classe):
+    """Remove tags <div class="…classe…"> … </div> mantendo o miolo (aninhamento ok)."""
+    html = str(html or "")
+    padrao_abre = re.compile(
+        rf'(?is)<div\b([^>]*class=["\'][^"\']*\b{re.escape(classe)}\b[^"\']*["\'][^>]*)>'
+    )
+    while True:
+        m = padrao_abre.search(html)
+        if not m:
+            break
+        i = m.end()
+        profundidade = 1
+        fim_miolo = None
+        while i < len(html) and profundidade:
+            abre = re.search(r"(?is)<div\b[^>]*>", html[i:])
+            fecha = re.search(r"(?is)</div\s*>", html[i:])
+            if not fecha:
+                break
+            pos_fecha = i + fecha.start()
+            pos_abre = i + abre.start() if abre else None
+            if pos_abre is not None and pos_abre < pos_fecha:
+                profundidade += 1
+                i = pos_abre + len(abre.group(0))
+                continue
+            profundidade -= 1
+            if profundidade == 0:
+                fim_miolo = pos_fecha
+                i = pos_fecha + len(fecha.group(0))
+                break
+            i = pos_fecha + len(fecha.group(0))
+        if fim_miolo is None:
+            html = html[: m.start()] + html[m.end() :]
+            continue
+        html = html[: m.start()] + html[m.end() : fim_miolo] + html[i:]
+    return html
+
+
 def _preparar_html_catalogo_para_sei(html):
     """
     Normaliza o HTML do editor de Configurações antes do parser SEI.
@@ -576,11 +613,31 @@ def _preparar_html_catalogo_para_sei(html):
     O contenteditable grava cada linha como <div> (muitas vezes com
     text-align:center). Remover o <div> sem virar <p> cola as linhas
     (ex.: PauloCompanhia). Aqui div → p preservando o alinhamento.
+
+    Os nomes de grupo/bloco (Introdução, Objetivo…) existem só na UI de
+    Configurações e não devem ir para a prévia nem para o SEI.
     """
     html = str(html or "")
 
+    # Remove cabeçalho do card-bloco (nome do grupo) por completo.
+    html = re.sub(
+        r'(?is)<header\b[^>]*class=["\'][^"\']*card-bloco-cabecalho[^"\']*["\'][^>]*>.*?</header>',
+        "",
+        html,
+    )
+    html = re.sub(
+        r"(?is)<header\b[^>]*>\s*<h[1-6]\b[^>]*>.*?</h[1-6]>\s*</header>",
+        "",
+        html,
+    )
+
+    # Desembrulha o corpo do bloco: mantém só o conteúdo editável.
+    html = _desembrulhar_divs_por_classe(html, "card-bloco-corpo")
+
     def _abrir_como_p(match):
-        return _tag_abertura_paragrafo_sei(_alinhamento_de_string_attrs(match.group(1) or ""))
+        return _tag_abertura_paragrafo_sei(
+            _alinhamento_de_string_attrs(match.group(1) or "")
+        )
 
     # Divs do editor → parágrafos (preserva centro/direita).
     html = re.sub(r"(?is)<div\b([^>]*)>", _abrir_como_p, html)
