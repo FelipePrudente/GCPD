@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 
 TAMANHO_MAXIMO_RESPOSTA = 2 * 1024 * 1024
 TAMANHO_MAXIMO_RESPOSTA_SECOES = 8 * 1024 * 1024
-BASE_URL_PADRAO = "https://homologacao.sei.sp.gov.br/sei/modulos/mod-wssei/controlador_ws.php/api/v1"
+BASE_URL_PADRAO = "https://homologacao.sei.sp.gov.br/sei/modulos/mod-wssei/controlador_ws.php/api/v2"
 
 
 class ErroIntegracaoSEI(Exception):
@@ -455,7 +455,7 @@ def cadastrar_documento_interno(procedimento, campos, token):
     }
 
 
-def listar_secoes_documento(documento, token):
+def listar_secoes_documento(documento, token, timeout=30):
     base_url = _base_url()
     documento = str(documento or "").strip()
     if not documento.isdigit():
@@ -469,7 +469,7 @@ def listar_secoes_documento(documento, token):
         method="GET",
     )
     try:
-        with urlopen(pedido, timeout=30) as resposta:
+        with urlopen(pedido, timeout=timeout) as resposta:
             bruto = resposta.read(TAMANHO_MAXIMO_RESPOSTA_SECOES + 1)
     except HTTPError as erro:
         detalhe = ""
@@ -537,53 +537,42 @@ def _desescapar_conteudo_sei(conteudo):
 
 def _preparar_secao_para_envio(secao):
     """
-    Replica o script da collection Postman "Documento - Listar Seções" → "Alterar Seção":
+    O POST /documento/secao/alterar da homologação PRODESP espera exatamente
+    o formato do Postman que funciona:
 
-      el.conteudo = _.unescape(el.conteudo);
-      delete el.somenteLeitura;
-      delete el.AssinaturaSecaoDocumento;
-      delete el.PrincipalSecaoDocumento;
-      delete el.DinamicaSecaoDocumento;
+      [{"id":"...","idSecaoModelo":"...","conteudo":"..."}, ...]
+
+    Campos extras do GET (somenteLeitura, AssinaturaSecaoDocumento, nome,
+    ordem, etc.) fazem o PHP do WS cair em count() com valor não-array
+    (Slim Application Error).
     """
     if not isinstance(secao, dict):
         return {}
 
-    enviado = dict(secao)
-    conteudo = enviado.get("conteudo")
+    conteudo = secao.get("conteudo")
     if conteudo is None:
-        conteudo = enviado.get("Conteudo") or ""
-    enviado["conteudo"] = _desescapar_conteudo_sei(conteudo)
+        conteudo = secao.get("Conteudo") or ""
+    conteudo = _desescapar_conteudo_sei(conteudo)
 
-    for chave in (
-        "somenteLeitura",
-        "AssinaturaSecaoDocumento",
-        "PrincipalSecaoDocumento",
-        "DinamicaSecaoDocumento",
-        "sinSomenteLeitura",
-        "sinAssinatura",
-    ):
-        enviado.pop(chave, None)
+    id_doc = (
+        secao.get("id")
+        or secao.get("idSecaoDocumento")
+        or secao.get("idSecao")
+        or secao.get("IdSecaoDocumento")
+        or ""
+    )
+    id_modelo = (
+        secao.get("idSecaoModelo")
+        or secao.get("IdSecaoModelo")
+        or secao.get("idSecaoModeloSecaoDocumento")
+        or ""
+    )
 
-    if not enviado.get("id"):
-        id_doc = (
-            enviado.get("idSecaoDocumento")
-            or enviado.get("idSecao")
-            or enviado.get("IdSecaoDocumento")
-            or ""
-        )
-        if id_doc:
-            enviado["id"] = str(id_doc).strip()
-
-    if not enviado.get("idSecaoModelo"):
-        id_modelo = (
-            enviado.get("IdSecaoModelo")
-            or enviado.get("idSecaoModeloSecaoDocumento")
-            or ""
-        )
-        if id_modelo:
-            enviado["idSecaoModelo"] = str(id_modelo).strip()
-
-    return enviado
+    return {
+        "id": str(id_doc).strip(),
+        "idSecaoModelo": str(id_modelo).strip(),
+        "conteudo": str(conteudo or ""),
+    }
 
 
 def alterar_secoes_documento(documento, secoes, versao, token):
@@ -597,9 +586,16 @@ def alterar_secoes_documento(documento, secoes, versao, token):
         raise ErroIntegracaoSEI("A lista de seções do documento é inválida.", status_http=400)
 
     secoes_envio = [_preparar_secao_para_envio(secao) for secao in secoes]
+    if not all(s.get("id") and s.get("idSecaoModelo") is not None for s in secoes_envio):
+        raise ErroIntegracaoSEI(
+            "Não foi possível montar as seções no formato esperado pelo SEI "
+            "(id / idSecaoModelo).",
+            status_http=400,
+        )
+    # Só id + idSecaoModelo + conteudo; JSON UTF-8 como no Postman que funciona.
     campos = {
         "documento": documento,
-        "secoes": json.dumps(secoes_envio, ensure_ascii=False),
+        "secoes": json.dumps(secoes_envio, ensure_ascii=False, separators=(",", ":")),
         "versao": str(versao or "1"),
     }
 
@@ -637,7 +633,8 @@ def alterar_secoes_documento(documento, secoes, versao, token):
                     },
                     method="POST",
                 )
-            with urlopen(pedido, timeout=60) as resposta:
+            # Timeout menor para caber no limite típico do Render (~30–100s) com listar+alterar.
+            with urlopen(pedido, timeout=35) as resposta:
                 bruto = resposta.read(TAMANHO_MAXIMO_RESPOSTA + 1)
         except HTTPError as erro:
             detalhe = ""

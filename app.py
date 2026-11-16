@@ -577,7 +577,7 @@ def config_catalogo_upload():
         if qtd:
             corpo["mensagem"] = (
                 f"Documento “{novo['nome']}” importado com {qtd} tag(s). "
-                "O formulário já está pronto; ajuste o tipo de cada tag se quiser."
+                "O Doc. Modelo já está pronto; ajuste o tipo de cada tag se quiser."
             )
         else:
             corpo["mensagem"] = (
@@ -760,15 +760,15 @@ def ia_gerar_secao():
 
 @app.post("/api/ia/preencher-formulario")
 def ia_preencher_formulario():
-    """Sugere valores para as tags do formulário escolhido (genérico para qualquer formulário)."""
+    """Sugere valores para as tags do Doc. Modelo escolhido (genérico para qualquer Doc. Modelo)."""
     if not _csrf_sei_valido():
         return jsonify({"ok": False, "mensagem": "Sessão expirada. Atualize a página e tente novamente."}), 403
     bruto = request.get_json(silent=True)
     if not isinstance(bruto, dict):
-        return jsonify({"ok": False, "mensagem": "Informe o formulário e o contexto."}), 400
+        return jsonify({"ok": False, "mensagem": "Informe o Doc. Modelo e o contexto."}), 400
     formulario = bruto.get("formulario")
     if not isinstance(formulario, dict):
-        return jsonify({"ok": False, "mensagem": "Selecione um formulário válido."}), 400
+        return jsonify({"ok": False, "mensagem": "Selecione um Doc. Modelo válido."}), 400
     contexto = bruto.get("contexto") if isinstance(bruto.get("contexto"), dict) else {}
     sessao = _sessao_sei_atual() or {}
     if not contexto.get("interessado") and sessao.get("usuario"):
@@ -1027,7 +1027,7 @@ def _dados_criacao_processo_sei(cadastro):
     processo_sei = cadastro.get("processo_sei")
     if not isinstance(processo_sei, dict):
         processo_sei = {}
-    # Qualquer tipo (exceto Decreto) usa o formulário Iniciar Processo.
+    # Qualquer tipo (exceto Decreto) usa o Doc. Modelo Iniciar Processo.
     if tipo_processo.casefold() == "decreto":
         dados_tipo = processo_sei
     else:
@@ -1334,7 +1334,7 @@ def _texto_util_html(html_bruto):
     return " ".join(" ".join(parser.partes).split())
 
 
-def _exigir_html_substancial(conteudo_html, contexto="formulário", minimo=1):
+def _exigir_html_substancial(conteudo_html, contexto="Doc. Modelo", minimo=1):
     """Impede envio ao SEI de HTML sem texto útil (que apagaria a seção)."""
     texto = _texto_util_html(conteudo_html)
     if len(texto) < int(minimo):
@@ -1394,10 +1394,10 @@ def visualizar_formulario_sei(processo_id):
         catalogo = carregar_catalogo()
         formulario = documento_por_id(catalogo, formulario_id)
         if not formulario:
-            raise ValueError("Selecione um formulário cadastrado válido.")
+            raise ValueError("Selecione um Doc. Modelo cadastrado válido.")
         valores = bruto.get("valores")
         if not isinstance(valores, dict):
-            raise ValueError("Os dados preenchidos no formulário são inválidos.")
+            raise ValueError("Os dados preenchidos no Doc. Modelo são inválidos.")
         ids_tags = {
             str(tag.get("id"))
             for tag in formulario.get("tags") or []
@@ -1413,8 +1413,8 @@ def visualizar_formulario_sei(processo_id):
         corpo_formulario = str(formulario.get("documento") or "").strip()
         if len(corpo_formulario) < 40:
             raise ValueError(
-                f"O formulário “{formulario.get('nome') or formulario_id}” está sem o corpo do documento no catálogo. "
-                "Abra Configurações, edite esse formulário e cole/importe o HTML completo antes de usá-lo no SEI."
+                f"O Doc. Modelo “{formulario.get('nome') or formulario_id}” está sem o corpo do documento no catálogo. "
+                "Abra Configurações, edite esse Doc. Modelo e cole/importe o HTML completo antes de usá-lo no SEI."
             )
         # HTML do catálogo normalizado para o editor de seções do SEI
         # (classes Texto_Justificado, sem <h1>/wrappers que quebram o mod-wssei).
@@ -1423,8 +1423,8 @@ def visualizar_formulario_sei(processo_id):
             gerar_documento_catalogo_html(dados_formulario, formulario)
         )
         if not conteudo_html.strip():
-            raise ValueError("O formulário não gerou conteúdo HTML para visualizar.")
-        _exigir_html_substancial(conteudo_html, contexto="formulário")
+            raise ValueError("O Doc. Modelo não gerou conteúdo HTML para visualizar.")
+        _exigir_html_substancial(conteudo_html, contexto="Doc. Modelo")
     except ValueError as erro:
         status = 404 if "Processo não encontrado" in str(erro) else 400
         return jsonify({"ok": False, "mensagem": str(erro)}), status
@@ -1540,51 +1540,48 @@ def alterar_secao_documento_sei(processo_id, documento_id):
             versao=listagem["versao"],
             token=sessao_sei["token"],
         )
+        # Confirmação rápida e opcional: no Render o limite de request é curto;
+        # se a reconsulta falhar/demorar, ainda assim consideramos o envio feito.
+        aviso_confirmacao = ""
         try:
             confirmacao = integracao_sei.listar_secoes_documento(
                 documento=str(documento_id),
                 token=sessao_sei["token"],
+                timeout=12,
             )
-        except integracao_sei.ErroIntegracaoSEI as erro:
-            raise integracao_sei.ErroIntegracaoSEI(
-                "O SEI recebeu a alteração, mas não foi possível confirmar o conteúdo. "
-                "Consulte o documento no SEI antes de tentar novamente.",
-                status_http=502,
-                resultado_incerto=True,
-            ) from erro
-        secoes_confirmadas = confirmacao["secoes"]
-        conteudo_confirmado = ""
-        if indice_secao < len(secoes_confirmadas):
-            conteudo_confirmado = str(
-                secoes_confirmadas[indice_secao].get("conteudo") or ""
-            )
-        texto_confirmado = _texto_util_html(conteudo_confirmado)
-        if (
-            indice_secao >= len(secoes_confirmadas)
-            or str(
-                secoes_confirmadas[indice_secao].get("idSecaoModelo")
-                or secoes_confirmadas[indice_secao].get("idSecao")
-                or ""
-            ) != id_atual
-            or not _conteudo_html_preservado(
-                conteudo_html,
-                conteudo_confirmado,
-            )
-        ):
-            detalhe_confirmacao = (
-                f" Após a gravação, a seção no SEI ficou com {len(texto_confirmado)} caracteres de texto."
-                if texto_confirmado
-                else " Após a gravação, a seção no SEI voltou vazia (0 caracteres de texto)."
-            )
-            raise integracao_sei.ErroIntegracaoSEI(
-                "O SEI recebeu a alteração, mas não confirmou o conteúdo HTML na seção selecionada."
-                + detalhe_confirmacao
-                + " Consulte o documento no SEI antes de tentar novamente. "
-                "Dica: use um formulário do catálogo compatível com o tipo documental "
-                "(ex.: Relatório de Justificativa para série de Relatório) e confira se a prévia "
-                "mostra o texto completo.",
-                status_http=502,
-                resultado_incerto=True,
+            secoes_confirmadas = confirmacao["secoes"]
+            conteudo_confirmado = ""
+            if indice_secao < len(secoes_confirmadas):
+                conteudo_confirmado = str(
+                    secoes_confirmadas[indice_secao].get("conteudo") or ""
+                )
+            texto_confirmado = _texto_util_html(conteudo_confirmado)
+            if (
+                indice_secao >= len(secoes_confirmadas)
+                or str(
+                    secoes_confirmadas[indice_secao].get("idSecaoModelo")
+                    or secoes_confirmadas[indice_secao].get("idSecao")
+                    or ""
+                ) != id_atual
+                or not _conteudo_html_preservado(
+                    conteudo_html,
+                    conteudo_confirmado,
+                )
+            ):
+                detalhe_confirmacao = (
+                    f" A seção no SEI ficou com {len(texto_confirmado)} caracteres de texto."
+                    if texto_confirmado
+                    else " A seção no SEI parece vazia após a gravação."
+                )
+                aviso_confirmacao = (
+                    "O SEI aceitou o envio, mas a confirmação automática não bateu."
+                    + detalhe_confirmacao
+                    + " Confira o documento no SEI."
+                )
+        except integracao_sei.ErroIntegracaoSEI:
+            aviso_confirmacao = (
+                "O SEI aceitou o envio, mas a confirmação automática demorou. "
+                "Confira o documento no SEI."
             )
     except integracao_sei.ErroIntegracaoSEI as erro:
         if erro.status_http == 401:
@@ -1607,7 +1604,10 @@ def alterar_secao_documento_sei(processo_id, documento_id):
             "ok": False,
             "mensagem": f"Não foi possível preparar ou alterar o conteúdo HTML: {erro}",
         }), 500
-    return jsonify({"ok": True, "mensagem": "Conteúdo enviado à seção selecionada no SEI."})
+    mensagem_ok = "Conteúdo enviado ao documento no SEI."
+    if aviso_confirmacao:
+        mensagem_ok = f"{mensagem_ok} {aviso_confirmacao}"
+    return jsonify({"ok": True, "mensagem": mensagem_ok, "aviso": aviso_confirmacao or None})
 
 
 @app.put("/api/processos/<int:processo_id>")
@@ -1936,33 +1936,42 @@ def criar_processo_com_documento():
             "id_procedimento": retorno_processo.get("id_procedimento"),
         }), 500
 
-    documento_resultado = None
-    if dados_documento and dados_documento.get("idSerie"):
+    lista_docs = bruto.get("documentos")
+    if not isinstance(lista_docs, list) or not lista_docs:
+        lista_docs = [dados_documento] if isinstance(dados_documento, dict) and dados_documento.get("idSerie") else []
+    documentos_resultado = []
+    falhas_docs = []
+    for indice, dados_doc in enumerate(lista_docs):
+        if not isinstance(dados_doc, dict) or not dados_doc.get("idSerie"):
+            continue
         try:
-            dados_documento, tipo_documento = banco.aplicar_regras_documento_sei(dados_documento)
+            dados_doc, tipo_documento = banco.aplicar_regras_documento_sei(dados_doc)
         except ValueError as erro:
-            return jsonify({
-                "ok": False,
-                "mensagem": (
-                    f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
-                    f"mas o documento não foi enviado: {erro}"
-                ),
-                "etapa": "validar_documento",
-                "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
-                "processo": processo,
-                "protocolo": retorno_processo.get("protocolo"),
-                "id_procedimento": retorno_processo.get("id_procedimento"),
-            }), 400
+            falhas_docs.append(str(erro))
+            if not documentos_resultado:
+                return jsonify({
+                    "ok": False,
+                    "mensagem": (
+                        f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
+                        f"mas o documento não foi enviado: {erro}"
+                    ),
+                    "etapa": "validar_documento",
+                    "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
+                    "processo": processo,
+                    "protocolo": retorno_processo.get("protocolo"),
+                    "id_procedimento": retorno_processo.get("id_procedimento"),
+                }), 400
+            continue
         try:
             documento_resultado = integracao_sei.cadastrar_documento_interno(
                 procedimento=retorno_processo["id_procedimento"],
-                campos=dados_documento,
+                campos=dados_doc,
                 token=sessao_sei["token"],
             )
             if documento_resultado.get("id_documento"):
                 descricao_local = (
-                    str(dados_documento.get("descricao") or "").strip()
-                    or str(dados_documento.get("nomeArvore") or "").strip()
+                    str(dados_doc.get("descricao") or "").strip()
+                    or str(dados_doc.get("nomeArvore") or "").strip()
                     or tipo_documento["nome"]
                 )
                 banco.registrar_documento_sei(
@@ -1973,46 +1982,63 @@ def criar_processo_com_documento():
                     id_serie=tipo_documento["id"],
                     tipo_documento=tipo_documento["nome"],
                 )
+                documentos_resultado.append({
+                    **documento_resultado,
+                    "id_serie": tipo_documento["id"],
+                    "tipo_documento": tipo_documento["nome"],
+                    "descricao": descricao_local,
+                })
         except integracao_sei.ErroIntegracaoSEI as erro:
             if erro.status_http == 401:
                 _encerrar_sessao_sei()
-            return jsonify({
-                "ok": False,
-                "mensagem": (
-                    f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
-                    f"mas falhou ao cadastrar o documento: {erro}"
-                ),
-                "etapa": "cadastrar_documento",
-                "resultado_incerto": erro.resultado_incerto,
-                "campo_faltante": erro.campo_faltante,
-                "processo": processo,
-                "protocolo": retorno_processo.get("protocolo"),
-                "id_procedimento": retorno_processo.get("id_procedimento"),
-            }), erro.status_http or 500
+            if not documentos_resultado:
+                return jsonify({
+                    "ok": False,
+                    "mensagem": (
+                        f"Processo criado com sucesso ({retorno_processo.get('protocolo')}), "
+                        f"mas falhou ao cadastrar o documento: {erro}"
+                    ),
+                    "etapa": "cadastrar_documento",
+                    "resultado_incerto": erro.resultado_incerto,
+                    "campo_faltante": erro.campo_faltante,
+                    "processo": processo,
+                    "protocolo": retorno_processo.get("protocolo"),
+                    "id_procedimento": retorno_processo.get("id_procedimento"),
+                }), erro.status_http or 500
+            falhas_docs.append(str(erro))
         except (ValueError, sqlite3.Error) as erro:
-            return jsonify({
-                "ok": False,
-                "mensagem": (
-                    "Processo criado e documento confirmado no SEI, "
-                    f"mas falhou ao registrar localmente: {erro}"
-                ),
-                "etapa": "registrar_documento",
-                "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
-                "processo": processo,
-                "documento": documento_resultado,
-                "protocolo": retorno_processo.get("protocolo"),
-                "id_procedimento": retorno_processo.get("id_procedimento"),
-            }), 500
+            if not documentos_resultado:
+                return jsonify({
+                    "ok": False,
+                    "mensagem": (
+                        "Processo criado e documento confirmado no SEI, "
+                        f"mas falhou ao registrar localmente: {erro}"
+                    ),
+                    "etapa": "registrar_documento",
+                    "campo_faltante": integracao_sei.extrair_campo_faltante_documento(str(erro)),
+                    "processo": processo,
+                    "protocolo": retorno_processo.get("protocolo"),
+                    "id_procedimento": retorno_processo.get("id_procedimento"),
+                }), 500
+            falhas_docs.append(str(erro))
+
+    documento_resultado = documentos_resultado[0] if documentos_resultado else None
+    qtd = len(documentos_resultado)
+    if qtd == 0:
+        mensagem_ok = "Processo criado com sucesso."
+    elif qtd == 1:
+        mensagem_ok = "Processo e documento criados com sucesso."
+    else:
+        mensagem_ok = f"Processo e {qtd} documentos criados com sucesso."
+    if falhas_docs:
+        mensagem_ok += f" Alguns documentos falharam: {'; '.join(falhas_docs[:3])}"
 
     return jsonify({
         "ok": True,
-        "mensagem": (
-            "Processo e documento criados com sucesso."
-            if documento_resultado
-            else "Processo criado com sucesso."
-        ),
+        "mensagem": mensagem_ok,
         "processo": processo,
         "documento": documento_resultado,
+        "documentos": documentos_resultado,
         "protocolo": retorno_processo.get("protocolo"),
         "id_procedimento": retorno_processo.get("id_procedimento"),
     }), 201

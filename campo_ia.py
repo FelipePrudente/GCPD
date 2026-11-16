@@ -439,7 +439,7 @@ def _destilar(consulta, textos):
 LIMITE_RESPOSTA_IA = 2500
 
 _PROMPT_SISTEMA = (
-    "Você redige respostas para um formulário de contratação pública (PRODESP/SP), "
+    "Você redige respostas para um Doc. Modelo de contratação pública (PRODESP/SP), "
     "em português do Brasil, tom formal e técnico. "
     "Calibre o tamanho conforme o pedido: "
     "(1) Lista curta — certificações, tecnologias, nomes/siglas: uma por linha, sem prosa. "

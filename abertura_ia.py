@@ -387,13 +387,34 @@ def _especificacao_curta(pedido, ia_valor=""):
     return texto or "Abertura de processo assistida por IA"
 
 
-def montar_pacote_confirmado(pedido, tipo, tipo_doc, assunto=None, fonte="Assistente IA"):
-    """Monta o payload final depois que o usuário confirmou processo e documento."""
+def _montar_payload_documento(tipo_doc, assunto):
+    documento = {
+        "idSerie": str(tipo_doc.get("id")),
+        "descricao": "",
+        "nomeArvore": "",
+        "nivelAcesso": "0",
+        "assuntos": str(assunto.get("id_sei") or "") if tipo_doc.get("precisa_assunto") else "",
+        "observacao": "",
+        "idUnidadeGeradoraProtocolo": UNIDADE_GERADORA_PADRAO,
+        "tipo_documento_nome": tipo_doc.get("nome") or "Documento",
+    }
+    if tipo_doc.get("precisa_numero"):
+        documento["numero"] = "DDS001"
+    return documento
+
+
+def montar_pacote_confirmado(pedido, tipo, tipo_doc, assunto=None, fonte="Assistente IA", tipos_doc=None):
+    """Monta o payload final depois que o usuário confirmou processo e documento(s)."""
     pedido = _texto(pedido)
     if not tipo:
         raise ValueError("Selecione um tipo de processo.")
-    if not tipo_doc:
-        raise ValueError("Selecione um tipo de documento.")
+    docs = []
+    if isinstance(tipos_doc, list) and tipos_doc:
+        docs = [d for d in tipos_doc if isinstance(d, dict) and d.get("id")]
+    elif tipo_doc:
+        docs = [tipo_doc]
+    if not docs:
+        raise ValueError("Selecione ao menos um tipo de documento.")
     assuntos = banco.listar_assuntos_sei()
     if not assunto:
         assunto = banco.obter_assunto_do_tipo_processo(
@@ -427,34 +448,37 @@ def montar_pacote_confirmado(pedido, tipo, tipo_doc, assunto=None, fonte="Assist
             "nivel_acesso": "publico",
         },
     }
-    documento = {
-        "idSerie": str(tipo_doc.get("id")),
-        "descricao": "",
-        "nomeArvore": "",
-        "nivelAcesso": "0",
-        "assuntos": str(assunto.get("id_sei") or "") if tipo_doc.get("precisa_assunto") else "",
-        "observacao": "",
-        "idUnidadeGeradoraProtocolo": UNIDADE_GERADORA_PADRAO,
-    }
-    if tipo_doc.get("precisa_numero"):
-        documento["numero"] = "DDS001"
-    nome_doc = tipo_doc.get("nome") or "Documento"
+    documentos = [_montar_payload_documento(doc, assunto) for doc in docs]
+    documento = documentos[0]
+    nomes = [d.get("tipo_documento_nome") or d.get("idSerie") for d in documentos]
+    if len(nomes) == 1:
+        resumo_docs = f"documento “{nomes[0]}”"
+        tipo_documento_txt = f"{documento.get('idSerie')} — {nomes[0]}"
+    else:
+        resumo_docs = f"{len(nomes)} documentos ({', '.join(nomes)})"
+        tipo_documento_txt = "; ".join(
+            f"{d.get('idSerie')} — {d.get('tipo_documento_nome')}" for d in documentos
+        )
     return {
         "ok": True,
         "fonte": fonte,
-        "resumo": f"Processo “{tipo.get('nome')}” + documento “{nome_doc}”",
+        "resumo": f"Processo “{tipo.get('nome')}” + {resumo_docs}",
         "pedido": pedido,
         "processo": processo,
         "documento": documento,
+        "documentos": documentos,
         "preview": {
             "tipo_processo": tipo.get("nome"),
             "especificacao": "",
             "assunto": assunto.get("nome"),
             "nivel_acesso": "publico",
             "interessado": INTERESSADO_PADRAO,
-            "tipo_documento": f"{tipo_doc.get('id')} — {nome_doc}",
-            "descricao_documento": nome_doc,
-            "nome_arvore": nome_doc[:80],
+            "tipo_documento": tipo_documento_txt,
+            "tipos_documento": [
+                f"{d.get('idSerie')} — {d.get('tipo_documento_nome')}" for d in documentos
+            ],
+            "descricao_documento": nomes[0],
+            "nome_arvore": str(nomes[0])[:80],
         },
     }
 
@@ -677,7 +701,7 @@ def _mes_ano_atual():
 
 
 def _ids_campo_conhecidos(tag):
-    """Normaliza id + rótulo para casar campos equivalentes entre formulários."""
+    """Normaliza id + rótulo para casar campos equivalentes entre Docs. Modelo."""
     partes = [_normalizar(tag.get("id")), _normalizar(tag.get("rotulo"))]
     return " ".join(p for p in partes if p)
 
@@ -707,7 +731,7 @@ def _valor_sistema_para_tag(tag, contexto):
 
 def sugerir_preenchimento_formulario(formulario, contexto=None):
     """
-    Analisa as tags do formulário escolhido e sugere valores.
+    Analisa as tags do Doc. Modelo escolhido e sugere valores.
     Campos de sistema (SEI, interessado, data…) vêm do contexto;
     demais campos de texto/número vêm da IA a partir do pedido do usuário.
     Tabelas ficam de fora nesta etapa.
@@ -719,7 +743,7 @@ def sugerir_preenchimento_formulario(formulario, contexto=None):
         if isinstance(tag, dict) and _texto(tag.get("id")) and not tag.get("calculado")
     ]
     if not tags:
-        raise ValueError("O formulário selecionado não possui campos para preencher.")
+        raise ValueError("O Doc. Modelo selecionado não possui campos para preencher.")
 
     valores = {}
     pendentes = []
@@ -748,11 +772,11 @@ def sugerir_preenchimento_formulario(formulario, contexto=None):
             ensure_ascii=False,
         )
         instrucao = (
-            "Preencha formulário PRODESP/SEI. Responda SÓ JSON: "
+            "Preencha Doc. Modelo PRODESP/SEI. Responda SÓ JSON: "
             "{\"valores\":{\"id\":\"texto\"}}.\n"
             "PT-BR formal. Não invente horas/PF/UE/prazos/valores se não estiverem no pedido. "
             "Pode inferir tecnologia, projeto e objetivo do pedido. Sem tabelas. Sem texto fora do JSON.\n"
-            f"Formulário: {_texto(form.get('nome')) or _texto(form.get('id')) or '(sem nome)'}\n"
+            f"Doc. Modelo: {_texto(form.get('nome')) or _texto(form.get('id')) or '(sem nome)'}\n"
             f"SEI: {_texto(contexto.get('numero_sei')) or '-'}\n"
             f"Interessado: {_texto(contexto.get('interessado')) or INTERESSADO_PADRAO}\n"
             f"Assunto: {_texto(contexto.get('assunto')) or '-'}\n"
