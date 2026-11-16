@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GCPD — Abertura de processo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=processo-assunto-modal" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=doc-modelo-overlay" />
 </head>
 <body>
 <header>
   <div class="cabecalho">
     <p class="marca">GCPD · PRODESP</p>
     <h1>Abertura de processo</h1>
-    <p>Crie o processo diretamente no SEI de homologação pelo formulário de abertura. O GCPD salva localmente os dados e o protocolo retornado pelo SEI, sem gerar um número GCPD. A geração de documentos continua local, em Word, para revisão e posterior inclusão no processo.</p>
+    <p>Crie o processo diretamente no SEI de homologação pelo Doc. Modelo de abertura. O GCPD salva localmente os dados e o protocolo retornado pelo SEI, sem gerar um número GCPD. A geração de documentos continua local, em Word, para revisão e posterior inclusão no processo.</p>
     <div class="sei-conexao" aria-live="polite">
       <span id="sei-sessao-status">Não conectado ao SEI</span>
       <button type="button" class="acao" id="sei-logout">Desconectar</button>
@@ -21,7 +21,7 @@
 <main>
   <div class="abas" role="tablist" aria-label="Áreas do sistema">
     <button type="button" class="aba ativa" role="tab" id="aba-principal" aria-controls="painel-principal" aria-selected="true">Principal</button>
-    <button type="button" class="aba" role="tab" id="aba-formulario" aria-controls="painel-formulario" aria-selected="false">Formulário</button>
+    <button type="button" class="aba" role="tab" id="aba-formulario" aria-controls="painel-formulario" aria-selected="false">Doc. Modelo</button>
     <button type="button" class="aba" role="tab" id="aba-configuracoes" aria-controls="painel-configuracoes" aria-selected="false">Configurações</button>
   </div>
 
@@ -68,7 +68,7 @@
   <form id="cadastro">
     <section class="selecao-documentos-geracao" aria-label="Documentos a gerar">
       <div class="secao-topo"><h2>Documentos a gerar</h2></div>
-      <p class="ajuda">Selecione um ou mais documentos. O formulário mostra só os campos necessários aos selecionados; na geração, saem apenas esses.</p>
+      <p class="ajuda">Selecione um ou mais documentos. O Doc. Modelo mostra só os campos necessários aos selecionados; na geração, saem apenas esses.</p>
       <div class="multi-docs" id="multi-docs">
         <button type="button" class="multi-docs-toggle" id="multi-docs-toggle" aria-expanded="false">
           <span id="multi-docs-rotulo">Selecione os documentos</span>
@@ -217,8 +217,8 @@
   <div class="painel-aba" id="painel-configuracoes" role="tabpanel" aria-labelledby="aba-configuracoes">
     <div class="config-cabecalho">
       <div>
-        <h2>Documentos e formulário</h2>
-        <p class="ajuda">Em cada documento: defina os grupos/blocos, depois as tags. O formulário reúne as tags de todos os documentos.</p>
+        <h2>Documentos e Doc. Modelo</h2>
+        <p class="ajuda">Em cada documento: defina os grupos/blocos, depois as tags. O Doc. Modelo reúne as tags de todos os documentos.</p>
       </div>
       <div class="config-cabecalho-acoes">
         <button type="button" class="acao" id="ia-config-abrir" title="Configurar chave da IA">IA / API</button>
@@ -232,7 +232,7 @@
           <h2 id="processo-assunto-titulo">Processo / Assunto</h2>
           <button type="button" class="acao" id="processo-assunto-fechar">Fechar</button>
         </div>
-        <p class="ajuda">Relacione o tipo de processo ao assunto SEI. Quando houver vínculo, o formulário e a IA já trazem o assunto automaticamente.</p>
+        <p class="ajuda">Relacione o tipo de processo ao assunto SEI. Quando houver vínculo, o Doc. Modelo e a IA já trazem o assunto automaticamente.</p>
         <div class="grade">
           <div class="campo">
             <label for="processo-assunto-filtro">Filtrar processo</label>
@@ -381,12 +381,12 @@
           <select id="tag-grupo">
             <option value="">Selecione um grupo</option>
           </select>
-          <p class="ajuda">Onde o campo será preenchido no formulário.</p>
+          <p class="ajuda">Onde o campo será preenchido no Doc. Modelo.</p>
         </div>
         <div class="campo largo" id="campo-tag-reuso">
           <label>Reutilizar também nestes grupos</label>
           <div id="tag-reuso-lista" class="tag-reuso-lista"></div>
-          <p class="ajuda">Nesses blocos a tag aparece no formulário sem pedir o valor de novo — usa o preenchimento do grupo principal.</p>
+          <p class="ajuda">Nesses blocos a tag aparece no Doc. Modelo sem pedir o valor de novo — usa o preenchimento do grupo principal.</p>
         </div>
         <div class="campo"><label for="tag-largura">Largura na linha</label>
           <select id="tag-largura">
@@ -404,11 +404,11 @@
             <option value="tabela">Tabela (linhas e colunas)</option>
           </select>
         </div>
-        <div class="campo check"><label><input type="checkbox" id="tag-calculado" /> Tag calculada (sem campo no formulário)</label></div>
+        <div class="campo check"><label><input type="checkbox" id="tag-calculado" /> Tag calculada (sem campo no Doc. Modelo)</label></div>
         <div class="campo largo oculto" id="campo-tag-consulta">
           <label for="tag-consulta-ia">Prompt sugerido (opcional)</label>
           <textarea id="tag-consulta-ia" placeholder="Ex.: cargos de nível pleno em cloud AWS usados em editais públicos"></textarea>
-          <p class="ajuda">Aparece como rascunho no painel de IA do formulário. O usuário pode alterar o prompt na hora da busca.</p>
+          <p class="ajuda">Aparece como rascunho no painel de IA do Doc. Modelo. O usuário pode alterar o prompt na hora da busca.</p>
         </div>
         <div class="campo largo oculto" id="campo-tag-tabela">
           <label>Colunas da tabela</label>
@@ -446,7 +446,7 @@
         <label for="ia-campo-prompt">O que você quer buscar?</label>
         <textarea id="ia-campo-prompt" rows="4" placeholder="Ex.: Defina a plataforma Microsoft Dynamics e Power Apps e seus principais produtos e serviços"></textarea>
       </div>
-      <label class="campo check"><input type="checkbox" id="ia-campo-usar-tecnologia" /> Incluir a tecnologia do formulário na busca</label>
+      <label class="campo check"><input type="checkbox" id="ia-campo-usar-tecnologia" /> Incluir a tecnologia do Doc. Modelo na busca</label>
       <p class="ajuda">Deixe desmarcado para perguntas gerais. Marque só quando a resposta depender da tecnologia cadastrada.</p>
       <div class="barra">
         <button type="button" class="primario" id="ia-campo-buscar">Buscar</button>
@@ -507,7 +507,7 @@
       <div class="opcoes-cadastro">
         <button type="button" class="opcao-cadastro" data-modo="novo">
           <strong>Novo</strong>
-          <span>Formulário em branco para abertura.</span>
+          <span>Doc. Modelo em branco para abertura.</span>
         </button>
         <button type="button" class="opcao-cadastro" data-modo="aditar">
           <strong>Aditivar</strong>
@@ -793,7 +793,7 @@
         </div>
         <div id="documento-interno-sei-conteudo" class="oculto">
           <p id="documento-interno-sei-etapa-status" class="ok" role="status" aria-live="polite"></p>
-          <p class="ajuda">Escolha uma seção editável do SEI e preencha um formulário cadastrado. A prévia HTML será revisada antes de substituir o conteúdo da seção.</p>
+          <p class="ajuda">Escolha uma seção editável do SEI e preencha um Doc. Modelo cadastrado. A prévia HTML será revisada antes de substituir o conteúdo da seção.</p>
           <div class="grade">
             <div class="campo">
               <label for="sei-doc-secao">Seção do documento SEI</label>
@@ -830,19 +830,19 @@
   <div id="painel-preencher-secao" class="painel-encaixe oculto">
     <div class="ficha-encaixe ficha-documento-sei" role="dialog" aria-modal="true" aria-labelledby="preencher-secao-titulo">
       <div class="secao-topo">
-        <h2 id="preencher-secao-titulo">Preencher formulário do documento</h2>
+        <h2 id="preencher-secao-titulo">Preencher Doc. Modelo</h2>
         <button type="button" class="acao" id="preencher-secao-fechar">Voltar</button>
       </div>
-      <p class="ajuda">Selecione o formulário, preencha os campos, gere a prévia e inclua o conteúdo no documento do SEI. Use o Assistente IA para pesquisar textos e copiar o resultado nos campos.</p>
+      <p class="ajuda">Selecione o Doc. Modelo, preencha os campos, gere a prévia e inclua o conteúdo no documento do SEI. Use o Assistente IA para pesquisar textos e copiar o resultado nos campos.</p>
       <section id="documento-interno-sei-formulario-painel" class="secao-formulario-sei">
         <div class="campo">
-          <label for="sei-doc-formulario">Formulário cadastrado</label>
+          <label for="sei-doc-formulario">Doc. Modelo cadastrado</label>
           <select id="sei-doc-formulario">
-            <option value="">Carregue e selecione um formulário</option>
+            <option value="">Carregue e selecione um Doc. Modelo</option>
           </select>
         </div>
         <div class="barra">
-          <button type="button" class="acao" id="documento-interno-sei-formulario-selecionar">Selecionar formulário</button>
+          <button type="button" class="acao" id="documento-interno-sei-formulario-selecionar">Selecionar Doc. Modelo</button>
         </div>
         <div id="documento-interno-sei-formulario-campos" class="grade"></div>
         <div class="barra">
@@ -856,7 +856,7 @@
         <details class="campo oculto" style="margin-top:1rem;">
           <summary>Ou enviar texto simples (teste da API)</summary>
           <label for="sei-doc-texto-simples">Texto simples para a seção</label>
-          <textarea id="sei-doc-texto-simples" rows="4" placeholder="Use só se não for preencher o formulário acima"></textarea>
+          <textarea id="sei-doc-texto-simples" rows="4" placeholder="Use só se não for preencher o Doc. Modelo acima"></textarea>
         </details>
         <div class="barra">
           <button type="button" class="primario" id="documento-interno-sei-alterar">Incluir conteúdo no documento</button>
@@ -880,7 +880,7 @@
         <label for="assistente-ia-prompt">Prompt</label>
         <textarea id="assistente-ia-prompt" rows="4" placeholder="Ex.: Defina a plataforma Microsoft Dynamics e Power Apps e seus principais produtos e serviços"></textarea>
       </div>
-      <label class="campo check"><input type="checkbox" id="assistente-ia-usar-tecnologia" /> Incluir a tecnologia do formulário na busca</label>
+      <label class="campo check"><input type="checkbox" id="assistente-ia-usar-tecnologia" /> Incluir a tecnologia do Doc. Modelo na busca</label>
       <div class="barra">
         <button type="button" class="primario" id="assistente-ia-buscar">Buscar</button>
         <span class="total" id="assistente-ia-estado"></span>
@@ -1015,7 +1015,7 @@
         <h2 id="cert-titulo">Sugestões de certificações</h2>
         <button type="button" class="acao" id="cert-fechar">Fechar</button>
       </div>
-      <p id="cert-ajuda" class="ajuda">Marque as certificações desejadas e aplique no formulário. A busca usa a tecnologia e os perfis informados.</p>
+      <p id="cert-ajuda" class="ajuda">Marque as certificações desejadas e aplique no Doc. Modelo. A busca usa a tecnologia e os perfis informados.</p>
       <p id="cert-aviso" class="aviso oculto"></p>
       <div id="cert-lista" class="lista-sugestoes"></div>
       <p id="cert-erro" class="erro oculto"></p>
@@ -1026,7 +1026,26 @@
     </div>
   </div>
 </main>
-<script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=processo-assunto-2"></script>
-<script src="{{ url_for('static', filename='cadastro.js') }}?v=ia-preencher-timeout"></script>
+
+  <div id="overlay-processando" class="overlay-processando oculto" role="alertdialog" aria-modal="true" aria-labelledby="overlay-processando-titulo" aria-live="assertive">
+    <div class="overlay-processando-caixa">
+      <div class="overlay-robo" aria-hidden="true">
+        <div class="overlay-robo-cabeca">
+          <span class="overlay-robo-olho"></span>
+          <span class="overlay-robo-olho"></span>
+        </div>
+        <div class="overlay-robo-corpo"></div>
+        <div class="overlay-engrenagens">
+          <span class="overlay-engrenagem overlay-engrenagem-a"></span>
+          <span class="overlay-engrenagem overlay-engrenagem-b"></span>
+        </div>
+      </div>
+      <p id="overlay-processando-titulo" class="overlay-processando-titulo">Processando…</p>
+      <p id="overlay-processando-texto" class="overlay-processando-texto">Aguarde enquanto o sistema conclui a operação.</p>
+    </div>
+  </div>
+
+<script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=doc-modelo"></script>
+<script src="{{ url_for('static', filename='cadastro.js') }}?v=multi-docs-ia"></script>
 </body>
 </html>
