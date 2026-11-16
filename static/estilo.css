@@ -1014,6 +1014,29 @@ section h3 {
   line-height: 1.5;
 }
 
+.previa-documento-sei .Texto_Justificado,
+.previa-documento-sei .Texto_Centralizado,
+.previa-documento-sei .Texto_Alinhado_Direita,
+.previa-documento-sei p[align="center"],
+.previa-documento-sei p[align="right"] {
+  margin: 0 0 0.35em;
+  min-height: 1.2em;
+}
+
+.previa-documento-sei .Texto_Justificado {
+  text-align: justify;
+}
+
+.previa-documento-sei .Texto_Centralizado,
+.previa-documento-sei p[align="center"] {
+  text-align: center;
+}
+
+.previa-documento-sei .Texto_Alinhado_Direita,
+.previa-documento-sei p[align="right"] {
+  text-align: right;
+}
+
 .previa-documento-sei table {
   width: 100%;
   border-collapse: collapse;
