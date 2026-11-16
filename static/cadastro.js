@@ -583,7 +583,7 @@ function inserirSelecaoIaNoCampo() {
   if (!campoEl) {
     const erro = document.getElementById("ia-campo-erro");
     erro.className = "erro";
-    erro.textContent = "Não foi possível localizar o campo do formulário.";
+    erro.textContent = "Não foi possível localizar o campo do Doc. Modelo.";
     return;
   }
   campoEl.value = texto;
@@ -1602,7 +1602,7 @@ async function abrirInclusaoDocumento() {
     if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível carregar os Word gerados.");
     const disponiveis = corpo.disponiveis || [];
     if (!disponiveis.length) {
-      throw new Error("Este processo ainda não tem Word gerado disponível. Volte ao formulário e gere um documento.");
+      throw new Error("Este processo ainda não tem Word gerado disponível. Volte ao Doc. Modelo e gere um documento.");
     }
     disponiveis.forEach((documento) => {
       const opcao = document.createElement("option");
@@ -2519,7 +2519,7 @@ function aplicarCertificacoesSelecionadas() {
   localStorage.setItem(chave, JSON.stringify(dados));
   desenhar();
   fecharPainelCertificacoes();
-  mensagem(`${escolhidas.length} certificação(ões) aplicada(s) ao formulário. Revise antes de gerar os documentos.`, "ok");
+  mensagem(`${escolhidas.length} certificação(ões) aplicada(s) ao Doc. Modelo. Revise antes de gerar os documentos.`, "ok");
   document.getElementById("certificacoes").scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
@@ -2784,7 +2784,7 @@ function abrirBuscaSei(modo) {
   document.getElementById("busca-sei-titulo").textContent =
     modo === "Prorrogação" ? "Prorrogar — buscar SEI" : "Aditivar — buscar SEI";
   document.getElementById("busca-sei-ajuda").textContent =
-    "Simulação: digite o número SEI que já aparece na coluna Nº SEI da Principal. Os dados do cadastro serão carregados no formulário.";
+    "Simulação: digite o número SEI que já aparece na coluna Nº SEI da Principal. Os dados do cadastro serão carregados no Doc. Modelo.";
   document.getElementById("busca-numero-sei").value = "";
   document.getElementById("busca-sei-erro").classList.add("oculto");
   document.getElementById("busca-sei-erro").textContent = "";
@@ -2828,8 +2828,8 @@ function continuarNovoComTipo() {
   salvar();
   atualizarTipoProcessoAtual();
   fecharPainelTipoProcesso();
-  // Qualquer tipo abre o formulário Iniciar Processo (ex-Contrato).
-  // Decreto mantém o formulário próprio, se ainda for usado.
+  // Qualquer tipo abre o Doc. Modelo Iniciar Processo (ex-Contrato).
+  // Decreto mantém o Doc. Modelo próprio, se ainda for usado.
   if (tipoProcessoSelecionado.trim().toLocaleLowerCase() === "decreto") {
     abrirFormularioDecreto();
     return;
@@ -3478,6 +3478,39 @@ function mensagemConteudoDocumentoInternoSei(texto, tipo = "erro") {
   el.classList.toggle("oculto", !texto);
 }
 
+function painelPreencherSecaoVisivel() {
+  const painel = campo("painel-preencher-secao");
+  return Boolean(painel && !painel.classList.contains("oculto"));
+}
+
+/** Feedback visível na tela do Doc. Modelo (não no painel oculto de seções). */
+function mensagemFormularioDocumentoSei(texto, tipo = "erro") {
+  if (painelPreencherSecaoVisivel()) {
+    const el = campo("preencher-secao-mensagem");
+    if (el) {
+      el.textContent = texto || "";
+      el.className = tipo || "erro";
+      el.classList.toggle("oculto", !texto);
+      return;
+    }
+  }
+  mensagemConteudoDocumentoInternoSei(texto, tipo);
+}
+
+function mostrarOverlayProcessando(titulo, texto) {
+  const overlay = campo("overlay-processando");
+  if (!overlay) return;
+  const tit = campo("overlay-processando-titulo");
+  const msg = campo("overlay-processando-texto");
+  if (tit) tit.textContent = titulo || "Processando…";
+  if (msg) msg.textContent = texto || "Aguarde enquanto o sistema conclui a operação.";
+  overlay.classList.remove("oculto");
+}
+
+function ocultarOverlayProcessando() {
+  campo("overlay-processando")?.classList.add("oculto");
+}
+
 function fecharPainelDocumentoInternoSei() {
   campo("painel-documento-interno-sei").classList.add("oculto");
 }
@@ -3553,7 +3586,7 @@ async function prepararEtapaConteudoDocumentoSei(estado, opcoes = {}) {
       `Conteúdo enviado ao SEI para o documento ${estado.protocolo || estado.id_documento}.`;
   } else {
     campo("documento-interno-sei-etapa-status").textContent =
-      `Documento SEI ${estado.protocolo ? `(${estado.protocolo})` : `ID ${estado.id_documento || "pendente"}`} cadastrado. Abrindo o formulário para incluir o conteúdo…`;
+      `Documento SEI ${estado.protocolo ? `(${estado.protocolo})` : `ID ${estado.id_documento || "pendente"}`} cadastrado. Abrindo o Doc. Modelo para incluir o conteúdo…`;
   }
   if (estado.status === "vinculo_pendente") {
     campo("documento-interno-sei-conteudo").classList.remove("oculto");
@@ -3705,22 +3738,22 @@ async function carregarListaFormulariosDocumentoSei() {
   seletor.replaceChildren();
   const opcaoVazia = document.createElement("option");
   opcaoVazia.value = "";
-  opcaoVazia.textContent = "Carregando formulários…";
+  opcaoVazia.textContent = "Carregando Docs. Modelo…";
   seletor.append(opcaoVazia);
   try {
     const resposta = await fetch("/api/formularios-sei");
     const corpo = await lerRespostaApi(resposta);
     if (!resposta.ok) {
       if (resposta.status === 401) window.location.replace("/");
-      throw new Error(corpo.mensagem || "Não foi possível carregar os formulários cadastrados.");
+      throw new Error(corpo.mensagem || "Não foi possível carregar os Docs. Modelo cadastrados.");
     }
     formulariosDocumentoSei = Array.isArray(corpo.formularios) ? corpo.formularios : [];
     seletor.replaceChildren();
     const placeholder = document.createElement("option");
     placeholder.value = "";
     placeholder.textContent = formulariosDocumentoSei.length
-      ? "Selecione um formulário"
-      : "Nenhum formulário cadastrado no catálogo";
+      ? "Selecione um Doc. Modelo"
+      : "Nenhum Doc. Modelo cadastrado no catálogo";
     seletor.append(placeholder);
     formulariosDocumentoSei.forEach((formulario) => {
       const opcao = document.createElement("option");
@@ -3733,7 +3766,7 @@ async function carregarListaFormulariosDocumentoSei() {
     }
     if (!formulariosDocumentoSei.length) {
       mensagemConteudoDocumentoInternoSei(
-        "Cadastre ao menos um documento no catálogo (aba Configurações) para usar como formulário.",
+        "Cadastre ao menos um documento no catálogo (aba Configurações) para usar como Doc. Modelo.",
         "aviso",
       );
     }
@@ -3742,7 +3775,7 @@ async function carregarListaFormulariosDocumentoSei() {
     seletor.replaceChildren();
     const falha = document.createElement("option");
     falha.value = "";
-    falha.textContent = "Falha ao carregar formulários";
+    falha.textContent = "Falha ao carregar Docs. Modelo";
     seletor.append(falha);
     mensagemConteudoDocumentoInternoSei(erro.message);
   }
@@ -3773,14 +3806,14 @@ async function navegarParaFormularioDocumentoSei() {
   conteudoHtmlFormularioSei = "";
   const msg = campo("preencher-secao-mensagem");
   if (msg) {
-    msg.textContent = "Carregando formulários do catálogo…";
+    msg.textContent = "Carregando Docs. Modelo do catálogo…";
     msg.className = "aviso";
     msg.classList.remove("oculto");
   }
   await carregarListaFormulariosDocumentoSei();
   if (msg) {
     if (formulariosDocumentoSei.length) {
-      msg.textContent = "Selecione o formulário, preencha os campos, gere a prévia e inclua o conteúdo no documento.";
+      msg.textContent = "Selecione o Doc. Modelo, preencha os campos, gere a prévia e inclua o conteúdo no documento.";
       msg.className = "aviso";
       msg.classList.remove("oculto");
     } else {
@@ -3867,10 +3900,14 @@ async function sugerirPreenchimentoFormularioDocumentoSei() {
   }
   const msg = campo("preencher-secao-mensagem");
   if (msg) {
-    msg.textContent = "A IA está analisando este formulário e sugerindo o preenchimento…";
+    msg.textContent = "A IA está analisando este Doc. Modelo e sugerindo o preenchimento…";
     msg.className = "aviso";
     msg.classList.remove("oculto");
   }
+  mostrarOverlayProcessando(
+    "Analisando Doc. Modelo…",
+    "A IA está sugerindo o preenchimento dos campos. Aguarde um instante.",
+  );
   try {
     const resposta = await fetch("/api/ia/preencher-formulario", {
       method: "POST",
@@ -3919,6 +3956,8 @@ async function sugerirPreenchimentoFormularioDocumentoSei() {
       msg.className = "erro";
       msg.classList.remove("oculto");
     }
+  } finally {
+    ocultarOverlayProcessando();
   }
 }
 
@@ -3931,7 +3970,7 @@ async function selecionarFormularioDocumentoSei() {
   if (!formularioDocumentoSeiSelecionado) {
     campo("documento-interno-sei-formulario-campos").replaceChildren();
     campo("documento-interno-sei-visualizar").classList.add("oculto");
-    mensagemConteudoDocumentoInternoSei("Selecione um formulário cadastrado.");
+    mensagemConteudoDocumentoInternoSei("Selecione um Doc. Modelo cadastrado.");
     return;
   }
   const tags = (formularioDocumentoSeiSelecionado.tags || [])
@@ -3950,10 +3989,10 @@ async function selecionarFormularioDocumentoSei() {
         <div class="grade">${campos.map(htmlCampoFormularioDocumentoSei).join("")}</div>
       </section>
     `).join("")
-    : `<p class="ajuda">Este formulário não possui campos para preencher. Clique em Visualizar para revisar o documento.</p>`;
+    : `<p class="ajuda">Este Doc. Modelo não possui campos para preencher. Clique em Visualizar para revisar o documento.</p>`;
   campo("documento-interno-sei-visualizar").classList.remove("oculto");
   mensagemConteudoDocumentoInternoSei("");
-  // Após a escolha do formulário: a IA analisa as tags daquele formulário e sugere valores.
+  // Após a escolha do Doc. Modelo: a IA analisa as tags daquele Doc. Modelo e sugere valores.
   await sugerirPreenchimentoFormularioDocumentoSei();
 }
 
@@ -4068,14 +4107,18 @@ function manipularTabelaFormularioDocumentoSei(evento) {
 
 async function visualizarFormularioDocumentoSei() {
   if (!formularioDocumentoSeiSelecionado) {
-    mensagemConteudoDocumentoInternoSei("Selecione um formulário cadastrado.");
+    mensagemFormularioDocumentoSei("Selecione um Doc. Modelo cadastrado.");
     return;
   }
   const valores = lerValoresFormularioDocumentoSei();
   const botao = campo("documento-interno-sei-visualizar");
   botao.disabled = true;
   limparPreviaFormularioDocumentoSei();
-  mensagemConteudoDocumentoInternoSei("Gerando a pré-visualização HTML…", "aviso");
+  mensagemFormularioDocumentoSei("Gerando a pré-visualização HTML…", "aviso");
+  mostrarOverlayProcessando(
+    "Gerando prévia…",
+    "O robôzinho está montando o HTML do Doc. Modelo para o SEI.",
+  );
   try {
     const resposta = await fetch(
       `/api/processos/${processoEmEdicao.id}/formularios/visualizar`,
@@ -4097,15 +4140,19 @@ async function visualizarFormularioDocumentoSei() {
       throw new Error(corpo.mensagem || "Não foi possível gerar a pré-visualização HTML.");
     }
     conteudoHtmlFormularioSei = corpo.conteudo_html || "";
-    if (!conteudoHtmlFormularioSei) throw new Error("O formulário não gerou conteúdo HTML.");
+    if (!conteudoHtmlFormularioSei) throw new Error("O Doc. Modelo não gerou conteúdo HTML.");
     campo("documento-interno-sei-previa-html").innerHTML = conteudoHtmlFormularioSei;
     campo("documento-interno-sei-previa").classList.remove("oculto");
     campo("documento-interno-sei-alterar").disabled =
       !actualPodeAlterarDocumentoSei(estadoDocumentoInternoSei());
-    mensagemConteudoDocumentoInternoSei("");
+    mensagemFormularioDocumentoSei(
+      "Prévia gerada. Revise o HTML e clique em “Incluir conteúdo no documento”.",
+      "aviso",
+    );
   } catch (erro) {
-    mensagemConteudoDocumentoInternoSei(erro.message);
+    mensagemFormularioDocumentoSei(erro.message);
   } finally {
+    ocultarOverlayProcessando();
     botao.disabled = false;
   }
 }
@@ -4130,40 +4177,51 @@ async function alterarConteudoDocumentoSei() {
   const estado = estadoDocumentoInternoSei();
   if (!estado?.id_documento || estado.status === "concluido") return;
   if (estado.alteracao_incerta) {
-    mensagemConteudoDocumentoInternoSei(
-      "A resposta anterior não foi confirmada. Verifique a seção no SEI antes de liberar outra tentativa.",
+    mensagemFormularioDocumentoSei(
+      "A resposta anterior não foi confirmada. Verifique o documento no SEI antes de liberar outra tentativa.",
       "aviso",
     );
     campo("documento-interno-sei-revisar-alteracao").classList.remove("oculto");
     campo("documento-interno-sei-alterar").disabled = true;
     return;
   }
-  const indice = Number(campo("sei-doc-secao").value);
-  const secao = secoesDocumentoInternoSei.find((item) => item.indice === indice);
+  // Garante seção selecionada (a tela de seções fica oculta no caminho feliz).
+  const seletor = campo("sei-doc-secao");
+  if (seletor && seletor.options.length && (seletor.selectedIndex < 0 || !seletor.value)) {
+    seletor.selectedIndex = 0;
+  }
+  const indice = Number(seletor?.value);
+  let secao = secoesDocumentoInternoSei.find((item) => item.indice === indice);
+  if ((!secao || secao.somente_leitura) && secoesDocumentoInternoSei.length) {
+    secao = secoesDocumentoInternoSei.find((item) => !item.somente_leitura) || null;
+    if (secao && seletor) seletor.value = String(secao.indice);
+  }
   if (!secao || secao.somente_leitura) {
-    mensagemConteudoDocumentoInternoSei("Selecione uma seção editável antes de enviar.");
+    mensagemFormularioDocumentoSei(
+      "Não há seção editável carregada para este documento. Feche e abra novamente o preenchimento.",
+    );
     return;
   }
 
-  // Preferência: HTML formatado da prévia do formulário.
+  // Preferência: HTML formatado da prévia do Doc. Modelo.
   // Fallback: texto da caixa → <p>texto</p> (teste da API).
   if (!conteudoHtmlFormularioSei) {
     const caixa = campo("sei-doc-texto-simples");
     const textoBruto = (caixa?.value || "").trim();
     if (!textoBruto) {
-      mensagemConteudoDocumentoInternoSei(
-        "Gere a prévia do formulário (ou digite um texto simples) antes de enviar.",
+      mensagemFormularioDocumentoSei(
+        "Gere a prévia do Doc. Modelo (ou digite um texto simples) antes de enviar.",
       );
       return;
     }
     const normalizarTipografia = (t) =>
       t
-        .replace(/[\u2013\u2014\u2015\u2212]/g, "-")
-        .replace(/[\u2018\u2019\u201a\u201b]/g, "'")
-        .replace(/[\u201c\u201d\u201e\u201f]/g, '"')
+        .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\ufe58\ufe63\uff0d]/g, "-")
+        .replace(/[\u2018\u2019\u201a\u201b\u2032]/g, "'")
+        .replace(/[\u201c\u201d\u201e\u201f\u2033]/g, '"')
         .replace(/\u2026/g, "...")
-        .replace(/[\u00a0\u202f\u2007\u2009]/g, " ")
-        .replace(/[\u200b\ufeff\u00ad]/g, "");
+        .replace(/[\u00a0\u202f\u2007\u2008\u2009\u200a]/g, " ")
+        .replace(/[\u200b\u200c\u200d\u2060\ufeff\u00ad]/g, "");
     const linhas = textoBruto
       .split(/\r?\n/)
       .map((l) => normalizarTipografia(l).trim())
@@ -4181,16 +4239,27 @@ async function alterarConteudoDocumentoSei() {
   }
 
   const origem = formularioDocumentoSeiSelecionado
-    ? `formulário “${formularioDocumentoSeiSelecionado.nome}”`
+    ? `Doc. Modelo “${formularioDocumentoSeiSelecionado.nome}”`
     : "texto simples";
   if (!window.confirm(
-    `O conteúdo atual da seção “${secao.nome}” será substituído pelo HTML do ${origem}. Deseja continuar?`,
+    `O conteúdo atual do documento será substituído pelo HTML do ${origem}. Deseja continuar?`,
   )) return;
 
   const botao = campo("documento-interno-sei-alterar");
   botao.disabled = true;
-  mensagemConteudoDocumentoInternoSei("Enviando o conteúdo HTML ao SEI…", "aviso");
-    try {
+  mensagemFormularioDocumentoSei(
+    "Enviando o conteúdo HTML ao SEI… Isso pode levar até 1 minuto. Não feche a página.",
+    "aviso",
+  );
+  mostrarOverlayProcessando(
+    "Incluindo no SEI…",
+    "Engrenagens em movimento: enviando o HTML ao documento. Não feche a página.",
+  );
+  const controlador = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timerAbort = controlador
+    ? setTimeout(() => controlador.abort(), 110000)
+    : null;
+  try {
     const resposta = await fetch(
       `/api/processos/${processoEmEdicao.id}/documentos/${encodeURIComponent(estado.id_documento)}/secoes/alterar`,
       {
@@ -4204,6 +4273,7 @@ async function alterarConteudoDocumentoSei() {
           indice_secao: secao.indice,
           id_secao_modelo: secao.id_secao_modelo,
         }),
+        signal: controlador?.signal,
       },
     );
     const corpo = await lerRespostaApi(resposta);
@@ -4214,7 +4284,7 @@ async function alterarConteudoDocumentoSei() {
         salvarEstadoDocumentoInternoSei(estado);
         campo("documento-interno-sei-revisar-alteracao").classList.remove("oculto");
       }
-      throw new Error(corpo.mensagem || "Não foi possível alterar a seção do documento no SEI.");
+      throw new Error(corpo.mensagem || "Não foi possível alterar o documento no SEI.");
     }
     estado.status = "concluido";
     estado.alteracao_incerta = false;
@@ -4224,19 +4294,23 @@ async function alterarConteudoDocumentoSei() {
     salvarEstadoDocumentoInternoSei(estado);
     campo("documento-interno-sei-etapa-status").textContent = corpo.mensagem;
     campo("documento-interno-sei-alteracao-retorno").textContent =
-      `A seção “${secao.nome}” foi atualizada.`;
+      `O documento foi atualizado no SEI.`;
     campo("documento-interno-sei-alteracao-retorno").classList.remove("oculto");
-    const msgPreencher = campo("preencher-secao-mensagem");
-    if (msgPreencher) {
-      msgPreencher.textContent = `A seção “${secao.nome}” foi atualizada no SEI.`;
-      msgPreencher.className = "ok";
-      msgPreencher.classList.remove("oculto");
-    }
+    mensagemFormularioDocumentoSei(
+      `Conteúdo incluído no SEI com sucesso${corpo.mensagem ? ` · ${corpo.mensagem}` : ""}.`,
+      "ok",
+    );
     await carregarListaDocumentosInternosSei();
-    mensagemConteudoDocumentoInternoSei("");
   } catch (erro) {
-    mensagemConteudoDocumentoInternoSei(erro.message);
+    const abortado = erro?.name === "AbortError";
+    mensagemFormularioDocumentoSei(
+      abortado
+        ? "O envio demorou demais (possível limite do Render/SEI). Confira o documento no SEI antes de tentar de novo."
+        : (erro.message || "Falha ao incluir o conteúdo no SEI."),
+    );
   } finally {
+    if (timerAbort) clearTimeout(timerAbort);
+    ocultarOverlayProcessando();
     const atual = estadoDocumentoInternoSei();
     botao.disabled = Boolean(atual?.alteracao_incerta) || atual?.status === "concluido";
   }
@@ -5035,7 +5109,10 @@ async function retomarAberturaIaSeHouver() {
     if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível abrir o processo criado.");
     definirEdicao(corpo.processo);
     if (corpo.processo?.cadastro) aplicarCadastro(corpo.processo.cadastro);
-    documentoSeiAtivoId = String(dados.documentoId || "");
+    const idsDocs = Array.isArray(dados.documentosIds) && dados.documentosIds.length
+      ? dados.documentosIds.map(String)
+      : (dados.documentoId ? [String(dados.documentoId)] : []);
+    documentoSeiAtivoId = idsDocs[0] || "";
     const estado = {
       id_documento: documentoSeiAtivoId,
       protocolo: String(dados.protocoloDocumento || ""),
@@ -5045,11 +5122,15 @@ async function retomarAberturaIaSeHouver() {
     };
     if (documentoSeiAtivoId) salvarEstadoDocumentoInternoSei(estado);
     await abrirPainelDocumentoInternoSei();
-    if (documentoSeiAtivoId) {
+    // Com vários documentos: mostra a lista para o usuário escolher qual preencher.
+    // Com um só: segue direto ao Doc. Modelo.
+    if (idsDocs.length === 1 && documentoSeiAtivoId) {
       await prepararEtapaConteudoDocumentoSei(estado, { irDiretoAoFormulario: true });
     }
+    const qtd = idsDocs.length;
     mensagemPrincipal(
-      `Abertura com IA concluída · SEI ${dados.protocolo || corpo.processo.numero_sei || ""}.`,
+      `Abertura com IA concluída · SEI ${dados.protocolo || corpo.processo.numero_sei || ""}`
+      + (qtd > 1 ? ` · ${qtd} documentos criados — escolha qual incluir o conteúdo.` : ".") ,
       "ok",
     );
   } catch (erro) {

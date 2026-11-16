@@ -82,18 +82,37 @@ async function garantirListas() {
   }
 }
 
+function normalizarDocumentosEdicao(pacote) {
+  const lista = Array.isArray(pacote?.documentos) && pacote.documentos.length
+    ? pacote.documentos
+    : (pacote?.documento ? [pacote.documento] : []);
+  return lista
+    .map((doc) => {
+      const id = String(doc?.idSerie || doc?.id || "").trim();
+      if (!id) return null;
+      const achado = tiposDocumento.find((d) => String(d.id) === id);
+      return {
+        idSerie: id,
+        nome: doc.tipo_documento_nome || doc.nome || achado?.nome || id,
+      };
+    })
+    .filter(Boolean);
+}
+
 function preencherEdicao(pacote) {
   const p = pacote.preview || {};
-  const doc = pacote.documento || {};
-  const nomeDoc = String(p.tipo_documento || "").replace(/^\d+\s*[—-]\s*/, "");
+  const docs = normalizarDocumentosEdicao(pacote);
+  const primeiro = docs[0] || {};
   edicao = {
     tipo_processo: p.tipo_processo || pacote.processo?.tipo_processo_sei || "",
     especificacao: p.especificacao || "",
     assunto: p.assunto || "",
     interessado: p.interessado || INTERESSADO_PADRAO,
     nivel_acesso: pacote.processo?.processo_contratacao?.nivel_acesso || "publico",
-    idSerie: String(doc.idSerie || ""),
-    tipo_documento_nome: nomeDoc,
+    idSerie: String(primeiro.idSerie || ""),
+    tipo_documento_nome: primeiro.nome || "",
+    documentos: docs,
+    idsSerie: docs.map((d) => d.idSerie),
     assuntoDocumento: p.assunto || "",
   };
   if (!edicao.tipo_documento_nome && edicao.idSerie) {
@@ -106,17 +125,31 @@ function tipoDocumentoSelecionado() {
   return tiposDocumento.find((tipo) => String(tipo.id) === String(edicao.idSerie)) || null;
 }
 
+function tiposDocumentosSelecionados() {
+  const ids = Array.isArray(edicao.idsSerie) && edicao.idsSerie.length
+    ? edicao.idsSerie
+    : (edicao.idSerie ? [edicao.idSerie] : []);
+  return ids
+    .map((id) => tiposDocumento.find((tipo) => String(tipo.id) === String(id)))
+    .filter(Boolean);
+}
+
 function desenharLeitura() {
   const host = document.getElementById("resumo-leitura");
-  const tipoDoc = tipoDocumentoSelecionado();
+  const docs = tiposDocumentosSelecionados();
+  const rotuloDocs = docs.length
+    ? docs.map((d) => `${d.id} — ${d.nome}`).join("; ")
+    : (edicao.idSerie ? `${edicao.idSerie} — ${edicao.tipo_documento_nome}` : edicao.tipo_documento_nome);
   const linhas = [
     ["Processo", edicao.tipo_processo],
     ["Assunto", edicao.assunto],
     ["Interessado", edicao.interessado],
     ["Nível de acesso", rotuloNivel(edicao.nivel_acesso)],
-    ["Documento", edicao.idSerie ? `${edicao.idSerie} — ${edicao.tipo_documento_nome}` : edicao.tipo_documento_nome],
+    [docs.length > 1 ? "Documentos" : "Documento", rotuloDocs],
   ];
-  if (tipoDoc?.precisa_assunto) linhas.push(["Assunto do documento", edicao.assuntoDocumento]);
+  if (docs.some((d) => d.precisa_assunto)) {
+    linhas.push(["Assunto do documento", edicao.assuntoDocumento]);
+  }
   host.innerHTML = linhas.map(([rotulo, valor]) => `
     <div>
       <dt>${escHtml(rotulo)}</dt>
@@ -152,9 +185,15 @@ function desenharListas(filtroTipo = "", filtroAssunto = "", filtroDoc = "") {
   if (tipoHost) tipoHost.innerHTML = htmlLista(tipos, edicao.tipo_processo, "nome", "nome", "data-tipo");
   if (assuntoHost) assuntoHost.innerHTML = htmlLista(assuntos, edicao.assunto, "nome", "nome", "data-assunto");
   if (docHost) {
+    const idsSel = new Set(
+      (Array.isArray(edicao.idsSerie) && edicao.idsSerie.length
+        ? edicao.idsSerie
+        : (edicao.idSerie ? [edicao.idSerie] : [])
+      ).map(String),
+    );
     docHost.innerHTML = docs.length
       ? `<div class="abrir-ia-lista">${docs.map((item) => `
-          <button type="button" data-doc="${escHtml(item.id)}" aria-pressed="${item.id === String(edicao.idSerie)}">${escHtml(item.rotulo)}</button>
+          <button type="button" data-doc="${escHtml(item.id)}" aria-pressed="${idsSel.has(String(item.id))}">${escHtml(item.rotulo)}</button>
         `).join("")}</div>`
       : `<div class="abrir-ia-lista"><p class="lista-tipos-vazia">Nenhuma opção disponível.</p></div>`;
   }
@@ -186,7 +225,7 @@ function desenharEdicao() {
       </select>
     </div>
     <div class="abrir-ia-campo">
-      <label>Documento</label>
+      <label>Documentos (multi-seleção)</label>
       <input type="search" class="abrir-ia-filtro" id="abrir-ia-filtro-documento" placeholder="Filtrar tipo documental" autocomplete="off" />
       <div id="abrir-ia-lista-documento"></div>
     </div>
@@ -212,9 +251,9 @@ function desenharEdicao() {
 function atualizarAssuntoDocumento(filtro = "") {
   const bloco = document.getElementById("abrir-ia-assunto-doc");
   const lista = document.getElementById("abrir-ia-lista-assunto-doc");
-  const tipo = tipoDocumentoSelecionado();
+  const docs = tiposDocumentosSelecionados();
   if (!bloco || !lista) return;
-  const exige = Boolean(tipo?.precisa_assunto);
+  const exige = docs.some((tipo) => tipo.precisa_assunto);
   bloco.classList.toggle("oculto", !exige);
   if (!exige) return;
   if (!edicao.assuntoDocumento) edicao.assuntoDocumento = edicao.assunto || "";
@@ -229,25 +268,41 @@ function lerEdicaoDoFormulario() {
   edicao.nivel_acesso = document.getElementById("abrir-ia-nivel")?.value || "publico";
   if (!edicao.tipo_processo) throw new Error("Selecione o tipo de processo na lista.");
   if (!edicao.assunto) throw new Error("Selecione um assunto na lista.");
-  if (!edicao.idSerie) throw new Error("Selecione o tipo de documento na lista.");
-  if (tipoDocumentoSelecionado()?.precisa_assunto && !edicao.assuntoDocumento) {
-    throw new Error("Este tipo documental exige um assunto.");
+  const ids = Array.isArray(edicao.idsSerie) ? edicao.idsSerie.filter(Boolean) : [];
+  if (!ids.length && edicao.idSerie) ids.push(edicao.idSerie);
+  if (!ids.length) throw new Error("Selecione ao menos um tipo de documento na lista.");
+  edicao.idsSerie = ids;
+  edicao.idSerie = ids[0];
+  edicao.documentos = ids.map((id) => {
+    const achado = tiposDocumento.find((d) => String(d.id) === String(id));
+    return { idSerie: String(id), nome: achado?.nome || id };
+  });
+  edicao.tipo_documento_nome = edicao.documentos[0]?.nome || "";
+  if (tiposDocumentosSelecionados().some((d) => d.precisa_assunto) && !edicao.assuntoDocumento) {
+    throw new Error("Um dos tipos documentais exige um assunto.");
   }
 }
 
-function montarPayload() {
-  const tipo = tipoDocumentoSelecionado();
+function montarPayloadDocumento(tipo) {
   const assuntoDoc = assuntosSei.find((item) => item.nome === edicao.assuntoDocumento);
   const documento = {
-    idSerie: String(edicao.idSerie),
+    idSerie: String(tipo.id),
     descricao: "",
     nomeArvore: "",
     nivelAcesso: edicao.nivel_acesso === "sigiloso" ? "2" : (edicao.nivel_acesso === "restrito" ? "1" : "0"),
     assuntos: tipo?.precisa_assunto ? String(assuntoDoc?.id_sei || "") : "",
     observacao: "",
     idUnidadeGeradoraProtocolo: "110000001",
+    tipo_documento_nome: tipo.nome || "",
   };
   if (tipo?.precisa_numero) documento.numero = "DDS001";
+  return documento;
+}
+
+function montarPayload() {
+  const docs = tiposDocumentosSelecionados();
+  if (!docs.length) throw new Error("Selecione ao menos um tipo de documento.");
+  const documentos = docs.map(montarPayloadDocumento);
   return {
     processo: {
       tipo_processo_sei: edicao.tipo_processo,
@@ -271,7 +326,8 @@ function montarPayload() {
         nivel_acesso: edicao.nivel_acesso,
       },
     },
-    documento,
+    documento: documentos[0],
+    documentos,
   };
 }
 
@@ -280,7 +336,7 @@ function scrollChat() {
   if (host) host.scrollTop = host.scrollHeight;
 }
 
-function adicionarBolha(papel, html, opcoes = []) {
+function adicionarBolha(papel, html, opcoes = [], extras = {}) {
   const host = document.getElementById("chat-mensagens");
   if (!host) return;
   const bloco = document.createElement("div");
@@ -289,12 +345,44 @@ function adicionarBolha(papel, html, opcoes = []) {
   if (opcoes.length) {
     const lista = document.createElement("div");
     lista.className = "chat-opcoes";
+    const multi = Boolean(extras.multiselecao);
+    const selecionados = new Set((extras.selecionados || []).map(String));
     opcoes.forEach((opcao) => {
+      if (multi && opcao.tipo === "documento") {
+        const label = document.createElement("label");
+        label.className = "chat-opcao chat-opcao-check";
+        label.setAttribute("aria-pressed", selecionados.has(String(opcao.valor)) ? "true" : "false");
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.value = String(opcao.valor || "");
+        check.checked = selecionados.has(String(opcao.valor));
+        check.addEventListener("change", () => {
+          label.setAttribute("aria-pressed", check.checked ? "true" : "false");
+        });
+        const span = document.createElement("span");
+        span.textContent = opcao.rotulo || opcao.valor || opcao.id;
+        label.append(check, span);
+        lista.appendChild(label);
+        return;
+      }
       const botao = document.createElement("button");
       botao.type = "button";
       botao.className = opcao.tipo === "acao" ? "chat-opcao chat-opcao-acao" : "chat-opcao";
       botao.textContent = opcao.rotulo || opcao.valor || opcao.id;
-      botao.addEventListener("click", () => enviarChat({ escolha: opcao }));
+      botao.addEventListener("click", () => {
+        if (multi && String(opcao.valor || "").replace(/\s+/g, "_") === "confirmar_documentos") {
+          const ids = [...lista.querySelectorAll('input[type="checkbox"]:checked')].map((el) => el.value);
+          enviarChat({
+            escolha: {
+              ...opcao,
+              ids,
+              documentos: ids,
+            },
+          });
+          return;
+        }
+        enviarChat({ escolha: opcao });
+      });
       lista.appendChild(botao);
     });
     bloco.appendChild(lista);
@@ -361,7 +449,10 @@ async function enviarChat({ mensagemTexto = "", escolha = null, silencioso = fal
       throw new Error(corpo.mensagem || "Não foi possível falar com o assistente.");
     }
     estadoChat = corpo.estado || estadoChat;
-    adicionarBolha("assistente", formatarMarkdownLeve(corpo.mensagem || ""), corpo.opcoes || []);
+    adicionarBolha("assistente", formatarMarkdownLeve(corpo.mensagem || ""), corpo.opcoes || [], {
+      multiselecao: Boolean(corpo.multiselecao),
+      selecionados: corpo.selecionados || [],
+    });
     if (corpo.pacote?.ok) {
       await irParaRevisao(corpo.pacote);
     }
@@ -386,11 +477,11 @@ async function iniciarChat() {
 async function confirmar() {
   const botao = document.getElementById("abrir-ia-confirmar");
   botao.disabled = true;
-  mensagem("abrir-ia-mensagem-revisao", "Criando processo e documento no SEI…", "aviso");
+  mensagem("abrir-ia-mensagem-revisao", "Criando processo e documento(s) no SEI…", "aviso");
   try {
     if (modoEdicao) lerEdicaoDoFormulario();
-    else if (tipoDocumentoSelecionado()?.precisa_assunto && !edicao.assuntoDocumento) {
-      throw new Error("Este tipo documental exige um assunto.");
+    else if (tiposDocumentosSelecionados().some((d) => d.precisa_assunto) && !edicao.assuntoDocumento) {
+      throw new Error("Um dos tipos documentais exige um assunto.");
     }
     const payload = montarPayload();
     const resposta = await fetch("/api/processos/criar-com-documento", {
@@ -402,13 +493,17 @@ async function confirmar() {
       body: JSON.stringify(payload),
     });
     const corpo = await lerJson(resposta);
-    if (corpo.ok && corpo.processo && corpo.documento?.id_documento) {
+    const docsCriados = Array.isArray(corpo.documentos) && corpo.documentos.length
+      ? corpo.documentos
+      : (corpo.documento ? [corpo.documento] : []);
+    if (corpo.ok && corpo.processo && docsCriados[0]?.id_documento) {
       sessionStorage.setItem("gcpd-pos-abertura-ia", JSON.stringify({
         processoId: corpo.processo.id,
-        documentoId: corpo.documento.id_documento,
+        documentoId: docsCriados[0].id_documento,
+        documentosIds: docsCriados.map((d) => d.id_documento).filter(Boolean),
         protocolo: corpo.protocolo || corpo.processo.numero_sei || "",
-        protocoloDocumento: corpo.documento.protocolo || "",
-        descricao: payload.documento.descricao || "",
+        protocoloDocumento: docsCriados[0].protocolo || "",
+        descricao: payload.documento?.descricao || "",
       }));
       sessionStorage.setItem("gcpd-contexto-formulario-ia", JSON.stringify({
         pedido: estadoChat?.pedido || edicao.especificacao || "",
@@ -496,9 +591,22 @@ document.getElementById("abrir-ia-edicao")?.addEventListener("click", (evento) =
   }
   const doc = evento.target.closest("[data-doc]");
   if (doc) {
-    edicao.idSerie = doc.getAttribute("data-doc") || "";
-    const achado = tiposDocumento.find((item) => String(item.id) === edicao.idSerie);
-    edicao.tipo_documento_nome = achado?.nome || "";
+    const id = String(doc.getAttribute("data-doc") || "");
+    const atuais = new Set(
+      (Array.isArray(edicao.idsSerie) && edicao.idsSerie.length
+        ? edicao.idsSerie
+        : (edicao.idSerie ? [edicao.idSerie] : [])
+      ).map(String),
+    );
+    if (atuais.has(id)) atuais.delete(id);
+    else atuais.add(id);
+    edicao.idsSerie = [...atuais];
+    edicao.idSerie = edicao.idsSerie[0] || "";
+    edicao.documentos = edicao.idsSerie.map((docId) => {
+      const achado = tiposDocumento.find((item) => String(item.id) === String(docId));
+      return { idSerie: String(docId), nome: achado?.nome || docId };
+    });
+    edicao.tipo_documento_nome = edicao.documentos[0]?.nome || "";
     desenharListas(
       document.getElementById("abrir-ia-filtro-tipo")?.value || "",
       document.getElementById("abrir-ia-filtro-assunto")?.value || "",
