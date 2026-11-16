@@ -347,6 +347,9 @@ function adicionarBolha(papel, html, opcoes = [], extras = {}) {
     lista.className = "chat-opcoes";
     const multi = Boolean(extras.multiselecao);
     const selecionados = new Set((extras.selecionados || []).map(String));
+    const acoesConfirmacao = document.createElement("div");
+    acoesConfirmacao.className = "chat-opcoes-confirmar";
+    let temConfirmacao = false;
     opcoes.forEach((opcao) => {
       if (multi && opcao.tipo === "documento") {
         const label = document.createElement("label");
@@ -365,12 +368,15 @@ function adicionarBolha(papel, html, opcoes = [], extras = {}) {
         lista.appendChild(label);
         return;
       }
+      const ehConfirmarDocs =
+        multi && String(opcao.valor || "").replace(/\s+/g, "_") === "confirmar_documentos";
       const botao = document.createElement("button");
       botao.type = "button";
       botao.className = opcao.tipo === "acao" ? "chat-opcao chat-opcao-acao" : "chat-opcao";
+      if (ehConfirmarDocs) botao.classList.add("chat-opcao-confirmar");
       botao.textContent = opcao.rotulo || opcao.valor || opcao.id;
       botao.addEventListener("click", () => {
-        if (multi && String(opcao.valor || "").replace(/\s+/g, "_") === "confirmar_documentos") {
+        if (ehConfirmarDocs) {
           const ids = [...lista.querySelectorAll('input[type="checkbox"]:checked')].map((el) => el.value);
           enviarChat({
             escolha: {
@@ -383,9 +389,15 @@ function adicionarBolha(papel, html, opcoes = [], extras = {}) {
         }
         enviarChat({ escolha: opcao });
       });
-      lista.appendChild(botao);
+      if (ehConfirmarDocs) {
+        temConfirmacao = true;
+        acoesConfirmacao.appendChild(botao);
+      } else {
+        lista.appendChild(botao);
+      }
     });
     bloco.appendChild(lista);
+    if (temConfirmacao) bloco.appendChild(acoesConfirmacao);
   }
   host.appendChild(bloco);
   scrollChat();

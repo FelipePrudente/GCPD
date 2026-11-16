@@ -339,6 +339,14 @@ main {
   gap: 8px;
   margin-top: 10px;
 }
+.chat-opcoes-confirmar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 2.2em;
+  padding-top: 0.6em;
+}
 .chat-opcao {
   border: 1px solid #9fc0e4;
   background: #f3f8fd;
@@ -360,6 +368,9 @@ main {
 }
 .chat-opcao-acao:hover {
   background: #004687;
+}
+.chat-opcao-confirmar {
+  align-self: flex-start;
 }
 .chat-opcao-check {
   display: inline-flex;
@@ -492,6 +503,50 @@ main {
 
 .grade-processos tbody tr:last-child td { border-bottom: 0; }
 .grade-processos tbody tr:hover td { background: #f7fafc; }
+.barra-filtro-processos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0 0 12px;
+}
+.barra-filtro-processos input[type="search"] {
+  flex: 1 1 260px;
+  min-width: 220px;
+  max-width: 420px;
+  border: 1px solid var(--line-strong, #9eb6cc);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: #123;
+}
+.barra-filtro-processos input[type="search"]:focus {
+  outline: 2px solid #0057a8;
+  outline-offset: 1px;
+}
+.filtro-processos-resumo {
+  font-size: 13px;
+  color: var(--muted, #5a6f84);
+}
+.paginacao-processos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+.paginacao-processos[hidden] {
+  display: none !important;
+}
+.paginacao-processos-info {
+  font-size: 13px;
+  color: var(--muted, #5a6f84);
+  min-width: 10em;
+  text-align: center;
+}
 .barra-acoes-processos {
   display: flex;
   flex-wrap: wrap;
