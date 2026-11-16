@@ -538,16 +538,74 @@ def _texto_entidades_sei(texto):
     return "".join(partes)
 
 
+def _alinhamento_de_string_attrs(attrs_html):
+    """Extrai alinhamento de uma string de atributos HTML bruta."""
+    attrs = []
+    for nome, valor in re.findall(
+        r'([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*"([^"]*)"', attrs_html or ""
+    ):
+        attrs.append((nome, valor))
+    for nome, valor in re.findall(
+        r"([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*'([^']*)'", attrs_html or ""
+    ):
+        attrs.append((nome, valor))
+    return _alinhamento_de_attrs(attrs)
+
+
+def _tag_abertura_paragrafo_sei(alinhamento="left", negrito=False):
+    """Abre <p> no estilo do editor SEI, preservando centro/direita quando houver."""
+    alinhamento = (alinhamento or "left").lower()
+    if alinhamento == "center":
+        abertura = '<p class="Texto_Centralizado" align="center" style="text-align:center;">'
+    elif alinhamento == "right":
+        abertura = (
+            '<p class="Texto_Alinhado_Direita" align="right" '
+            'style="text-align:right;">'
+        )
+    else:
+        abertura = '<p class="Texto_Justificado">'
+    if negrito:
+        abertura += "<strong>"
+    return abertura
+
+
+def _preparar_html_catalogo_para_sei(html):
+    """
+    Normaliza o HTML do editor de Configurações antes do parser SEI.
+
+    O contenteditable grava cada linha como <div> (muitas vezes com
+    text-align:center). Remover o <div> sem virar <p> cola as linhas
+    (ex.: PauloCompanhia). Aqui div → p preservando o alinhamento.
+    """
+    html = str(html or "")
+
+    def _abrir_como_p(match):
+        return _tag_abertura_paragrafo_sei(_alinhamento_de_string_attrs(match.group(1) or ""))
+
+    # Divs do editor → parágrafos (preserva centro/direita).
+    html = re.sub(r"(?is)<div\b([^>]*)>", _abrir_como_p, html)
+    html = re.sub(r"(?is)</div>", "</p>", html)
+
+    # Wrappers sem valor tipográfico: só remove a tag, mantém o miolo.
+    html = re.sub(
+        r"(?is)</?(html|body|article|section|header|footer|main)\b[^>]*>",
+        "",
+        html,
+    )
+    return html
+
+
 def html_para_secao_sei(html_bruto):
     """
     Converte HTML do catálogo/Word para o subset que o SEI grava de fato.
 
     Formato aceito pelo editor de seções (homologação PRODESP):
-    - <p class="Texto_Justificado">…</p> separados por \\r\\n\\r\\n
+    - <p class="Texto_Justificado|Texto_Centralizado">…</p> separados por \\r\\n\\r\\n
     - acentos como entidades (&oacute;, &ccedil;…)
     - <strong>, <em>, <u>, <br />
     - <ul>/<ol>/<li> e tabelas border=1 cellpadding=1 cellspacing=1
     - sem DOCTYPE / html / head / body / h1 de capa
+    - preserva alinhamento (centro/direita) vindo do editor de Configurações
     """
     html = str(html_bruto or "").strip()
     if not html:
@@ -558,11 +616,8 @@ def html_para_secao_sei(html_bruto):
     html = re.sub(r"(?is)<head\b[^>]*>.*?</head>", "", html)
     html = re.sub(r"(?is)<script\b[^>]*>.*?</script>", "", html)
     html = re.sub(r"(?is)<style\b[^>]*>.*?</style>", "", html)
-    html = re.sub(
-        r"(?is)</?(html|body|article|section|header|footer|main|div)\b[^>]*>",
-        "",
-        html,
-    )
+    # Divs do contenteditable → <p> (não apagar: cola linhas)
+    html = _preparar_html_catalogo_para_sei(html)
     # Título do formulário — no SEI já existe seção só-leitura com o título
     html = re.sub(r"(?is)<h1\b[^>]*>.*?</h1>", "", html, count=1)
     # <hr> não existe no subset do SEI
@@ -590,11 +645,14 @@ def html_para_secao_sei(html_bruto):
                 return
             bruto = "".join(self._texto_solto)
             self._texto_solto = []
-            limpo = " ".join(bruto.split()).strip()
-            if limpo:
-                self.partes.append(
-                    f'<p class="Texto_Justificado">{_texto_entidades_sei(limpo)}</p>'
-                )
+            # Cada linha solta vira um parágrafo (não colar tudo numa linha).
+            for linha in re.split(r"[\r\n]+", bruto):
+                limpo = " ".join(linha.split()).strip()
+                if limpo:
+                    self.partes.append(
+                        f'{_tag_abertura_paragrafo_sei("left")}'
+                        f"{_texto_entidades_sei(limpo)}</p>"
+                    )
 
         def handle_starttag(self, tag, attrs):
             tag = tag.lower()
@@ -610,21 +668,30 @@ def html_para_secao_sei(html_bruto):
 
             self._flush_texto_solto()
             attrs_map = {str(k).lower(): str(v or "") for k, v in (attrs or [])}
+            alinhamento = _alinhamento_de_attrs(attrs)
 
             if tag in {"h2", "h3", "h4", "h5", "h6"}:
-                self.partes.append('<p class="Texto_Justificado"><strong>')
+                # Títulos centralizados no modelo viram parágrafo centralizado.
+                self.partes.append(
+                    _tag_abertura_paragrafo_sei(alinhamento, negrito=True)
+                )
                 self.abertas.append(("h", tag))
                 self._em_bloco = True
                 return
 
             if tag == "p":
-                self.partes.append('<p class="Texto_Justificado">')
+                self.partes.append(_tag_abertura_paragrafo_sei(alinhamento))
                 self.abertas.append(("p", tag))
                 self._em_bloco = True
                 return
 
             if tag == "span":
                 estilo = attrs_map.get("style", "").strip()
+                classe = attrs_map.get("class", "").strip().lower()
+                # Tags do editor ({{campo}}) — só o texto, sem o span.
+                if "tag" in classe.split():
+                    self.abertas.append(("span_skip", tag))
+                    return
                 # Só preserva estilos simples usados no template SEI (cor).
                 if estilo and re.fullmatch(
                     r"(?i)\s*color\s*:\s*#[0-9a-f]{3,8}\s*;?\s*", estilo
@@ -636,7 +703,6 @@ def html_para_secao_sei(html_bruto):
                         )
                         self.abertas.append(("span", tag))
                         return
-                # span sem estilo útil: transparente (não abre tag)
                 self.abertas.append(("span_skip", tag))
                 return
 
@@ -733,9 +799,20 @@ def html_para_secao_sei(html_bruto):
             texto = normalizar_caracteres_para_sei(data)
             if not texto:
                 return
+            # Preserva quebras de linha; só colapsa espaços horizontais.
             texto = re.sub(r"[ \t]+", " ", texto)
             if not self._em_bloco and not self._em_celula and not self.abertas:
                 self._texto_solto.append(texto)
+                return
+            # Dentro de parágrafo: newline do editor → <br />
+            if "\n" in texto and self._em_bloco:
+                pedacos = re.split(r"\r?\n", texto)
+                for i, pedaco in enumerate(pedacos):
+                    if i:
+                        self.partes.append("<br />")
+                    pedaco = pedaco.strip() if i not in (0, len(pedacos) - 1) else pedaco
+                    if pedaco:
+                        self.partes.append(_texto_entidades_sei(pedaco))
                 return
             self.partes.append(_texto_entidades_sei(texto))
 
@@ -756,8 +833,21 @@ def html_para_secao_sei(html_bruto):
                 else:
                     self.partes.append(f"</{tipo}>")
             bruto = "".join(self.partes)
+            # Linhas em branco do editor (div/p vazios ou só <br>) → &nbsp;
+            # para o SEI manter o espaçamento vertical do modelo.
+            def _paragrafo_espaco(match):
+                abertura = match.group(1)
+                # Cada <br> extra no mesmo bloco vira um parágrafo em branco a mais.
+                qtd_br = len(re.findall(r"(?i)<br\s*/?>", match.group(0)))
+                qtd = max(1, qtd_br)
+                return "".join(f"{abertura}&nbsp;</p>" for _ in range(qtd))
+
             bruto = re.sub(
-                r'(?is)<p class="Texto_Justificado">\s*</p>', "", bruto
+                r'(?is)(<p class="Texto_(?:Justificado|Centralizado|Alinhado_Direita)"[^>]*>)'
+                r"(?:\s|&nbsp;|<br\s*/?>)*"
+                r"</p>",
+                _paragrafo_espaco,
+                bruto,
             )
             # Blocos separados como no conteúdo nativo do SEI
             bruto = re.sub(r"</p>\s*<p ", "</p>\r\n\r\n<p ", bruto)
@@ -793,7 +883,8 @@ def _fallback_paragrafos(html_bruto):
         limpa = " ".join(linha.split()).strip()
         if limpa:
             paragrafos.append(
-                f'<p class="Texto_Justificado">{_texto_entidades_sei(limpa)}</p>'
+                f'{_tag_abertura_paragrafo_sei("left")}'
+                f"{_texto_entidades_sei(limpa)}</p>"
             )
     return "\r\n\r\n".join(paragrafos)
 
