@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GCPD — Abertura de processo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=fmt-sei-espacos" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=filtro-paginacao" />
 </head>
 <body>
 <header>
@@ -37,12 +37,22 @@
       </div>
       <p class="ajuda">Os novos processos entram nesta grade após serem criados no SEI; o protocolo SEI é a identificação oficial e não é gerado código GCPD. Marque um ou mais itens para excluir, ou use o ícone de lixeira em Ações.</p>
       <p id="mensagem-principal" class="erro oculto"></p>
+      <div class="barra-filtro-processos">
+        <label class="sr-only" for="filtro-processos">Filtrar processos</label>
+        <input
+          type="search"
+          id="filtro-processos"
+          placeholder="Filtrar por código, nº SEI, tipo, assunto…"
+          autocomplete="off"
+        />
+        <span id="filtro-processos-resumo" class="filtro-processos-resumo" aria-live="polite"></span>
+      </div>
       <div class="grade-processos-wrap">
         <table class="grade-processos" aria-label="Processos cadastrados">
           <thead>
             <tr>
               <th class="col-check">
-                <input type="checkbox" id="processos-marcar-todos" title="Marcar todos" aria-label="Marcar todos os processos" />
+                <input type="checkbox" id="processos-marcar-todos" title="Marcar todos desta página" aria-label="Marcar todos os processos desta página" />
               </th>
               <th>Código GCPD (legado)</th>
               <th>Tipo de processo</th>
@@ -57,6 +67,11 @@
           </tbody>
         </table>
       </div>
+      <nav class="paginacao-processos" id="paginacao-processos" aria-label="Paginação dos processos" hidden>
+        <button type="button" class="acao" id="processos-pagina-anterior" disabled>Anterior</button>
+        <span id="processos-pagina-info" class="paginacao-processos-info"></span>
+        <button type="button" class="acao" id="processos-pagina-proxima" disabled>Próxima</button>
+      </nav>
     </section>
   </div>
 
@@ -1046,6 +1061,6 @@
   </div>
 
 <script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=doc-modelo"></script>
-<script src="{{ url_for('static', filename='cadastro.js') }}?v=multi-docs-ia"></script>
+<script src="{{ url_for('static', filename='cadastro.js') }}?v=filtro-paginacao"></script>
 </body>
 </html>
