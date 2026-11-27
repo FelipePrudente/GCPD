@@ -1187,7 +1187,10 @@ def documentos_mais_usados_por_tipo_processo(tipo_processo, limite=5):
             """
             SELECT
                 d.id_serie AS id,
-                COALESCE(NULLIF(TRIM(d.tipo_documento), ''), t.nome) AS nome,
+                COALESCE(
+                    NULLIF(TRIM(MAX(d.tipo_documento)), ''),
+                    MAX(t.nome)
+                ) AS nome,
                 COUNT(*) AS usos
             FROM documento_sei d
             JOIN processo p ON p.id = d.processo_id
