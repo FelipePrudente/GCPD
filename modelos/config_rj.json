@@ -1,9 +1,165 @@
 {
   "tags": [
     {
-      "id": "introducao",
-      "rotulo": "Introducao",
-      "grupo": "Introdução",
+      "id": "id_relatorio",
+      "rotulo": "ID do Relatório",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "numero_sei",
+      "rotulo": "Nº Processo SEI",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 2,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "n_sow",
+      "rotulo": "Nº SOW",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "diretoria",
+      "rotulo": "Diretoria",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "superintendencia",
+      "rotulo": "Superintendência",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "gerencia",
+      "rotulo": "Gerência",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "matricula_gerente",
+      "rotulo": "Matrícula Gerente",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "nome_gerente",
+      "rotulo": "Nome Gerente",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "email_gerente",
+      "rotulo": "E-mail Gerente",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 2,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "numero_contrato",
+      "rotulo": "Nº Contrato",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "fornecedor",
+      "rotulo": "Fornecedor",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "data_fim_vigencia",
+      "rotulo": "Data Fim Vigência",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 2,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "objeto_descricao_atividades",
+      "rotulo": "Objeto e Descrição dos Serviços/Atividades",
+      "grupo": "Formulário",
       "reuso_em": [],
       "calculado": false,
       "tipo": "texto",
@@ -14,9 +170,22 @@
       "somar": ""
     },
     {
-      "id": "objetivo",
-      "rotulo": "Objetivo",
-      "grupo": "Objetivo",
+      "id": "local_execucao",
+      "rotulo": "Local de Execução",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "endereco_execucao",
+      "rotulo": "Endereço de Execução",
+      "grupo": "Formulário",
       "reuso_em": [],
       "calculado": false,
       "tipo": "texto",
@@ -27,9 +196,61 @@
       "somar": ""
     },
     {
-      "id": "tabela_finc",
-      "rotulo": "Financeiro",
-      "grupo": "Financeiro",
+      "id": "cliente_os",
+      "rotulo": "Cliente OS",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "projeto",
+      "rotulo": "Projeto",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "entregaveis",
+      "rotulo": "Entregáveis",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "prazo_os",
+      "rotulo": "Prazo da OS (dias corridos)",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
+      "largura": 1,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "itens_contrato",
+      "rotulo": "Itens do Contrato",
+      "grupo": "Formulário",
       "reuso_em": [],
       "calculado": false,
       "tipo": "tabela",
@@ -37,31 +258,64 @@
       "consulta_ia": "",
       "colunas": [
         {
-          "id": "perfil",
-          "rotulo": "Perfil técnico",
+          "id": "servico",
+          "rotulo": "Serviço",
           "tipo": "texto"
         },
         {
-          "id": "experiencia",
-          "rotulo": "Experiência mínima (anos)",
+          "id": "cargo",
+          "rotulo": "Cargo",
+          "tipo": "texto"
+        },
+        {
+          "id": "nivel",
+          "rotulo": "Nível Profissional (Jr./Pleno/Sênior)",
+          "tipo": "texto"
+        },
+        {
+          "id": "tecnologia",
+          "rotulo": "Tecnologia",
+          "tipo": "texto"
+        },
+        {
+          "id": "qtd_horas",
+          "rotulo": "Quantidade de Horas",
           "tipo": "numero"
         },
         {
-          "id": "horas",
-          "rotulo": "Total de horas",
+          "id": "valor_total",
+          "rotulo": "Valor Total",
+          "tipo": "numero"
+        },
+        {
+          "id": "qtd_recursos",
+          "rotulo": "Quantidade de Recursos",
           "tipo": "numero"
         }
       ],
-      "agrupar_por": "",
-      "somar": "horas"
+      "agrupar_por": "qtd_horas",
+      "somar": "valor_total"
     },
     {
-      "id": "n_proc_sei",
-      "rotulo": "Nº Processo SEI",
-      "grupo": "Introdução",
+      "id": "recurso_financeiro",
+      "rotulo": "Recurso Finaceiro",
+      "grupo": "Formulário",
       "reuso_em": [],
       "calculado": false,
-      "tipo": "numero",
+      "tipo": "texto_curto",
+      "largura": 4,
+      "consulta_ia": "",
+      "colunas": [],
+      "agrupar_por": "",
+      "somar": ""
+    },
+    {
+      "id": "aprovador",
+      "rotulo": "Aprovador",
+      "grupo": "Formulário",
+      "reuso_em": [],
+      "calculado": false,
+      "tipo": "texto_curto",
       "largura": 2,
       "consulta_ia": "",
       "colunas": [],
@@ -69,5 +323,5 @@
       "somar": ""
     }
   ],
-  "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Introdução\"><header class=\"card-bloco-cabecalho\"><h3>Introdução</h3></header><div class=\"card-bloco-corpo\"><p style=\"text-align: center;\"><b>RELATÓRIO DE JUSTIFICATIVA</b></p><p style=\"text-align: left;\"><b>Nº do Processo</b>:&nbsp;{{n_proc_sei}}</p><p style=\"text-align: left;\"><b>Interessado: </b>CIA DE PROCESSAMENTO DE DADOS DO ESTADO DE SAO PAULO -</p><p style=\"text-align: left;\">PRODESP</p><p style=\"text-align: left;\"><b>Assunto: </b>CONTRATAÇÃO DE SERVIÇOS DE APOIO TÉCNICO ESPECIALIZADO EM</p><p style=\"text-align: left;\">TECNOLOGIAS AWS</p><p style=\"text-align: left;\">CIA. DE PROCESSAMENTO DE DADOS DO ESTADO DE SÃO PAULO</p><p style=\"text-align: center;\">RELATÓRIO DE JUSTIFICATIVA</p><p style=\"text-align: left;\">REL.GEN.Rel.GEN{{introducao}}</p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Objetivo\"><header class=\"card-bloco-cabecalho\"><h3>Objetivo</h3></header><div class=\"card-bloco-corpo\"><p>{{objetivo}}</p></div></section>\n<section class=\"card-bloco\" data-grupo=\"Financeiro\"><header class=\"card-bloco-cabecalho\"><h3>Financeiro</h3></header><div class=\"card-bloco-corpo\"><p>{{tabela_finc}}</p></div></section>\n</article>"
+  "documento": "<article class=\"folha-doc\">\n<section class=\"card-bloco\" data-grupo=\"Formulário\"><header class=\"card-bloco-cabecalho\"><h3>Formulário</h3></header><div class=\"card-bloco-corpo\"><div style=\"text-align: center;\"><b>Governo do Estado de São Paulo</b></div><div style=\"text-align: center;\"><b>Companhia&nbsp; de Processamento de Dados do Estado de São Paulo</b></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><br></div><div style=\"text-align: center;\"><b>JUSTIFICATIVA DE OS</b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: center;\"><b><br></b></div><div style=\"text-align: left;\"><b>Número Processo SEI:&nbsp;&nbsp;{{numero_sei}}</b></div><div style=\"text-align: left;\"><b>ID do Relatório:&nbsp; &nbsp;{{id_relatorio}}</b></div><div style=\"text-align: left;\"><b>Número SOW:&nbsp;&nbsp;{{n_sow}}</b></div><div style=\"text-align: left;\"><b>Diretoria:&nbsp;&nbsp;{{diretoria}}</b></div><div style=\"text-align: left;\"><b>Superintendência:&nbsp;&nbsp;{{superintendencia}}</b></div><div style=\"text-align: left;\"><b>Gerência:&nbsp;&nbsp;{{gerencia}}</b></div><div style=\"text-align: left;\"><b>Matrícula Gerente:&nbsp;&nbsp;{{matricula_gerente}}</b></div><div style=\"text-align: left;\"><b>Nome Gerente:&nbsp;&nbsp;{{nome_gerente}}</b></div><div style=\"text-align: left;\"><b>E-mail Gerente:&nbsp;&nbsp;{{email_gerente}}</b></div><div style=\"text-align: left;\"><b>Número do Contrato:&nbsp;&nbsp;{{numero_contrato}}</b></div><div style=\"text-align: left;\"><b>Fornecedor:&nbsp;&nbsp;{{fornecedor}}</b></div><div style=\"text-align: left;\"><b>Data Fim Vigência:&nbsp;&nbsp;{{data_fim_vigencia}}</b></div><div style=\"text-align: left;\"><b>Objeto e Descrição dos Serviços/Atividades:&nbsp;&nbsp;{{objeto_descricao_atividades}}</b></div><div style=\"text-align: left;\"><b>Local de Execução:&nbsp;&nbsp;{{local_execucao}}</b></div><div style=\"text-align: left;\"><b>Endereço de Execução:&nbsp;&nbsp;{{endereco_execucao}}</b></div><div style=\"text-align: left;\"><b>Cliente OS:&nbsp;&nbsp;{{cliente_os}}</b></div><div style=\"text-align: left;\"><b>Projeto:&nbsp;&nbsp;{{projeto}}</b></div><div style=\"text-align: left;\"><b>Entregáveis:&nbsp;&nbsp;{{entregaveis}}</b></div><div style=\"text-align: left;\"><b>Prazo (dias corridos):&nbsp;&nbsp;{{prazo_os}}</b></div><div style=\"text-align: left;\"><b>Itens Contrato{{itens_contrato}}</b></div><div style=\"text-align: left;\"><b>Recurso Financeiro:&nbsp;&nbsp;{{recurso_financeiro}}<br></b></div><div style=\"text-align: left;\"><b><br></b></div><div style=\"text-align: left;\"><b><br></b></div><div style=\"text-align: left;\"><b>Aprovador:</b></div><div style=\"text-align: left;\"><b><br>{{nome_gerente}}<br>{{matricula_gerente}}</b></div><div style=\"text-align: left;\"><b><br></b></div><p></p></div></section>\n</article>"
 }

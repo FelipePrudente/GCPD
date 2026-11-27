@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Listas permanentes do sistema e registros de processos."""
 import json
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -31,12 +32,12 @@ CREATE TABLE IF NOT EXISTS perfil (
     nome TEXT NOT NULL COLLATE NOCASE,
     UNIQUE (tecnologia_id, nome)
 );
-CREATE TABLE IF NOT EXISTS tipo_processo_sei (
+    CREATE TABLE IF NOT EXISTS tipo_processo_sei (
     id INTEGER PRIMARY KEY,
     nome TEXT NOT NULL COLLATE NOCASE UNIQUE,
-    id_sei TEXT
-);
-CREATE TABLE IF NOT EXISTS assunto_sei (
+        id_sei TEXT
+    );
+    CREATE TABLE IF NOT EXISTS assunto_sei (
     id INTEGER PRIMARY KEY,
     nome TEXT NOT NULL COLLATE NOCASE UNIQUE,
     id_sei TEXT,
@@ -46,47 +47,60 @@ CREATE TABLE IF NOT EXISTS assunto_sei (
 CREATE TABLE IF NOT EXISTS tipo_processo_assunto (
     tipo_processo_id_sei TEXT NOT NULL PRIMARY KEY,
     assunto_id_sei TEXT NOT NULL DEFAULT ''
-);
-CREATE TABLE IF NOT EXISTS tipo_documento_sei (
-    id TEXT PRIMARY KEY,
+    );
+    CREATE TABLE IF NOT EXISTS tipo_documento_sei (
+        id TEXT PRIMARY KEY,
     nome TEXT NOT NULL COLLATE NOCASE,
     ordem INTEGER NOT NULL,
     precisa_assunto INTEGER NOT NULL DEFAULT 0,
     precisa_numero INTEGER NOT NULL DEFAULT 0
-);
-CREATE TABLE IF NOT EXISTS processo (
+    );
+    CREATE TABLE IF NOT EXISTS processo (
     id INTEGER PRIMARY KEY,
-    codigo TEXT UNIQUE,
-    tipo TEXT NOT NULL,
-    numero_sei TEXT,
-    id_procedimento_sei TEXT,
-    assunto TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'nao_enviado',
-    pasta_id TEXT,
+        codigo TEXT UNIQUE,
+        tipo TEXT NOT NULL,
+        numero_sei TEXT,
+        id_procedimento_sei TEXT,
+        assunto TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'nao_enviado',
+        pasta_id TEXT,
     cadastro TEXT,
     criado_em TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS documento_processo (
+    );
+    CREATE TABLE IF NOT EXISTS documento_processo (
     id INTEGER PRIMARY KEY,
-    processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
-    nome TEXT NOT NULL,
-    tipo_documento TEXT NOT NULL,
-    arquivo_origem TEXT NOT NULL,
+        processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
+        nome TEXT NOT NULL,
+        tipo_documento TEXT NOT NULL,
+        arquivo_origem TEXT NOT NULL,
     metadados TEXT NOT NULL,
-    conteudo_html TEXT NOT NULL,
+        conteudo_html TEXT NOT NULL,
     criado_em TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS documento_sei (
+    );
+    CREATE TABLE IF NOT EXISTS documento_sei (
     id INTEGER PRIMARY KEY,
-    processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
-    id_documento_sei TEXT NOT NULL UNIQUE,
-    protocolo TEXT NOT NULL DEFAULT '',
-    descricao TEXT NOT NULL,
-    id_serie TEXT NOT NULL DEFAULT '',
-    tipo_documento TEXT NOT NULL DEFAULT '',
+        processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
+        id_documento_sei TEXT NOT NULL UNIQUE,
+        protocolo TEXT NOT NULL DEFAULT '',
+        descricao TEXT NOT NULL,
+        id_serie TEXT NOT NULL DEFAULT '',
+        tipo_documento TEXT NOT NULL DEFAULT '',
     criado_em TEXT NOT NULL
+    );
+CREATE TABLE IF NOT EXISTS gerencia (
+    id INTEGER PRIMARY KEY,
+    sigla TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    descritivo TEXT NOT NULL DEFAULT ''
 );
-"""
+    """
+
+# Siglas iniciais. O descritivo da GOR veio do processo lido; os demais ficam para o cadastro.
+GERENCIAS_INICIAIS = (
+    ("GOR", "Gerência de Operações Comerciais"),
+    ("CGS", ""),
+    ("DDS", ""),
+    ("GRC", ""),
+)
 
 # id, nome, precisa_assunto, precisa_numero. Número, quando exigido, vai fixo como DDS001.
 NUMERO_DOCUMENTO_FIXO = "DDS001"
@@ -142,6 +156,10 @@ def iniciar():
     banco_novo = not ARQUIVO.exists()
     with conectar() as conexao:
         conexao.executescript(SCHEMA)
+        conexao.executemany(
+            "INSERT OR IGNORE INTO gerencia (sigla, descritivo) VALUES (?, ?)",
+            GERENCIAS_INICIAIS,
+        )
         colunas_documento_sei = {
             linha["name"]
             for linha in conexao.execute("PRAGMA table_info(documento_sei)").fetchall()
@@ -261,13 +279,13 @@ def iniciar():
                     """
                     CREATE TABLE processo_novo (
                         id INTEGER PRIMARY KEY,
-                        codigo TEXT UNIQUE,
-                        tipo TEXT NOT NULL,
-                        numero_sei TEXT,
-                        id_procedimento_sei TEXT,
-                        assunto TEXT NOT NULL,
-                        status TEXT NOT NULL DEFAULT 'nao_enviado',
-                        pasta_id TEXT,
+        codigo TEXT UNIQUE,
+        tipo TEXT NOT NULL,
+        numero_sei TEXT,
+        id_procedimento_sei TEXT,
+        assunto TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'nao_enviado',
+        pasta_id TEXT,
                         cadastro TEXT,
                         criado_em TEXT NOT NULL
                     )
@@ -733,6 +751,62 @@ def _inserir_perfil(conexao, tecnologia_id, nome):
     )
 
 
+def listar_gerencias():
+    with conectar() as conexao:
+        return [
+            {"id": linha["id"], "sigla": linha["sigla"], "descritivo": linha["descritivo"] or ""}
+            for linha in conexao.execute("SELECT id, sigla, descritivo FROM gerencia ORDER BY sigla")
+        ]
+
+
+def criar_gerencia(sigla, descritivo):
+    sigla = _sigla_gerencia(sigla)
+    descritivo = str(descritivo or "").strip()
+    if not descritivo:
+        raise ValueError("Informe o descritivo da gerência.")
+    with conectar() as conexao:
+        try:
+            cursor = conexao.execute(
+                "INSERT INTO gerencia (sigla, descritivo) VALUES (?, ?)",
+                (sigla, descritivo),
+            )
+        except sqlite3.IntegrityError as erro:
+            raise ValueError("Essa sigla já está cadastrada.") from erro
+        return cursor.lastrowid
+
+
+def atualizar_gerencia(identificador, sigla, descritivo):
+    sigla = _sigla_gerencia(sigla)
+    descritivo = str(descritivo or "").strip()
+    if not descritivo:
+        raise ValueError("Informe o descritivo da gerência.")
+    with conectar() as conexao:
+        existe = conexao.execute("SELECT 1 FROM gerencia WHERE id = ?", (identificador,)).fetchone()
+        if not existe:
+            raise ValueError("Gerência não encontrada.")
+        try:
+            conexao.execute(
+                "UPDATE gerencia SET sigla = ?, descritivo = ? WHERE id = ?",
+                (sigla, descritivo, identificador),
+            )
+        except sqlite3.IntegrityError as erro:
+            raise ValueError("Essa sigla já está cadastrada.") from erro
+
+
+def excluir_gerencia(identificador):
+    with conectar() as conexao:
+        apagou = conexao.execute("DELETE FROM gerencia WHERE id = ?", (identificador,)).rowcount
+    if not apagou:
+        raise ValueError("Gerência não encontrada.")
+
+
+def _sigla_gerencia(valor):
+    texto = str(valor or "").strip().upper()
+    if not re.fullmatch(r"[A-Z0-9]{2,8}", texto):
+        raise ValueError("A sigla precisa ter de 2 a 8 letras ou números, sem espaço.")
+    return texto
+
+
 def listar():
     with conectar() as conexao:
         tecnologias = []
@@ -1056,8 +1130,8 @@ def registrar_documento_sei(processo_id, id_documento, protocolo, descricao, id_
         criado_em = datetime.now().isoformat(timespec="seconds")
         conexao.execute(
             """
-            INSERT INTO documento_sei
-                (processo_id, id_documento_sei, protocolo, descricao, id_serie, tipo_documento, criado_em)
+                INSERT INTO documento_sei
+                    (processo_id, id_documento_sei, protocolo, descricao, id_serie, tipo_documento, criado_em)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (

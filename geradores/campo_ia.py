@@ -607,8 +607,9 @@ def _erro_http_detalhe(erro):
     return texto
 
 
-def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=True):
+def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=False):
     # Chaves AQ. (AI Studio) exigem o header x-goog-api-key.
+    # thinkingConfig costuma falhar no flash-lite ("invalid argument"); só tenta se pedido.
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
         f"{urllib.parse.quote(modelo, safe='')}:generateContent"
@@ -634,7 +635,10 @@ def _gemini_generate(chave, modelo, prompt, max_tokens=800, thinking=True):
             dados = json.loads(resp.read().decode("utf-8"))
     except Exception as erro:
         detalhe = _erro_http_detalhe(erro)
-        if thinking and ("thinking" in detalhe.lower() or "400" in detalhe):
+        baixo = detalhe.lower()
+        if thinking and (
+            "thinking" in baixo or "400" in detalhe or "invalid argument" in baixo
+        ):
             return _gemini_generate(chave, modelo, prompt, max_tokens=max_tokens, thinking=False)
         raise RuntimeError(detalhe) from erro
     partes = (
@@ -649,10 +653,11 @@ def _chamar_gemini(consulta, textos, cfg):
     chave = str(cfg.get("google_api_key") or "").strip()
     if not chave:
         return None
-    modelo = str(cfg.get("modelo_google") or "gemini-3.5-flash").strip() or "gemini-3.5-flash"
-    candidatos = [modelo]
-    if modelo != "gemini-3.5-flash-lite":
-        candidatos.append("gemini-3.5-flash-lite")
+    modelo = str(cfg.get("modelo_google") or "gemini-3.5-flash-lite").strip() or "gemini-3.5-flash-lite"
+    lite = "gemini-3.5-flash-lite"
+    # Lite primeiro: o flash cheio tem falhado por timeout nesta conta.
+    candidatos = [lite] if modelo == lite else [lite, modelo]
+    candidatos = list(dict.fromkeys(candidatos))
     contexto = "\n".join(f"- {t}" for t in (textos or [])[:4]) or "(sem trechos web)"
     if _parece_pedido_salario(consulta):
         instrucao = (
@@ -689,12 +694,20 @@ def _chamar_gemini(consulta, textos, cfg):
                 return parseado
             if parseado:
                 return {"itens": parseado, "fonte": f"Google Gemini ({nome})", "modelo": nome}
+            if (texto or "").strip():
+                return {
+                    "itens": [(texto or "").strip()[:900]],
+                    "fonte": f"Google Gemini ({nome})",
+                    "modelo": nome,
+                }
             ultimo_erro = f"Modelo {nome} retornou vazio."
         except Exception as erro:
-            ultimo_erro = str(erro)
+            ultimo_erro = _erro_http_detalhe(erro) if "HTTP" in type(erro).__name__ or hasattr(erro, "code") else str(erro)
             baixo = ultimo_erro.lower()
             modelo_indisponivel = "404" in ultimo_erro or "no longer available" in baixo or "not_found" in baixo
-            if modelo_indisponivel and indice == 0:
+            if (modelo_indisponivel or "timed out" in baixo or "timeout" in baixo) and indice < len(candidatos) - 1:
+                continue
+            if indice < len(candidatos) - 1:
                 continue
             break
     return {"erro": ultimo_erro or "Gemini não retornou conteúdo.", "fonte": "Google Gemini"}
@@ -744,43 +757,106 @@ def _chamar_openai(consulta, textos, cfg):
             dados = json.loads(resp.read().decode("utf-8"))
         texto = dados["choices"][0]["message"]["content"].strip()
     except Exception as erro:
-        return {"erro": str(erro), "fonte": "OpenAI"}
+        return {"erro": _erro_http_detalhe(erro), "fonte": "OpenAI"}
     parseado = _parse_resposta_llm(texto, consulta)
     if isinstance(parseado, dict):
         parseado["fonte"] = "OpenAI"
         return parseado
-    return {"itens": parseado, "fonte": "OpenAI"}
+    if parseado:
+        return {"itens": parseado, "fonte": "OpenAI"}
+    if texto:
+        return {"itens": [texto[:900]], "fonte": "OpenAI"}
+    return {"erro": "OpenAI retornou vazio.", "fonte": "OpenAI"}
+
+
+def _chamar_copilot_campo(consulta, textos, cfg):
+    try:
+        from geradores.copilot_ia import responder_copilot
+    except Exception as erro:
+        return {"erro": str(erro), "fonte": "Copilot Studio"}
+    if not str(cfg.get("copilot_directline_secret") or "").strip():
+        return None
+    contexto = "\n".join(f"- {t}" for t in (textos or [])[:4])
+    prompt = consulta
+    if contexto:
+        prompt = f"{consulta}\n\nTrechos de apoio:\n{contexto}"
+    try:
+        texto, fonte = responder_copilot(prompt, timeout=45)
+    except Exception as erro:
+        return {"erro": str(erro), "fonte": "Copilot Studio"}
+    parseado = _parse_resposta_llm(texto, consulta)
+    if isinstance(parseado, dict):
+        parseado["fonte"] = fonte
+        return parseado
+    if parseado:
+        return {"itens": parseado, "fonte": fonte}
+    if texto:
+        return {"itens": [texto[:900]], "fonte": fonte}
+    return {"erro": "Copilot Studio retornou vazio.", "fonte": fonte}
 
 
 def _refinar_com_llm(consulta, textos):
-    """Usa Google Gemini e/ou OpenAI conforme configuração local/env."""
+    """Dispara Copilot/Gemini/OpenAI e usa a primeira resposta válida."""
+    from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+
     from geradores.ia_config import carregar_ia_config
 
     cfg = carregar_ia_config()
-    provedor = str(cfg.get("provedor") or "google").strip().lower()
-    ordem = []
-    if provedor == "google":
-        ordem = ["google", "openai"]
-    elif provedor == "openai":
-        ordem = ["openai", "google"]
-    else:
-        ordem = ["google", "openai"]
+    provedor = str(cfg.get("provedor") or "copilot").strip().lower()
+    tem_google = bool(str(cfg.get("google_api_key") or "").strip())
+    tem_openai = bool(str(cfg.get("openai_api_key") or "").strip())
+    tem_copilot = bool(str(cfg.get("copilot_directline_secret") or "").strip())
 
-    ultimo_erro = ""
-    for nome in ordem:
-        resultado = _chamar_gemini(consulta, textos, cfg) if nome == "google" else _chamar_openai(consulta, textos, cfg)
-        if resultado is None:
-            continue
-        if resultado.get("erro"):
-            ultimo_erro = resultado["erro"]
-            continue
+    def valido(resultado):
+        if not isinstance(resultado, dict) or resultado.get("erro"):
+            return False
         if resultado.get("refinar"):
-            return resultado
-        itens = resultado.get("itens") or []
-        if itens:
-            return resultado
-    if ultimo_erro:
-        return {"erro": ultimo_erro}
+            return True
+        return bool(resultado.get("itens"))
+
+    if provedor == "copilot" and tem_copilot:
+        return _chamar_copilot_campo(consulta, textos, cfg) or {"itens": [], "fonte": None}
+    if provedor == "google" and tem_google:
+        return _chamar_gemini(consulta, textos, cfg) or {"itens": [], "fonte": None}
+    if provedor == "openai" and tem_openai:
+        return _chamar_openai(consulta, textos, cfg) or {"itens": [], "fonte": None}
+
+    chamadas = []
+    if tem_copilot:
+        chamadas.append(("copilot", lambda: _chamar_copilot_campo(consulta, textos, cfg)))
+    if tem_google:
+        chamadas.append(("google", lambda: _chamar_gemini(consulta, textos, cfg)))
+    if tem_openai:
+        chamadas.append(("openai", lambda: _chamar_openai(consulta, textos, cfg)))
+    if not chamadas:
+        return {"itens": [], "fonte": None}
+    if len(chamadas) == 1:
+        return chamadas[0][1]() or {"itens": [], "fonte": None}
+
+    erros = []
+    with ThreadPoolExecutor(max_workers=len(chamadas)) as pool:
+        pendentes = {pool.submit(fn) for _, fn in chamadas}
+        while pendentes:
+            prontos, pendentes = wait(pendentes, timeout=45, return_when=FIRST_COMPLETED)
+            if not prontos:
+                break
+            for futuro in prontos:
+                try:
+                    resultado = futuro.result()
+                except Exception as erro:
+                    erros.append(str(erro))
+                    continue
+                if resultado is None:
+                    continue
+                if resultado.get("erro"):
+                    erros.append(str(resultado.get("erro")))
+                    continue
+                if valido(resultado):
+                    for restante in pendentes:
+                        restante.cancel()
+                    return resultado
+    if erros:
+        return {"erro": " | ".join(erros[:2]), "fonte": "LLM"}
     return {"itens": [], "fonte": None}
 
 
@@ -815,7 +891,11 @@ def responder_campo_ia(consulta, tecnologia="", rotulo="", usar_tecnologia=False
     from geradores.ia_config import carregar_ia_config
 
     cfg = carregar_ia_config()
-    tem_llm = bool(str(cfg.get("google_api_key") or "").strip() or str(cfg.get("openai_api_key") or "").strip())
+    tem_llm = bool(
+        str(cfg.get("google_api_key") or "").strip()
+        or str(cfg.get("openai_api_key") or "").strip()
+        or str(cfg.get("copilot_directline_secret") or "").strip()
+    )
 
     # Com LLM: evita busca web genérica, mas pesquisa salarial e “usar tecnologia” precisam da web.
     textos, fontes = ([], [])

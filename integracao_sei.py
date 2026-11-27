@@ -152,6 +152,34 @@ def _mensagem_api(payload):
     return ""
 
 
+def _mensagem_erro_http(corpo):
+    texto = str(corpo or "").strip()
+    if not texto:
+        return ""
+    try:
+        return _mensagem_api(json.loads(texto))
+    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError):
+        pass
+    # Páginas Slim/Infra do mod-wssei (HTML) em falhas 5xx.
+    if "ORA-28000" in texto or "account is locked" in texto.casefold():
+        return (
+            "O banco do SEI de homologação está com a conta Oracle bloqueada (ORA-28000). "
+            "Peça ao time de infraestrutura do SEI para desbloquear."
+        )
+    match = re.search(
+        r"<strong>\s*Message:\s*</strong>\s*([^<]+)",
+        texto,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        detalhe = html_unescape(match.group(1)).strip()
+        if detalhe:
+            return detalhe
+    if "Slim Application Error" in texto or "InfraException" in texto:
+        return "O SEI de homologação está indisponível no momento (erro interno)."
+    return ""
+
+
 def _post_form(base_url, caminho, campos, token=None, resultado_incerto=False, timeout=30):
     cabecalhos = {"Content-Type": "application/x-www-form-urlencoded"}
     if token:
@@ -169,10 +197,12 @@ def _post_form(base_url, caminho, campos, token=None, resultado_incerto=False, t
         incerto = resultado_incerto and erro.code >= 500
         detalhe = ""
         try:
-            payload = json.loads(erro.read(TAMANHO_MAXIMO_RESPOSTA).decode("utf-8"))
-            detalhe = _mensagem_api(payload)
-        except (UnicodeDecodeError, json.JSONDecodeError, Exception):
+            corpo = erro.read(TAMANHO_MAXIMO_RESPOSTA).decode("utf-8", errors="replace")
+            detalhe = _mensagem_erro_http(corpo)
+        except Exception:
             pass
+        if erro.code >= 500 and not detalhe:
+            detalhe = "O SEI de homologação está indisponível no momento (erro interno)."
         mensagem = f"SEI respondeu com HTTP {erro.code}."
         if detalhe:
             mensagem = f"{mensagem} {detalhe}"
@@ -229,10 +259,21 @@ def autenticar(usuario, senha):
         )
     except ErroIntegracaoSEI as erro:
         # Propaga 401/403/5xx com mensagem clara na tela de login.
-        if erro.status_http >= 500:
+        if erro.status_http >= 500 or erro.status_http == 502:
+            detalhe = str(erro).strip()
+            if "ORA-28000" in detalhe or "conta Oracle" in detalhe:
+                mensagem = detalhe
+            elif detalhe and "indisponível" in detalhe.casefold():
+                mensagem = detalhe
+            else:
+                mensagem = (
+                    "Não foi possível autenticar: o SEI de homologação está "
+                    "indisponível no momento. Tente novamente mais tarde ou "
+                    "avise a infraestrutura do SEI."
+                )
             raise ErroIntegracaoSEI(
-                str(erro) if str(erro) else "SEI respondeu com erro de servidor.",
-                status_http=503 if "503" in str(erro) else 502,
+                mensagem,
+                status_http=503 if "503" in detalhe else 502,
             ) from erro
         raise
 

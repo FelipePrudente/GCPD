@@ -1,0 +1,26 @@
+{
+  "fornecedor": "Almaviva Solutions S.A.",
+  "contrato": "8446",
+  "vigencia_inicio": "2025-07-07",
+  "vigencia_fim": "2027-07-06",
+  "primeiro_contrato_inicio": "2023-07-07",
+  "limite_fim_prodesp": "2028-07-07",
+  "renovacao_restante_anos": 1,
+  "prazo_maximo_os_dias": 90,
+  "max_termos_na_vigencia": 8,
+  "dias_sobra_vigencia": 10,
+  "saldo_cota": 150000.0,
+  "diretoria_cota": "DRC",
+  "reajuste_maximo_percentual": 15.0,
+  "tecnologias": [
+    "MIDDLEWARE"
+  ],
+  "perfis": [
+    "Gerente de Projetos",
+    "Analista de Requisitos"
+  ],
+  "termos_por_gerencia": {
+    "GOR": 0,
+    "GOC": 0
+  }
+}

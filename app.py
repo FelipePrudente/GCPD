@@ -36,6 +36,10 @@ from geradores.config_catalogo import (
     salvar_catalogo,
 )
 from geradores.config_documento import carregar_config_rj, salvar_config_rj
+from geradores.compliance_cdga import avaliar as avaliar_compliance
+from geradores.compliance_cdga import carregar as carregar_compliance
+from geradores.compliance_cdga import mensagem_bloqueio as mensagem_compliance
+from geradores.compliance_cdga import salvar as salvar_compliance
 from geradores.documento_catalogo import (
     gerar_documento_catalogo,
     gerar_documento_catalogo_html,
@@ -926,6 +930,22 @@ def baixar_documento_processo(processo_id, documento_id):
     )
 
 
+@app.get("/api/processos/<int:processo_id>/documentos/<int:documento_id>/html")
+def html_documento_processo(processo_id, documento_id):
+    """Conteúdo HTML do documento local, para a consulta somente leitura."""
+    try:
+        documento = banco.obter_documento_processo(documento_id)
+        if documento["processo_id"] != processo_id:
+            raise ValueError("Documento não encontrado neste processo.")
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 404
+    return jsonify({
+        "ok": True,
+        "nome": documento.get("nome") or "",
+        "conteudo_html": documento.get("conteudo_html") or "",
+    })
+
+
 @app.post("/api/processos/rascunho")
 def salvar_rascunho_processo():
     bruto = _corpo_json()
@@ -1381,6 +1401,76 @@ def _resumo_secao_sei(indice, secao):
     }
 
 
+@app.get("/api/compliance/almaviva")
+def compliance_almaviva_obter():
+    config = carregar_compliance()
+    return jsonify({"ok": True, "config": config})
+
+
+@app.put("/api/compliance/almaviva")
+def compliance_almaviva_salvar():
+    bruto = request.get_json(force=True, silent=False) or {}
+    try:
+        config = salvar_compliance(bruto)
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    return jsonify({"ok": True, "config": config})
+
+
+@app.post("/api/compliance/avaliar")
+def compliance_avaliar():
+    bruto = request.get_json(force=True, silent=False) or {}
+    valores = bruto.get("valores") if isinstance(bruto.get("valores"), dict) else {}
+    tags = bruto.get("tags") if isinstance(bruto.get("tags"), list) else []
+    resultado = avaliar_compliance(
+        valores,
+        tags,
+        formulario_id=bruto.get("formulario_id") or "",
+        formulario_nome=bruto.get("formulario_nome") or "",
+    )
+    return jsonify({
+        "ok": True,
+        "aplicavel": resultado["aplicavel"],
+        "bloqueios": resultado["bloqueios"],
+        "sugestoes_itens": resultado.get("sugestoes_itens") or [],
+        "mensagem": mensagem_compliance(resultado),
+    })
+
+
+@app.get("/api/gerencias")
+def gerencias():
+    return jsonify({"ok": True, "gerencias": banco.listar_gerencias()})
+
+
+@app.post("/api/gerencias")
+def nova_gerencia():
+    corpo = _corpo_json()
+    try:
+        identificador = banco.criar_gerencia(corpo.get("sigla"), corpo.get("descritivo"))
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    return jsonify({"ok": True, "id": identificador, "gerencias": banco.listar_gerencias()})
+
+
+@app.put("/api/gerencias/<int:identificador>")
+def editar_gerencia(identificador):
+    corpo = _corpo_json()
+    try:
+        banco.atualizar_gerencia(identificador, corpo.get("sigla"), corpo.get("descritivo"))
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    return jsonify({"ok": True, "gerencias": banco.listar_gerencias()})
+
+
+@app.delete("/api/gerencias/<int:identificador>")
+def apagar_gerencia(identificador):
+    try:
+        banco.excluir_gerencia(identificador)
+    except ValueError as erro:
+        return jsonify({"ok": False, "mensagem": str(erro)}), 400
+    return jsonify({"ok": True, "gerencias": banco.listar_gerencias()})
+
+
 @app.post("/api/processos/<int:processo_id>/formularios/visualizar")
 def visualizar_formulario_sei(processo_id):
     if not _csrf_sei_valido():
@@ -1398,17 +1488,26 @@ def visualizar_formulario_sei(processo_id):
         valores = bruto.get("valores")
         if not isinstance(valores, dict):
             raise ValueError("Os dados preenchidos no Doc. Modelo são inválidos.")
+        compliance = avaliar_compliance(
+            valores,
+            formulario.get("tags") or [],
+            formulario_id=formulario.get("id") or "",
+            formulario_nome=formulario.get("nome") or "",
+        )
+        if compliance["bloqueios"]:
+            raise ValueError(mensagem_compliance(compliance))
         ids_tags = {
             str(tag.get("id"))
             for tag in formulario.get("tags") or []
             if isinstance(tag, dict) and tag.get("id") and not tag.get("calculado")
         }
         dados_formulario = {
+            "numero_sei": str(processo.get("numero_sei") or ""),
             "extras": {
                 chave: valor
                 for chave, valor in valores.items()
                 if chave in ids_tags
-            }
+            },
         }
         corpo_formulario = str(formulario.get("documento") or "").strip()
         if len(corpo_formulario) < 40:
@@ -1484,6 +1583,16 @@ def alterar_secao_documento_sei(processo_id, documento_id):
             raise ValueError("Crie o processo no SEI antes de alterar o documento.")
         bruto = _corpo_json()
         conteudo_bruto = bruto.get("conteudo_html")
+        valores_compliance = bruto.get("valores") if isinstance(bruto.get("valores"), dict) else None
+        if valores_compliance:
+            compliance = avaliar_compliance(
+                valores_compliance,
+                bruto.get("tags") if isinstance(bruto.get("tags"), list) else [],
+                formulario_id=bruto.get("formulario_id") or "",
+                formulario_nome=bruto.get("formulario_nome") or "",
+            )
+            if compliance["bloqueios"]:
+                raise ValueError(mensagem_compliance(compliance))
         if not isinstance(conteudo_bruto, str) or not conteudo_bruto.strip():
             raise ValueError("Gere e revise a pré-visualização HTML antes de incluir o conteúdo.")
         # Sempre passa pelo pipeline SEI-safe:

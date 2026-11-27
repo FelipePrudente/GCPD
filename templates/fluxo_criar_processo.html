@@ -141,7 +141,7 @@
     </div>
     <div class="sei-conexao" aria-live="polite">
       <span id="sei-sessao-status">Verificando sessão…</span>
-      <a href="/cadastro" title="Formulário Word e configurações">Cadastro completo</a>
+      <a href="/cadastro" title="Doc. Modelo Word e configurações">Cadastro completo</a>
       <button type="button" id="sei-logout">Desconectar</button>
     </div>
   </div>
@@ -254,7 +254,7 @@
     <textarea id="doc_observacao" placeholder="Opcional"></textarea>
 
     <div style="margin:16px 0;">
-      <button type="button" class="btn-secondary" onclick="toggleCamposFormulario()">Campos do formulário</button>
+      <button type="button" class="btn-secondary" onclick="toggleCamposFormulario()">Campos do Doc. Modelo</button>
       <div id="camposFormulario" class="hidden" style="margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:8px; background:#faf8f4;">
         <p style="margin:0 0 10px; font-size:13px; color:var(--muted);">Campos aceitos pela API do SEI (conforme Postman). Preencha apenas os necessários.</p>
         <label>idUnidadeGeradoraProtocolo</label>
@@ -627,7 +627,7 @@ async function aoClicarAbrirIaFluxo() {
         "warn"
       );
       travarProcesso();
-      // Preenche formulários com o pacote da IA para retry
+      // Preenche Docs. Modelo com o pacote da IA para retry
       const proc = abrirIaPacoteFluxo.processo || {};
       const pc = proc.processo_contratacao || {};
       if (proc.tipo_processo_sei) document.getElementById("tipo_processo").value = proc.tipo_processo_sei;
@@ -974,7 +974,7 @@ async function editarProcesso(id) {
       return;
     }
     processoCriado = p;
-    // Preenche o formulário com os dados salvos
+    // Preenche o Doc. Modelo com os dados salvos
     if (p.cadastro) {
       const c = p.cadastro;
       if (c.tipo_processo_sei) document.getElementById("tipo_processo").value = c.tipo_processo_sei;

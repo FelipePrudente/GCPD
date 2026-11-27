@@ -148,6 +148,24 @@
     el.className = tipo === "erro" ? "erro" : tipo === "ok" ? "ok" : "total";
   }
 
+  function ehCampoProcessoSei(tag) {
+    const id = String(tag?.id || "").toLowerCase();
+    if (["numero_sei", "n_processo_sei", "n_do_processo", "processo_sei"].includes(id)) return true;
+    const rotulo = String(tag?.rotulo || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    return [
+      "numero processo sei",
+      "n processo sei",
+      "n do processo sei",
+      "no processo sei",
+      "no do processo sei",
+    ].includes(rotulo);
+  }
+
   function chipHtml(id) {
     const meta = metaTag(id);
     const classe = meta?.calculado ? "tag-doc calculado" : "tag-doc";
@@ -409,7 +427,7 @@
     renderTags();
     renderDocumento();
     avisarFormulario();
-    status("Documento criado. Defina os grupos/blocos antes de criar as tags.", "ok");
+    status("Documento criado. Ao criar a primeira tag, a tag Nº Processo SEI aparece logo abaixo para você posicionar no documento.", "ok");
   }
 
   async function enviarDocumentoArquivo(arquivo) {
@@ -438,7 +456,7 @@
     status(
       corpo.mensagem
         || (qtd
-          ? `Documento importado com ${qtd} tag(s). Formulário atualizado.`
+          ? `Documento importado com ${qtd} tag(s). Doc. Modelo atualizado.`
           : "Documento importado. Defina os grupos e tags."),
       "ok",
     );
@@ -734,19 +752,21 @@
             <div class="chips">
               ${itens.map((tag, indice) => {
                 const reuso = tag.grupo !== grupo;
+                const obrigatorio = ehCampoProcessoSei(tag);
                 return `
                 <div class="tag-linha${tag.calculado ? " calculado" : ""}${tagSelecionadaId === tag.id ? " ativa" : ""}" data-tag="${escHtml(tag.id)}" data-grupo="${escHtml(grupo)}">
                   <button type="button" class="tag-handle" draggable="true" data-acao="ordenar" title="Arrastar para reordenar neste bloco" aria-label="Reordenar {{${escHtml(tag.id)}}}">⋮⋮</button>
                   <button type="button" class="tag-chip" data-acao="usar" draggable="true" title="Arraste para o documento ou Ctrl+C / Ctrl+V">
                     <code>{{${escHtml(tag.id)}}}</code>
                     <span>${escHtml(tag.rotulo)}</span>
+                    ${obrigatorio ? `<span class="reuso-badge" title="Obrigatório em todo Doc. Modelo. O valor é o número do processo SEI.">automático</span>` : ""}
                     ${reuso ? `<span class="reuso-badge" title="Reuso — valor preenchido em ${escHtml(tag.grupo)}">reuso</span>` : ""}
                   </button>
                   <div class="tag-acoes">
                     <button type="button" class="tag-mini" data-acao="cima" title="Subir no bloco" aria-label="Subir" ${indice === 0 ? "disabled" : ""}>↑</button>
                     <button type="button" class="tag-mini" data-acao="baixo" title="Descer no bloco" aria-label="Descer" ${indice === itens.length - 1 ? "disabled" : ""}>↓</button>
                     <button type="button" class="tag-mini" data-acao="editar" title="Editar tag" aria-label="Editar ${escHtml(tag.id)}">✎</button>
-                    <button type="button" class="tag-mini perigo" data-acao="excluir" title="Excluir tag" aria-label="Excluir ${escHtml(tag.id)}">×</button>
+                    ${obrigatorio ? "" : `<button type="button" class="tag-mini perigo" data-acao="excluir" title="Excluir tag" aria-label="Excluir ${escHtml(tag.id)}">×</button>`}
                   </div>
                 </div>`;
               }).join("")}
@@ -1295,6 +1315,8 @@
         ids.add(col.id);
       }
     }
+    const primeiraTagDoModelo = !tagEmEdicao && estado.tags.length === 0;
+    let incluiuSei = false;
     if (tagEmEdicao) {
       const indice = estado.tags.findIndex((item) => item.id === tagEmEdicao.id);
       if (indice < 0) return;
@@ -1306,9 +1328,29 @@
         return;
       }
       estado.tags.push(nova);
+      if (primeiraTagDoModelo && !ehCampoProcessoSei(nova) && !estado.tags.some((item) => item.id === "numero_sei")) {
+        const indice = estado.tags.findIndex((item) => item.id === nova.id);
+        estado.tags.splice(indice + 1, 0, {
+          id: "numero_sei",
+          rotulo: "Nº Processo SEI",
+          grupo: nova.grupo,
+          reuso_em: [],
+          calculado: false,
+          tipo: "texto_curto",
+          largura: 2,
+          consulta_ia: "",
+          colunas: [],
+          agrupar_por: "",
+          somar: "",
+        });
+        incluiuSei = true;
+      }
     }
+    const avisoSei = incluiuSei
+      ? " A tag Nº Processo SEI ficou logo abaixo. Arraste-a para o ponto do documento em que o número deve aparecer."
+      : "";
     try {
-      await salvarTudo(tagEmEdicao ? "Tag atualizada." : "Tag criada.");
+      await salvarTudo((tagEmEdicao ? "Tag atualizada." : "Tag criada.") + avisoSei);
       fecharPainelTag();
       renderTags();
       renderDocumento();
@@ -1319,6 +1361,10 @@
   }
 
   async function excluirTag(id) {
+    if (ehCampoProcessoSei(metaTag(id) || { id })) {
+      status("O campo Nº Processo SEI é obrigatório em todo Doc. Modelo.", "erro");
+      return;
+    }
     if (!window.confirm(`Excluir a tag {{${id}}}? As ocorrências no documento serão removidas.`)) return;
     estado.tags = estado.tags.filter((item) => item.id !== id);
     const padrao = new RegExp(`\\{\\{\\s*${id}\\s*\\}\\}`, "g");
@@ -1504,22 +1550,35 @@
     const resposta = await fetch("/api/config/ia");
     const corpo = await resposta.json();
     if (!resposta.ok) throw new Error(corpo.mensagem || "Falha ao carregar configuração de IA.");
-    document.getElementById("ia-provedor").value = corpo.provedor || "google";
-    document.getElementById("ia-modelo-google").value = corpo.modelo_google || "gemini-3.5-flash";
+    document.getElementById("ia-provedor").value = corpo.provedor || "copilot";
+    document.getElementById("ia-modelo-google").value = corpo.modelo_google || "gemini-3.5-flash-lite";
     document.getElementById("ia-google-key").value = "";
     document.getElementById("ia-openai-key").value = "";
+    const copilotSecret = document.getElementById("ia-copilot-secret");
+    if (copilotSecret) copilotSecret.value = "";
     document.getElementById("ia-google-key").placeholder = corpo.google_configurado
       ? `Configurada: ${corpo.google_api_key_mascarada}`
-      : "Cole a chave aqui";
+      : "Opcional";
     document.getElementById("ia-openai-key").placeholder = corpo.openai_configurado
       ? `Configurada: ${corpo.openai_api_key_mascarada}`
       : "Opcional";
+    if (copilotSecret) {
+      copilotSecret.placeholder = corpo.copilot_configurado
+        ? `Configurado: ${corpo.copilot_secret_mascarado}`
+        : "Cole o Segredo 1 do canal Web";
+    }
     document.getElementById("ia-google-status").textContent = corpo.google_configurado
       ? "Chave Google já salva neste computador."
-      : "Nenhuma chave Google salva ainda.";
+      : "";
     document.getElementById("ia-openai-status").textContent = corpo.openai_configurado
       ? "Chave OpenAI já salva neste computador."
       : "";
+    const copilotStatus = document.getElementById("ia-copilot-status");
+    if (copilotStatus) {
+      copilotStatus.textContent = corpo.copilot_configurado
+        ? "Segredo Direct Line do Copilot já salvo neste computador."
+        : "Ainda sem Segredo Direct Line. Use o Segredo 1 em Segurança do canal Web.";
+    }
     const botao = document.getElementById("ia-config-abrir");
     if (botao) botao.textContent = corpo.pronto ? "IA pronta" : "IA / API";
     return corpo;
@@ -1553,13 +1612,15 @@
     }
     const googleKey = document.getElementById("ia-google-key")?.value.trim() || "";
     const openaiKey = document.getElementById("ia-openai-key")?.value.trim() || "";
+    const copilotKey = document.getElementById("ia-copilot-secret")?.value.trim() || "";
     const corpoEnvio = {
-      provedor: document.getElementById("ia-provedor")?.value || "google",
-      modelo_google: document.getElementById("ia-modelo-google")?.value.trim() || "gemini-3.5-flash",
+      provedor: document.getElementById("ia-provedor")?.value || "copilot",
+      modelo_google: document.getElementById("ia-modelo-google")?.value.trim() || "gemini-3.5-flash-lite",
     };
     // Só sobrescreve a chave se o usuário colou uma nova.
     if (googleKey) corpoEnvio.google_api_key = googleKey;
     if (openaiKey) corpoEnvio.openai_api_key = openaiKey;
+    if (copilotKey) corpoEnvio.copilot_directline_secret = copilotKey;
     try {
       const resposta = await fetch("/api/config/ia", {
         method: "PUT",
@@ -1569,7 +1630,7 @@
       const corpo = await resposta.json();
       if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível salvar.");
       fecharPainelIaConfig();
-      status(corpo.pronto ? "Chave de IA salva. Já pode testar o campo IA no Formulário." : "Configuração salva.", "ok");
+      status(corpo.pronto ? "Chave de IA salva. Já pode testar o campo IA no Doc. Modelo." : "Configuração salva.", "ok");
       const botao = document.getElementById("ia-config-abrir");
       if (botao) botao.textContent = corpo.pronto ? "IA pronta" : "IA / API";
     } catch (falha) {
@@ -1938,8 +1999,171 @@
     });
   }
 
+  function preencherCompliance(config) {
+    const porId = {
+      "compliance-saldo": config.saldo_cota,
+      "compliance-prazo": config.prazo_maximo_os_dias,
+      "compliance-vigencia-inicio": config.vigencia_inicio,
+      "compliance-vigencia-fim": config.vigencia_fim,
+      "compliance-limite": config.limite_fim_prodesp,
+      "compliance-reajuste": config.reajuste_maximo_percentual,
+      "compliance-termos": config.max_termos_na_vigencia,
+      "compliance-perfis": (config.perfis || []).join(", "),
+    };
+    Object.entries(porId).forEach(([id, valor]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = valor ?? "";
+    });
+    configCompliance = config;
+    document.querySelectorAll("[data-termos-gerencia]").forEach((el) => {
+      const sigla = el.dataset.termosGerencia;
+      el.value = (config.termos_por_gerencia || {})[sigla] ?? 0;
+    });
+  }
+
+  let gerenciasCadastradas = [];
+  let configCompliance = {};
+
+  function termosDigitados() {
+    const mapa = {};
+    document.querySelectorAll("[data-termos-gerencia]").forEach((el) => {
+      mapa[el.dataset.termosGerencia] = el.value;
+    });
+    return mapa;
+  }
+
+  function renderGerencias() {
+    const lista = document.getElementById("lista-gerencias");
+    if (!lista) return;
+    const termos = { ...(configCompliance.termos_por_gerencia || {}), ...termosDigitados() };
+    lista.innerHTML = gerenciasCadastradas.map((item) => `
+      <div class="linha-gerencia" data-gerencia-id="${item.id}">
+        <input data-gerencia-sigla value="${escHtml(item.sigla)}" maxlength="8" aria-label="Sigla" />
+        <input data-gerencia-descritivo value="${escHtml(item.descritivo || "")}" placeholder="Descritivo" aria-label="Descritivo" />
+        <input data-termos-gerencia="${escHtml(item.sigla)}" type="number" min="0" step="1" value="${Number(termos[item.sigla] || 0)}" aria-label="Termos já abertos pela ${escHtml(item.sigla)}" title="Termos já abertos" />
+        <button type="button" class="acao" data-gerencia-salvar="${item.id}">Atualizar</button>
+        <button type="button" class="acao perigo" data-gerencia-excluir="${item.id}">Excluir</button>
+      </div>
+    `).join("");
+  }
+
+  async function carregarGerencias() {
+    const resposta = await fetch("/api/gerencias");
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível carregar as gerências.");
+    gerenciasCadastradas = corpo.gerencias || [];
+    renderGerencias();
+    window.aplicarGerenciasNosCampos?.(gerenciasCadastradas);
+  }
+
+  async function gravarGerencia() {
+    const statusEl = document.getElementById("gerencia-status");
+    const resposta = await fetch("/api/gerencias", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sigla: document.getElementById("gerencia-sigla")?.value,
+        descritivo: document.getElementById("gerencia-descritivo")?.value,
+      }),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível gravar a gerência.");
+    document.getElementById("gerencia-sigla").value = "";
+    document.getElementById("gerencia-descritivo").value = "";
+    gerenciasCadastradas = corpo.gerencias || [];
+    renderGerencias();
+    window.aplicarGerenciasNosCampos?.(gerenciasCadastradas);
+    if (statusEl) statusEl.textContent = "Gerência gravada.";
+  }
+
+  async function atualizarGerencia(id) {
+    const linha = document.querySelector(`[data-gerencia-id="${id}"]`);
+    const resposta = await fetch(`/api/gerencias/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sigla: linha?.querySelector("[data-gerencia-sigla]")?.value,
+        descritivo: linha?.querySelector("[data-gerencia-descritivo]")?.value,
+      }),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível atualizar a gerência.");
+    gerenciasCadastradas = corpo.gerencias || [];
+    renderGerencias();
+    window.aplicarGerenciasNosCampos?.(gerenciasCadastradas);
+    const statusEl = document.getElementById("gerencia-status");
+    if (statusEl) statusEl.textContent = "Gerência atualizada.";
+  }
+
+  async function excluirGerencia(id) {
+    const resposta = await fetch(`/api/gerencias/${id}`, { method: "DELETE" });
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível excluir a gerência.");
+    gerenciasCadastradas = corpo.gerencias || [];
+    renderGerencias();
+    window.aplicarGerenciasNosCampos?.(gerenciasCadastradas);
+  }
+
+  async function carregarCompliance() {
+    const resposta = await fetch("/api/compliance/almaviva");
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível carregar o compliance.");
+    preencherCompliance(corpo.config || {});
+  }
+
+  async function salvarCompliance() {
+    const statusEl = document.getElementById("compliance-status");
+    if (statusEl) statusEl.textContent = "Salvando…";
+    const resposta = await fetch("/api/compliance/almaviva", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        saldo_cota: document.getElementById("compliance-saldo")?.value,
+        prazo_maximo_os_dias: document.getElementById("compliance-prazo")?.value,
+        vigencia_inicio: document.getElementById("compliance-vigencia-inicio")?.value,
+        vigencia_fim: document.getElementById("compliance-vigencia-fim")?.value,
+        limite_fim_prodesp: document.getElementById("compliance-limite")?.value,
+        reajuste_maximo_percentual: document.getElementById("compliance-reajuste")?.value,
+        max_termos_na_vigencia: document.getElementById("compliance-termos")?.value,
+        termos_por_gerencia: termosDigitados(),
+        perfis: document.getElementById("compliance-perfis")?.value,
+      }),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) throw new Error(corpo.mensagem || "Não foi possível salvar o compliance.");
+    preencherCompliance(corpo.config || {});
+    if (statusEl) statusEl.textContent = "Parâmetros da Almaviva salvos.";
+  }
+
   async function iniciar() {
     ligarEventos();
+    document.getElementById("compliance-salvar")?.addEventListener("click", () => {
+      salvarCompliance().catch((erro) => {
+        const statusEl = document.getElementById("compliance-status");
+        if (statusEl) statusEl.textContent = erro.message;
+      });
+    });
+    document.getElementById("gerencia-gravar")?.addEventListener("click", () => {
+      gravarGerencia().catch((erro) => {
+        const statusEl = document.getElementById("gerencia-status");
+        if (statusEl) statusEl.textContent = erro.message;
+      });
+    });
+    document.getElementById("lista-gerencias")?.addEventListener("click", (evento) => {
+      const salvar = evento.target.closest("[data-gerencia-salvar]");
+      const excluir = evento.target.closest("[data-gerencia-excluir]");
+      const statusEl = document.getElementById("gerencia-status");
+      if (salvar) {
+        atualizarGerencia(salvar.dataset.gerenciaSalvar).catch((erro) => {
+          if (statusEl) statusEl.textContent = erro.message;
+        });
+      }
+      if (excluir) {
+        excluirGerencia(excluir.dataset.gerenciaExcluir).catch((erro) => {
+          if (statusEl) statusEl.textContent = erro.message;
+        });
+      }
+    });
     try {
       await carregar();
       renderListaDocumentos();
@@ -1952,6 +2176,18 @@
         await carregarPainelIaConfig();
       } catch (erroIa) {
         /* IA opcional na carga inicial */
+      }
+      try {
+        await carregarGerencias();
+      } catch (erroGerencia) {
+        const statusEl = document.getElementById("gerencia-status");
+        if (statusEl) statusEl.textContent = erroGerencia.message;
+      }
+      try {
+        await carregarCompliance();
+      } catch (erroCompliance) {
+        const statusEl = document.getElementById("compliance-status");
+        if (statusEl) statusEl.textContent = erroCompliance.message;
       }
     } catch (falha) {
       status(falha.message, "erro");

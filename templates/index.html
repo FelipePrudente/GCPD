@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GCPD — Abertura de processo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=filtro-paginacao" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}?v=gerencias-cadastro" />
 </head>
 <body>
 <header>
@@ -35,7 +35,7 @@
           <button type="button" class="primario" id="abrir-ia-abrir" title="Abrir processo e documento com IA">Criar Processo SEI - IA</button>
         </div>
       </div>
-      <p class="ajuda">Os novos processos entram nesta grade após serem criados no SEI; o protocolo SEI é a identificação oficial e não é gerado código GCPD. Marque um ou mais itens para excluir, ou use o ícone de lixeira em Ações.</p>
+      <p class="ajuda">Os novos processos entram nesta grade após serem criados no SEI; o protocolo SEI é a identificação oficial e não é gerado código GCPD. Clique em uma linha para consultar o processo e os documentos. Marque um ou mais itens para excluir, ou use o ícone de lixeira em Ações.</p>
       <p id="mensagem-principal" class="erro oculto"></p>
       <div class="barra-filtro-processos">
         <label class="sr-only" for="filtro-processos">Filtrar processos</label>
@@ -281,20 +281,25 @@
           <h2 id="ia-config-titulo">Inteligência artificial</h2>
           <button type="button" class="acao" id="ia-config-fechar">Fechar</button>
         </div>
-        <p class="ajuda">Informe a chave da API do Google (Gemini) para os campos do tipo “Busca por IA na internet”. A chave fica só neste computador.</p>
+        <p class="ajuda">Preferência atual: Copilot Studio (Segredo Direct Line do canal Web). Gemini/OpenAI ficam como reserva. As chaves ficam só neste computador.</p>
         <div class="grade">
           <div class="campo"><label for="ia-provedor">Provedor</label>
             <select id="ia-provedor">
+              <option value="copilot">Copilot Studio</option>
               <option value="google">Google Gemini</option>
               <option value="openai">OpenAI</option>
-              <option value="auto">Automático (Gemini → OpenAI)</option>
+              <option value="auto">Corrida (usa a que responder primeiro)</option>
             </select>
           </div>
-          <div class="campo"><label for="ia-modelo-google">Modelo Gemini</label>
-            <input id="ia-modelo-google" placeholder="gemini-3.5-flash" autocomplete="off" />
+          <div class="campo"><label for="ia-modelo-google">Modelo Gemini (reserva)</label>
+            <input id="ia-modelo-google" placeholder="gemini-3.5-flash-lite" autocomplete="off" />
           </div>
-          <div class="campo largo"><label for="ia-google-key">API Key do Google</label>
-            <input id="ia-google-key" type="password" placeholder="Cole a chave aqui" autocomplete="off" />
+          <div class="campo largo"><label for="ia-copilot-secret">Segredo Direct Line do Copilot (Segredo 1)</label>
+            <input id="ia-copilot-secret" type="password" placeholder="Cole o Segredo 1 do canal Web" autocomplete="off" />
+            <p id="ia-copilot-status" class="ajuda"></p>
+          </div>
+          <div class="campo largo"><label for="ia-google-key">API Key do Google (opcional)</label>
+            <input id="ia-google-key" type="password" placeholder="Opcional" autocomplete="off" />
             <p id="ia-google-status" class="ajuda"></p>
           </div>
           <div class="campo largo"><label for="ia-openai-key">API Key da OpenAI (opcional)</label>
@@ -309,6 +314,47 @@
         </div>
       </div>
     </div>
+    <section class="compliance-config" aria-label="Cadastro de gerências">
+      <div class="secao-topo">
+        <h3>Gerências</h3>
+      </div>
+      <p class="ajuda">O campo Gerência do Doc. Modelo usa esta lista. Vale a sigla ou o descritivo. As quatro primeiras já entram: GOR, CGS, DDS e GRC. Complete o descritivo das que ainda estiverem em branco.</p>
+      <div class="nova-linha">
+        <input id="gerencia-sigla" placeholder="Sigla, ex. GOR" maxlength="8" autocomplete="off" />
+        <input id="gerencia-descritivo" placeholder="Descritivo, ex. Gerência de Operações Comerciais" autocomplete="off" />
+        <button type="button" id="gerencia-gravar">Gravar gerência</button>
+      </div>
+      <div id="lista-gerencias" class="lista-gerencias"></div>
+      <p id="gerencia-status" class="ajuda"></p>
+    </section>
+    <section class="compliance-config" aria-label="Compliance CDGA Almaviva">
+      <div class="secao-topo">
+        <h3>Compliance CDGA — Almaviva</h3>
+        <button type="button" class="primario" id="compliance-salvar">Salvar parâmetros</button>
+      </div>
+      <p class="ajuda">Vale só no Relatório de Justificativa - OS, para a Almaviva (contrato 8446). O termo conta por gerência cadastrada acima. A cota é uma só, da diretoria DRC. O saldo abaixo é local, para teste, até a consulta ao GIP.</p>
+      <div class="grade">
+        <div class="campo"><label for="compliance-saldo">Saldo da cota da DRC (teste)</label><input id="compliance-saldo" type="number" step="0.01" min="0" /></div>
+        <div class="campo"><label for="compliance-prazo">Prazo máximo da OS (dias)</label><input id="compliance-prazo" type="number" step="1" min="1" /></div>
+        <div class="campo"><label for="compliance-vigencia-inicio">Início da vigência atual</label><input id="compliance-vigencia-inicio" type="date" /></div>
+        <div class="campo"><label for="compliance-vigencia-fim">Fim da vigência atual</label><input id="compliance-vigencia-fim" type="date" /></div>
+        <div class="campo"><label for="compliance-limite">Limite de 5 anos com a Prodesp</label><input id="compliance-limite" type="date" /></div>
+        <div class="campo"><label for="compliance-reajuste">Reajuste máximo (%)</label><input id="compliance-reajuste" type="number" step="0.1" min="0" /></div>
+        <div class="campo"><label for="compliance-termos">Termos máximos por gerência</label><input id="compliance-termos" type="number" step="1" min="1" /></div>
+        <div class="campo largo"><label for="compliance-perfis">Perfis do contrato, separados por vírgula</label><input id="compliance-perfis" type="text" placeholder="Gerente de Projetos, Analista de Requisitos, outro perfil" /></div>
+      </div>
+      <ul class="ajuda" id="compliance-regras">
+        <li>Só o Relatório de Justificativa - OS passa por estas regras.</li>
+        <li>Prazo da OS de no máximo 90 dias. Cada gerência pode abrir até 8 termos na vigência de 2 anos, com 10 dias de sobra.</li>
+        <li>A cota conferida é a da DRC. As gerências cadastradas usam o mesmo saldo, e cada uma tem a própria contagem de termos.</li>
+        <li>A OS não pode terminar depois da vigência do contrato. Passou disso, o caminho é renovação.</li>
+        <li>Contrato com a Prodesp limitado a 5 anos: 07/2023 a 07/2025, renovação atual até 07/2027 e só mais 1 ano.</li>
+        <li>O objeto precisa indicar tecnologia ou sistema (como o ID ESFERA). Essa tecnologia deve aparecer na coluna Tecnologia de pelo menos um item. O cargo da tabela e os perfis citados no objeto precisam estar na lista de perfis. Se o objeto pedir um desses perfis, a tabela Itens do Contrato tem de trazer o item.</li>
+        <li>O valor total de cada item e o somatório dos itens não podem ultrapassar o saldo da cota da DRC.</li>
+        <li>Saldo da DRC consumido por inteiro antes do fim da vigência exige aditivo. Reajuste de equilíbrio não passa de 15%.</li>
+      </ul>
+      <p id="compliance-status" class="ajuda"></p>
+    </section>
     <div class="config-triplice">
       <aside class="config-docs" aria-label="Documentos configuráveis">
         <div class="secao-topo">
@@ -712,6 +758,21 @@
     </div>
   </div>
 
+  <div id="painel-consulta-processo" class="painel-encaixe oculto">
+    <div class="ficha-encaixe ficha-consulta-processo" role="dialog" aria-modal="true" aria-labelledby="consulta-processo-titulo">
+      <div class="secao-topo">
+        <h2 id="consulta-processo-titulo">Consulta do processo</h2>
+        <button type="button" class="acao" id="consulta-processo-fechar">Fechar</button>
+      </div>
+      <p id="consulta-processo-mensagem" class="aviso oculto" role="status"></p>
+      <dl id="consulta-processo-dados" class="consulta-dados"></dl>
+      <h3 class="consulta-subtitulo">Documentos do processo</h3>
+      <p class="ajuda">Selecione um documento para ver o conteúdo completo. As informações do processo ficam somente leitura.</p>
+      <div id="consulta-processo-docs" class="consulta-docs"></div>
+      <div id="consulta-processo-conteudo" class="consulta-conteudo previa-documento-sei" aria-live="polite"></div>
+    </div>
+  </div>
+
   <div id="painel-documento-interno-sei" class="painel-encaixe oculto">
     <div class="ficha-encaixe ficha-documento-sei" role="dialog" aria-modal="true" aria-labelledby="documento-interno-sei-titulo">
       <div class="secao-topo">
@@ -859,6 +920,7 @@
         <div class="barra">
           <button type="button" class="acao" id="documento-interno-sei-formulario-selecionar">Selecionar Doc. Modelo</button>
         </div>
+        <div id="compliance-resumo" class="oculto" role="status"></div>
         <div id="documento-interno-sei-formulario-campos" class="grade"></div>
         <div class="barra">
           <button type="button" class="primario oculto" id="documento-interno-sei-visualizar">Visualizar HTML para o SEI</button>
@@ -1060,7 +1122,7 @@
     </div>
   </div>
 
-<script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=doc-modelo"></script>
-<script src="{{ url_for('static', filename='cadastro.js') }}?v=filtro-paginacao"></script>
+<script src="{{ url_for('static', filename='configuracoes-rj.js') }}?v=copilot-directline"></script>
+<script src="{{ url_for('static', filename='cadastro.js') }}?v=tech-match"></script>
 </body>
 </html>

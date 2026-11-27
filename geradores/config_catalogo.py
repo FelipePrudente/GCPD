@@ -6,6 +6,7 @@ import html
 import json
 import re
 import time
+import unicodedata
 from pathlib import Path
 
 from geradores.config_documento import (
@@ -29,6 +30,67 @@ ARQUIVO = RAIZ / "modelos" / "config_catalogo.json"
 PASTA_ORIGENS = RAIZ / "modelos" / "documentos_origem"
 
 ID_RJ = "relatorio_justificativa"
+ID_PROCESSO_SEI = "numero_sei"
+ROTULO_PROCESSO_SEI = "Nº Processo SEI"
+GRUPO_PROCESSO_SEI = "Identificação"
+_IDS_PROCESSO_SEI = {"numero_sei", "n_processo_sei", "n_do_processo", "processo_sei"}
+_ROTULOS_PROCESSO_SEI = {
+    "numero processo sei",
+    "n processo sei",
+    "n do processo sei",
+    "no processo sei",
+    "no do processo sei",
+}
+
+
+def _sem_acento(valor):
+    base = unicodedata.normalize("NFD", str(valor or ""))
+    return "".join(c for c in base if unicodedata.category(c) != "Mn").lower()
+
+
+def _chave_rotulo(valor):
+    return re.sub(r"[^a-z0-9]+", " ", _sem_acento(valor)).strip()
+
+
+def eh_campo_processo_sei(tag):
+    """True quando a tag é o número do processo SEI, pelo id ou pelo rótulo."""
+    if not isinstance(tag, dict):
+        return False
+    ident = re.sub(r"[^a-z0-9_]+", "_", _sem_acento(tag.get("id"))).strip("_")
+    if ident in _IDS_PROCESSO_SEI:
+        return True
+    return _chave_rotulo(tag.get("rotulo")) in _ROTULOS_PROCESSO_SEI
+
+
+def garantir_campo_processo_sei(doc):
+    """Inclui a tag Nº Processo SEI logo abaixo da primeira tag do modelo.
+
+    Não grava o placeholder no texto: o usuário arrasta a tag para o ponto do documento.
+    """
+    if not isinstance(doc, dict):
+        return doc
+    tags = [tag for tag in (doc.get("tags") or []) if isinstance(tag, dict)]
+    if not tags or any(eh_campo_processo_sei(tag) for tag in tags):
+        doc["tags"] = tags
+        return doc
+    primeira = tags[0]
+    grupo = str(primeira.get("grupo") or "").strip() or GRUPO_PROCESSO_SEI
+    tag_id = ID_PROCESSO_SEI
+    if any(tag.get("id") == tag_id for tag in tags):
+        tag_id = "n_processo_sei"
+    tags.insert(1, _normalizar_tag({
+        "id": tag_id,
+        "rotulo": ROTULO_PROCESSO_SEI,
+        "grupo": grupo,
+        "tipo": "texto_curto",
+        "largura": 2,
+    }))
+    grupos = [str(nome).strip() for nome in (doc.get("grupos") or []) if str(nome or "").strip()]
+    if grupo not in grupos:
+        grupos.append(grupo)
+    doc["tags"] = tags
+    doc["grupos"] = grupos
+    return doc
 
 
 def _slug_documento(valor, usados=None):
@@ -206,7 +268,7 @@ def _normalizar_documento(bruto, usados, tags_legado=None):
     if secoes:
         documento = _montar_documento_de_secoes(secoes)
 
-    return {
+    return garantir_campo_processo_sei({
         "id": doc_id,
         "nome": nome[:160],
         "documento": documento,
@@ -216,7 +278,7 @@ def _normalizar_documento(bruto, usados, tags_legado=None):
         "origem": str(bruto.get("origem") or "manual").strip() or "manual",
         "arquivo_origem": str(bruto.get("arquivo_origem") or "").strip(),
         "atualizado_em": int(bruto.get("atualizado_em") or time.time()),
-    }
+    })
 
 
 def _normalizar_catalogo(bruto):

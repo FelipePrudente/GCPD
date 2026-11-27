@@ -40,8 +40,9 @@ def _normalizar(texto):
     return re.sub(r"[^a-z0-9]+", " ", bruto).strip()
 
 
-def _post_gemini(chave, modelo, prompt, max_tokens, thinking=True, timeout=45):
+def _post_gemini(chave, modelo, prompt, max_tokens, thinking=False, timeout=45):
     # Chaves AQ. (AI Studio) exigem o header x-goog-api-key; AIza… também aceita o header.
+    # flash-lite rejeita thinkingConfig ("invalid argument"); padrão é sem thinking.
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{urllib.parse.quote(modelo, safe='')}:generateContent"
@@ -77,35 +78,36 @@ def _eh_timeout(erro):
     return "timed out" in texto or "timeout" in texto or "time out" in texto
 
 
-def _gemini_texto(prompt, max_tokens=2048, timeout=45, preferir_rapido=False):
-    cfg = carregar_ia_config()
-    chave = _texto(cfg.get("google_api_key"))
-    if not chave:
-        openai = _texto(cfg.get("openai_api_key"))
-        if not openai:
-            raise ValueError(
-                "Chave de IA não configurada. Em Configurações → IA / API, informe a chave do Gemini."
-            )
-        return _openai_texto(prompt, openai, cfg.get("modelo_openai") or "gpt-4o-mini", max_tokens)
-
-    modelo = _texto(cfg.get("modelo_google")) or "gemini-3.5-flash"
+def _fila_modelos_gemini(modelo, preferir_rapido=False):
+    modelo = _texto(modelo) or "gemini-3.5-flash-lite"
     lite = "gemini-3.5-flash-lite"
-    if preferir_rapido:
-        fila = [lite] if modelo == lite else [lite, modelo]
-    else:
-        fila = [modelo]
+    # Lite responde de forma estável; o flash cheio tem estourado timeout nesta conta.
+    if preferir_rapido or modelo == lite:
+        fila = [lite]
         if modelo != lite:
-            fila.append(lite)
+            fila.append(modelo)
+        return fila
+    fila = [modelo]
+    if modelo != lite:
+        fila.append(lite)
+    if "3.5-flash" in modelo and "lite" not in modelo:
+        # Garante lite cedo quando o configurado for o flash lento.
+        fila = [lite, modelo]
+    return list(dict.fromkeys(fila))
+
+
+def _chamar_gemini_sozinho(prompt, chave, modelo, max_tokens, timeout, preferir_rapido=False):
     ultimo = ""
+    fila = _fila_modelos_gemini(modelo, preferir_rapido=preferir_rapido)
     for indice, nome in enumerate(fila):
         try:
             try:
                 texto = _post_gemini(
-                    chave, nome, prompt, max_tokens, thinking=True, timeout=timeout
+                    chave, nome, prompt, max_tokens, thinking=False, timeout=timeout
                 )
             except Exception as erro:
                 detalhe = str(erro).lower()
-                if "thinking" in detalhe or "400" in str(erro):
+                if "thinking" in detalhe or "invalid argument" in detalhe or "400" in str(erro):
                     texto = _post_gemini(
                         chave, nome, prompt, max_tokens, thinking=False, timeout=timeout
                     )
@@ -118,13 +120,15 @@ def _gemini_texto(prompt, max_tokens=2048, timeout=45, preferir_rapido=False):
             ultimo = str(erro)
             baixo = ultimo.lower()
             modelo_indisponivel = "404" in ultimo or "not_found" in baixo or "no longer available" in baixo
-            if (modelo_indisponivel or _eh_timeout(erro)) and indice < len(fila) - 1:
+            if (modelo_indisponivel or _eh_timeout(erro) or "invalid argument" in baixo) and indice < len(fila) - 1:
+                continue
+            if indice < len(fila) - 1:
                 continue
             break
     raise RuntimeError(ultimo or "A IA não retornou conteúdo.")
 
 
-def _openai_texto(prompt, chave, modelo, max_tokens):
+def _openai_texto(prompt, chave, modelo, max_tokens, timeout=25):
     corpo = {
         "model": modelo,
         "temperature": 0.2,
@@ -146,12 +150,87 @@ def _openai_texto(prompt, chave, modelo, max_tokens):
         },
         method="POST",
     )
-    with urllib.request.urlopen(pedido, timeout=25) as resp:
+    with urllib.request.urlopen(pedido, timeout=timeout) as resp:
         dados = json.loads(resp.read().decode("utf-8"))
     texto = _texto(((dados.get("choices") or [{}])[0].get("message") or {}).get("content"))
     if not texto:
         raise RuntimeError("OpenAI retornou vazio.")
     return texto, f"OpenAI ({modelo})"
+
+
+def _gemini_texto(prompt, max_tokens=2048, timeout=45, preferir_rapido=False):
+    """Usa Copilot Studio, Gemini e/ou OpenAI conforme o provedor configurado."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    from geradores.copilot_ia import responder_copilot
+
+    cfg = carregar_ia_config()
+    provedor = _texto(cfg.get("provedor") or "copilot").lower()
+    chave_g = _texto(cfg.get("google_api_key"))
+    chave_o = _texto(cfg.get("openai_api_key"))
+    chave_c = _texto(cfg.get("copilot_directline_secret"))
+    if not chave_g and not chave_o and not chave_c:
+        raise ValueError(
+            "Chave de IA não configurada. Em Configurações → IA / API, informe Copilot, Gemini ou OpenAI."
+        )
+
+    modelo_g = _texto(cfg.get("modelo_google")) or "gemini-3.5-flash-lite"
+    modelo_o = _texto(cfg.get("modelo_openai")) or "gpt-4o-mini"
+    timeout_cada = max(10, min(int(timeout), 25 if preferir_rapido else min(int(timeout), 45)))
+
+    def rodar_google():
+        return _chamar_gemini_sozinho(
+            prompt, chave_g, modelo_g, max_tokens, timeout_cada, preferir_rapido=True
+        )
+
+    def rodar_openai():
+        return _openai_texto(prompt, chave_o, modelo_o, max_tokens, timeout=timeout_cada)
+
+    def rodar_copilot():
+        return responder_copilot(prompt, timeout=timeout_cada)
+
+    if provedor == "copilot":
+        if not chave_c:
+            raise ValueError("Provedor Copilot selecionado, mas o Segredo Direct Line não está salvo.")
+        return rodar_copilot()
+    if provedor == "google":
+        if not chave_g:
+            raise ValueError("Provedor Google selecionado, mas a chave Gemini não está salva.")
+        return rodar_google()
+    if provedor == "openai":
+        if not chave_o:
+            raise ValueError("Provedor OpenAI selecionado, mas a chave não está salva.")
+        return rodar_openai()
+
+    # auto: dispara os provedores configurados e usa o primeiro que responder.
+    futuros_fn = {}
+    if chave_c:
+        futuros_fn["copilot"] = rodar_copilot
+    if chave_g:
+        futuros_fn["google"] = rodar_google
+    if chave_o:
+        futuros_fn["openai"] = rodar_openai
+    if len(futuros_fn) == 1:
+        return next(iter(futuros_fn.values()))()
+
+    erros = []
+    with ThreadPoolExecutor(max_workers=max(1, len(futuros_fn))) as pool:
+        futuros = {pool.submit(fn): nome for nome, fn in futuros_fn.items()}
+        try:
+            for futuro in as_completed(futuros, timeout=timeout_cada + 5):
+                try:
+                    texto, fonte = futuro.result()
+                    if _texto(texto):
+                        return texto, fonte
+                    erros.append(f"{futuros[futuro]}: vazio")
+                except Exception as erro:
+                    erros.append(f"{futuros[futuro]}: {erro}")
+        except Exception as erro:
+            erros.append(str(erro))
+    raise RuntimeError(
+        "Nenhuma IA respondeu a tempo. "
+        + (" | ".join(erros) if erros else "Copilot, Gemini e OpenAI falharam.")
+    )
 
 
 def _extrair_json(texto):
@@ -729,6 +808,106 @@ def _valor_sistema_para_tag(tag, contexto):
     return None
 
 
+def _extrair_local(pedido):
+    texto = _texto(pedido)
+    for padrao in (
+        r"projeto d[aeo]s?\s+([A-Za-zÀ-ÿ0-9][\wÀ-ÿ .'-]{1,40})",
+        r"cliente\s+([A-Za-zÀ-ÿ0-9][\wÀ-ÿ .'-]{1,40})",
+    ):
+        achado = re.search(padrao, texto, flags=re.IGNORECASE)
+        if not achado:
+            continue
+        nome = re.split(r"[,.]|\s+(?:para|com|todos|que)\b", achado.group(1), maxsplit=1)[0]
+        nome = nome.strip(" -")
+        if len(nome) >= 3 and _normalizar(nome) not in {"contratacao", "abertura", "processo", "servico"}:
+            return nome
+    return ""
+
+
+def _trechos_endereco(local):
+    from geradores.campo_ia import _coletar_fontes
+
+    textos, fontes = _coletar_fontes(f"endereço da sede oficial {local}")
+    return textos[:6], fontes
+
+
+def ouvir_pedido_abertura(pedido):
+    """Lê o pedido da abertura, resume o assunto e busca o endereço na internet."""
+    pedido = _texto(pedido)
+    if len(_normalizar(pedido)) < 20:
+        return None
+    local = _extrair_local(pedido)
+    trechos = []
+    fontes = []
+    if local:
+        try:
+            trechos, fontes = _trechos_endereco(local)
+        except Exception:
+            trechos, fontes = [], []
+    bloco = "\n".join(f"- {_texto(t)[:400]}" for t in trechos) or "(sem trechos da internet)"
+    instrucao = (
+        "Leia o pedido de abertura de processo da Prodesp. Responda somente JSON:\n"
+        '{"resumo":"4 a 6 frases: o que é o assunto, para que serve e qual profissional costuma usar",'
+        '"local":"organização ou cliente citado, ou vazio",'
+        '"endereco":"endereço físico completo somente se estiver escrito nos trechos da internet, senão vazio",'
+        '"perfis":["perfis de contratação citados"]}\n'
+        "Não invente endereço, CEP, salário nem quantidade.\n"
+        f"Pedido:\n{pedido[:2500]}\n"
+        f"Local detectado: {local or '-'}\n"
+        f"Trechos da internet sobre o endereço:\n{bloco}"
+    )
+    fonte = ""
+    try:
+        texto, fonte = _gemini_texto(instrucao, max_tokens=700, timeout=40, preferir_rapido=True)
+        dados = _extrair_json(texto)
+    except Exception:
+        dados = {}
+    if not isinstance(dados, dict):
+        dados = {}
+    local_final = _texto(dados.get("local")) or local
+    endereco = _texto(dados.get("endereco"))
+    resumo = _texto(dados.get("resumo"))
+    perfis = [_texto(item) for item in (dados.get("perfis") or []) if _texto(item)]
+    linhas = ["Ouvi o pedido da abertura e já usei o que dava para preencher.", "", f"Pedido: {pedido}"]
+    if resumo:
+        linhas.extend(["", resumo])
+    if local_final:
+        linhas.append(f"Local de execução: {local_final}.")
+    if endereco:
+        linhas.append(f"Endereço de execução, buscado na internet: {endereco}.")
+    elif local_final:
+        linhas.append("Não encontrei um endereço físico confiável na internet para preencher agora.")
+    if perfis:
+        linhas.append("Perfis citados: " + ", ".join(perfis) + ".")
+    return {
+        "local": local_final,
+        "endereco": endereco,
+        "resumo": resumo,
+        "perfis": perfis,
+        "briefing": "\n".join(linhas),
+        "fonte": fonte or ", ".join(fontes),
+    }
+
+
+def _aplicar_endereco_do_pedido(valores, tags, ouviu):
+    if not ouviu:
+        return
+    for tag in tags:
+        chave = _ids_campo_conhecidos(tag)
+        tag_id = tag.get("id")
+        if not tag_id:
+            continue
+        if ouviu.get("local") and ("local de execucao" in chave or chave.strip() == "local execucao"):
+            valores[tag_id] = ouviu["local"]
+        if "endereco de execucao" in chave:
+            if ouviu.get("endereco"):
+                valores[tag_id] = ouviu["endereco"]
+            elif ouviu.get("local"):
+                valores.pop(tag_id, None)
+        if "objeto" in chave and "descricao" in chave and not _texto(valores.get(tag_id)):
+            valores[tag_id] = _texto(ouviu.get("resumo")) or ""
+
+
 def sugerir_preenchimento_formulario(formulario, contexto=None):
     """
     Analisa as tags do Doc. Modelo escolhido e sugere valores.
@@ -808,9 +987,22 @@ def sugerir_preenchimento_formulario(formulario, contexto=None):
                 else f"A IA não conseguiu sugerir os demais campos ({erro})."
             )
 
+    ouviu = None
+    pedido_abertura = _texto(contexto.get("pedido") or contexto.get("descricao") or contexto.get("texto"))
+    if pedido_abertura:
+        try:
+            ouviu = ouvir_pedido_abertura(pedido_abertura)
+        except Exception:
+            ouviu = None
+    if ouviu:
+        _aplicar_endereco_do_pedido(valores, tags, ouviu)
+        if ouviu.get("fonte"):
+            fonte_partes.append("internet")
+
     return {
         "ok": True,
         "valores": valores,
+        "briefing": (ouviu or {}).get("briefing") or "",
         "fonte": " + ".join(fonte_partes),
         "aviso": aviso_ia,
         "campos_sugeridos": len(valores),

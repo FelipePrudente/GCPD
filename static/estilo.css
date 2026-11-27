@@ -502,7 +502,61 @@ main {
 }
 
 .grade-processos tbody tr:last-child td { border-bottom: 0; }
+.grade-processos tbody tr.linha-processo { cursor: pointer; }
 .grade-processos tbody tr:hover td { background: #f7fafc; }
+.ficha-consulta-processo {
+  width: min(1080px, 100%);
+}
+.consulta-dados {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) 1fr;
+  gap: 6px 14px;
+  margin: 8px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #d5e2ee);
+  border-radius: 10px;
+  background: #f8fbfd;
+}
+.consulta-dados dt {
+  font-weight: 700;
+  color: #003d75;
+}
+.consulta-dados dd {
+  margin: 0;
+}
+.consulta-subtitulo {
+  margin: 8px 0 4px;
+}
+.consulta-docs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.consulta-doc {
+  border: 1px solid #9fc0e4;
+  background: #f3f8fd;
+  color: #003d75;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.consulta-doc[aria-pressed="true"] {
+  background: #0057a8;
+  border-color: #0057a8;
+  color: #fff;
+}
+.consulta-conteudo {
+  min-height: 120px;
+  max-height: 52vh;
+  overflow: auto;
+  border: 1px solid var(--line, #d5e2ee);
+  border-radius: 10px;
+  background: #fff;
+  padding: 16px 18px;
+}
 .barra-filtro-processos {
   display: flex;
   flex-wrap: wrap;
@@ -1655,6 +1709,36 @@ form.modo-sem-docs section[data-bloco-form] {
 .primario:disabled { opacity: 0.65; cursor: wait; filter: none; }
 
 .total { color: var(--muted); font-size: 14px; font-weight: 550; }
+
+.compliance-config {
+  margin: 0 0 18px;
+  padding: 14px 16px 6px;
+  border: 1px solid var(--line, #d7dde5);
+  border-radius: 12px;
+  background: #f7f9fb;
+}
+.compliance-config .largo { grid-column: 1 / -1; }
+.campo-compliance input,
+.campo-compliance textarea {
+  border-color: #c4504a;
+}
+.compliance-msg {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.compliance-resumo ul { margin: 8px 0 0; padding-left: 18px; }
+.lista-gerencias { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px; }
+.linha-gerencia {
+  display: grid;
+  grid-template-columns: 88px minmax(180px, 1fr) 140px auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.linha-gerencia input[data-gerencia-sigla] { text-transform: uppercase; }
+@media (max-width: 800px) {
+  .linha-gerencia { grid-template-columns: 1fr 1fr; }
+}
 
 .aviso, .erro, .ok {
   border-radius: 10px;

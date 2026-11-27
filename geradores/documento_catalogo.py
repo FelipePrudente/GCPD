@@ -378,9 +378,39 @@ def _html_tabela_catalogo(tag, valor):
     )
 
 
+def _preencher_numero_processo_sei(dados, doc_config):
+    """Copia o protocolo gerado para a tag Nº Processo SEI quando ela ainda está vazia."""
+    from geradores.config_catalogo import eh_campo_processo_sei
+
+    dados = dict(dados or {})
+    extras = dict(dados.get("extras") if isinstance(dados.get("extras"), dict) else {})
+    numero = str(
+        dados.get("numero_sei")
+        or extras.get("numero_sei")
+        or extras.get("n_processo_sei")
+        or ""
+    ).strip()
+    if not numero:
+        dados["extras"] = extras
+        return dados
+    if not str(extras.get("numero_sei") or "").strip():
+        extras["numero_sei"] = numero
+    if not str(extras.get("n_processo_sei") or "").strip():
+        extras["n_processo_sei"] = numero
+    for tag in (doc_config or {}).get("tags") or []:
+        if not isinstance(tag, dict) or not eh_campo_processo_sei(tag):
+            continue
+        if not str(extras.get(tag.get("id")) or "").strip():
+            extras[tag["id"]] = numero
+    dados["numero_sei"] = numero
+    dados["extras"] = extras
+    return dados
+
+
 def gerar_documento_catalogo_html(dados, doc_config):
     """Renderiza o documento do catálogo como HTML para prévia e inclusão no SEI."""
     doc_config = doc_config or {}
+    dados = _preencher_numero_processo_sei(dados, doc_config)
     tags_mapa = _tags_por_id(doc_config)
     extras = dados.get("extras") if isinstance(dados.get("extras"), dict) else {}
     html_documento = str(doc_config.get("documento") or "")
@@ -948,6 +978,7 @@ def _fallback_paragrafos(html_bruto):
 
 def gerar_documento_catalogo(dados, doc_config, caminho):
     """Monta um .docx a partir das seções do documento do catálogo."""
+    dados = _preencher_numero_processo_sei(dados, doc_config)
     tags_mapa = _tags_por_id(doc_config)
     tags_tabela = {
         tid for tid, tag in tags_mapa.items() if tag.get("tipo") == "tabela"

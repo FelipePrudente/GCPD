@@ -1,10 +1,22 @@
 banco/config/ia.json
+banco/gcpd.sqlite
 .env
 .venv/
 __pycache__/
 *.pyc
 saida/*
 !saida/amostra/
+!saida/amostra/**
+
+# Capturas / dumps de debug (não empacotar)
+cookies.txt
+cookies2.txt
+cookies*.txt
+body_*.txt
+headers_*.txt
+login_body.json
+sei_auth.json
+sei-login-sucesso.png
 
 # Playwright
 node_modules/

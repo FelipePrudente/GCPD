@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Configuração local das chaves de IA (Google Gemini / OpenAI)."""
+"""Configuração local das chaves de IA (Copilot Studio / Google Gemini / OpenAI)."""
 from __future__ import annotations
 
 import json
@@ -10,12 +10,17 @@ RAIZ = Path(__file__).resolve().parent.parent
 ARQUIVO = RAIZ / "banco" / "config" / "ia.json"
 
 PADRAO = {
-    "provedor": "google",
+    "provedor": "copilot",
     "google_api_key": "",
     "openai_api_key": "",
-    "modelo_google": "gemini-3.5-flash",
+    "copilot_directline_secret": "",
+    "copilot_agent_name": "GCPD Assistente SEI",
+    "copilot_bot_schema": "cr1bc_assistenteprocesso_B35ZPq",
+    "modelo_google": "gemini-3.5-flash-lite",
     "modelo_openai": "gpt-4o-mini",
 }
+
+PROVEDORES = {"google", "openai", "copilot", "auto"}
 
 
 def _ler_arquivo():
@@ -41,16 +46,26 @@ def carregar_ia_config():
         or ""
     ).strip()
     openai_env = os.environ.get("OPENAI_API_KEY", "").strip()
+    copilot_env = (
+        os.environ.get("COPILOT_DIRECTLINE_SECRET")
+        or os.environ.get("DIRECT_LINE_SECRET")
+        or ""
+    ).strip()
     if google_env:
         dados["google_api_key"] = google_env
     if openai_env:
         dados["openai_api_key"] = openai_env
+    if copilot_env:
+        dados["copilot_directline_secret"] = copilot_env
     modelo_g = os.environ.get("GEMINI_MODEL", "").strip()
     if modelo_g:
         dados["modelo_google"] = modelo_g
     modelo_o = os.environ.get("OPENAI_MODEL", "").strip()
     if modelo_o:
         dados["modelo_openai"] = modelo_o
+    nome = os.environ.get("COPILOT_AGENT_NAME", "").strip()
+    if nome:
+        dados["copilot_agent_name"] = nome
     return dados
 
 
@@ -59,14 +74,23 @@ def salvar_ia_config(bruto):
     if not isinstance(bruto, dict):
         raise ValueError("Configuração de IA inválida.")
     if "provedor" in bruto:
-        provedor = str(bruto.get("provedor") or "google").strip().lower()
-        if provedor not in {"google", "openai", "auto"}:
-            raise ValueError("Provedor inválido. Use google, openai ou auto.")
+        provedor = str(bruto.get("provedor") or "copilot").strip().lower()
+        if provedor not in PROVEDORES:
+            raise ValueError("Provedor inválido. Use copilot, google, openai ou auto.")
         atual["provedor"] = provedor
     if "google_api_key" in bruto:
         atual["google_api_key"] = str(bruto.get("google_api_key") or "").strip()
     if "openai_api_key" in bruto:
         atual["openai_api_key"] = str(bruto.get("openai_api_key") or "").strip()
+    if "copilot_directline_secret" in bruto:
+        atual["copilot_directline_secret"] = str(bruto.get("copilot_directline_secret") or "").strip()
+    if "copilot_agent_name" in bruto:
+        atual["copilot_agent_name"] = (
+            str(bruto.get("copilot_agent_name") or PADRAO["copilot_agent_name"]).strip()
+            or PADRAO["copilot_agent_name"]
+        )
+    if "copilot_bot_schema" in bruto:
+        atual["copilot_bot_schema"] = str(bruto.get("copilot_bot_schema") or "").strip()
     if "modelo_google" in bruto:
         atual["modelo_google"] = str(bruto.get("modelo_google") or PADRAO["modelo_google"]).strip() or PADRAO["modelo_google"]
     if "modelo_openai" in bruto:
@@ -89,14 +113,19 @@ def payload_ia_config():
     cfg = carregar_ia_config()
     google = bool(str(cfg.get("google_api_key") or "").strip())
     openai = bool(str(cfg.get("openai_api_key") or "").strip())
+    copilot = bool(str(cfg.get("copilot_directline_secret") or "").strip())
     return {
         "ok": True,
-        "provedor": cfg.get("provedor") or "google",
+        "provedor": cfg.get("provedor") or "copilot",
         "modelo_google": cfg.get("modelo_google") or PADRAO["modelo_google"],
         "modelo_openai": cfg.get("modelo_openai") or PADRAO["modelo_openai"],
+        "copilot_agent_name": cfg.get("copilot_agent_name") or PADRAO["copilot_agent_name"],
+        "copilot_bot_schema": cfg.get("copilot_bot_schema") or PADRAO["copilot_bot_schema"],
         "google_configurado": google,
         "openai_configurado": openai,
+        "copilot_configurado": copilot,
         "google_api_key_mascarada": _mascarar(cfg.get("google_api_key")),
         "openai_api_key_mascarada": _mascarar(cfg.get("openai_api_key")),
-        "pronto": google or openai,
+        "copilot_secret_mascarado": _mascarar(cfg.get("copilot_directline_secret")),
+        "pronto": google or openai or copilot,
     }
