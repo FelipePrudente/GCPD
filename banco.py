@@ -2,12 +2,18 @@
 """Listas permanentes do sistema e registros de processos."""
 import json
 import re
-import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from banco_conexao import (
+    ARQUIVO_SQLITE as ARQUIVO,
+    ErroBanco,
+    IntegrityError,
+    conectar,
+    usar_postgres,
+)
+
 RAIZ = Path(__file__).resolve().parent
-ARQUIVO = RAIZ / "banco" / "gcpd.sqlite"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS tecnologia (
@@ -136,14 +142,6 @@ TIPOS_DOCUMENTO_SEI = (
 )
 
 
-def conectar():
-    ARQUIVO.parent.mkdir(exist_ok=True)
-    conexao = sqlite3.connect(ARQUIVO)
-    conexao.row_factory = sqlite3.Row
-    conexao.execute("PRAGMA foreign_keys = ON")
-    return conexao
-
-
 def _nome(valor):
     texto = str(valor or "").strip()
     if not texto:
@@ -151,7 +149,208 @@ def _nome(valor):
     return texto
 
 
+SCHEMA_POSTGRES = """
+CREATE TABLE IF NOT EXISTS tecnologia (
+    id SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS grupo (
+    id SERIAL PRIMARY KEY,
+    tecnologia_id INTEGER NOT NULL REFERENCES tecnologia(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    UNIQUE (tecnologia_id, nome)
+);
+CREATE TABLE IF NOT EXISTS servico (
+    id SERIAL PRIMARY KEY,
+    grupo_id INTEGER NOT NULL REFERENCES grupo(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    UNIQUE (grupo_id, nome)
+);
+CREATE TABLE IF NOT EXISTS perfil (
+    id SERIAL PRIMARY KEY,
+    tecnologia_id INTEGER REFERENCES tecnologia(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    UNIQUE (tecnologia_id, nome)
+);
+CREATE TABLE IF NOT EXISTS tipo_processo_sei (
+    id SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL UNIQUE,
+    id_sei TEXT
+);
+CREATE TABLE IF NOT EXISTS assunto_sei (
+    id SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL UNIQUE,
+    id_sei TEXT,
+    codigo TEXT NOT NULL DEFAULT '',
+    descricao TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS tipo_processo_assunto (
+    tipo_processo_id_sei TEXT NOT NULL PRIMARY KEY,
+    assunto_id_sei TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS tipo_documento_sei (
+    id TEXT PRIMARY KEY,
+    nome TEXT NOT NULL,
+    ordem INTEGER NOT NULL,
+    precisa_assunto INTEGER NOT NULL DEFAULT 0,
+    precisa_numero INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS processo (
+    id SERIAL PRIMARY KEY,
+    codigo TEXT UNIQUE,
+    tipo TEXT NOT NULL,
+    numero_sei TEXT,
+    id_procedimento_sei TEXT,
+    assunto TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'nao_enviado',
+    pasta_id TEXT,
+    cadastro TEXT,
+    criado_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS documento_processo (
+    id SERIAL PRIMARY KEY,
+    processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
+    nome TEXT NOT NULL,
+    tipo_documento TEXT NOT NULL,
+    arquivo_origem TEXT NOT NULL,
+    metadados TEXT NOT NULL,
+    conteudo_html TEXT NOT NULL,
+    criado_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS documento_sei (
+    id SERIAL PRIMARY KEY,
+    processo_id INTEGER NOT NULL REFERENCES processo(id) ON DELETE CASCADE,
+    id_documento_sei TEXT NOT NULL UNIQUE,
+    protocolo TEXT NOT NULL DEFAULT '',
+    descricao TEXT NOT NULL,
+    id_serie TEXT NOT NULL DEFAULT '',
+    tipo_documento TEXT NOT NULL DEFAULT '',
+    criado_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS gerencia (
+    id SERIAL PRIMARY KEY,
+    sigla TEXT NOT NULL UNIQUE,
+    descritivo TEXT NOT NULL DEFAULT ''
+);
+"""
+
+
 def iniciar():
+    """Cria/atualiza o schema. Usa Postgres (Supabase) se DATABASE_URL existir."""
+    if usar_postgres():
+        _iniciar_postgres()
+        return
+    _iniciar_sqlite()
+
+
+def _colunas_postgres(conexao, tabela):
+    linhas = conexao.execute(
+        """
+        SELECT column_name AS name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = ?
+        """,
+        (tabela,),
+    ).fetchall()
+    return {str(linha["name"]) for linha in linhas}
+
+
+def _garantir_coluna_postgres(conexao, tabela, coluna, ddl):
+    if coluna not in _colunas_postgres(conexao, tabela):
+        conexao.execute(f"ALTER TABLE {tabela} ADD COLUMN {ddl}")
+
+
+def _iniciar_postgres():
+    with conectar() as conexao:
+        conexao.executescript(SCHEMA_POSTGRES)
+        _garantir_coluna_postgres(
+            conexao, "tipo_documento_sei", "precisa_assunto",
+            "precisa_assunto INTEGER NOT NULL DEFAULT 0",
+        )
+        _garantir_coluna_postgres(
+            conexao, "tipo_documento_sei", "precisa_numero",
+            "precisa_numero INTEGER NOT NULL DEFAULT 0",
+        )
+        _garantir_coluna_postgres(
+            conexao, "tipo_processo_sei", "id_sei", "id_sei TEXT",
+        )
+        _garantir_coluna_postgres(
+            conexao, "assunto_sei", "codigo", "codigo TEXT NOT NULL DEFAULT ''",
+        )
+        _garantir_coluna_postgres(
+            conexao, "assunto_sei", "descricao", "descricao TEXT NOT NULL DEFAULT ''",
+        )
+        _garantir_coluna_postgres(
+            conexao, "processo", "cadastro", "cadastro TEXT",
+        )
+        _garantir_coluna_postgres(
+            conexao, "processo", "id_procedimento_sei", "id_procedimento_sei TEXT",
+        )
+        _garantir_coluna_postgres(
+            conexao, "documento_sei", "id_serie", "id_serie TEXT NOT NULL DEFAULT ''",
+        )
+        _garantir_coluna_postgres(
+            conexao, "documento_sei", "tipo_documento",
+            "tipo_documento TEXT NOT NULL DEFAULT ''",
+        )
+        conexao.executemany(
+            "INSERT OR IGNORE INTO gerencia (sigla, descritivo) VALUES (?, ?)",
+            GERENCIAS_INICIAIS,
+        )
+        conexao.executemany(
+            """
+            INSERT INTO tipo_documento_sei (id, nome, ordem, precisa_assunto, precisa_numero)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                nome = excluded.nome,
+                ordem = excluded.ordem,
+                precisa_assunto = excluded.precisa_assunto,
+                precisa_numero = excluded.precisa_numero
+            """,
+            (
+                (identificador, nome, ordem, assunto, numero)
+                for ordem, (identificador, nome, assunto, numero) in enumerate(TIPOS_DOCUMENTO_SEI)
+            ),
+        )
+        ids_ativos = tuple(item[0] for item in TIPOS_DOCUMENTO_SEI)
+        conexao.execute(
+            f"DELETE FROM tipo_documento_sei WHERE id NOT IN ({','.join('?' for _ in ids_ativos)})",
+            ids_ativos,
+        )
+        conexao.execute(
+            """
+            INSERT INTO tipo_processo_sei (nome, id_sei)
+            VALUES (?, ?)
+            ON CONFLICT(nome) DO UPDATE SET id_sei = excluded.id_sei
+            """,
+            (
+                "Processo de Contratação de Serviço Técnico Profissional Especializado",
+                "100000692",
+            ),
+        )
+        # Seeds pesados só na primeira carga (evita centenas de round-trips no pooler).
+        qtd_tipos = conexao.execute(
+            "SELECT COUNT(*) AS n FROM tipo_processo_sei"
+        ).fetchone()
+        if int((qtd_tipos or {}).get("n") or 0) < 20:
+            _semear_tipos_processo_sei(conexao)
+        qtd_assuntos = conexao.execute(
+            "SELECT COUNT(*) AS n FROM assunto_sei"
+        ).fetchone()
+        if int((qtd_assuntos or {}).get("n") or 0) < 10:
+            _semear_assuntos_sei(conexao)
+        qtd_rel = conexao.execute(
+            "SELECT COUNT(*) AS n FROM tipo_processo_assunto"
+        ).fetchone()
+        if int((qtd_rel or {}).get("n") or 0) < 10:
+            _semear_tipo_processo_assunto(conexao)
+        # Semente de catálogo só se ainda não houver tecnologias.
+        qtd = conexao.execute("SELECT COUNT(*) AS n FROM tecnologia").fetchone()
+        if qtd and int(qtd["n"] or 0) == 0:
+            _semear(conexao)
+
+
+def _iniciar_sqlite():
     # Semeia AWS/Dynamics só na criação; tipos do fluxo ficam sempre disponíveis.
     banco_novo = not ARQUIVO.exists()
     with conectar() as conexao:
@@ -372,22 +571,31 @@ def _semear_assuntos_sei(conexao):
         registros.append((nome, id_sei, codigo, descricao or nome))
     if not registros:
         return
+    # Batch: atualiza por id_sei quando já existe; upserts restantes por nome.
+    existentes = {
+        str(linha["id_sei"]): linha["id"]
+        for linha in conexao.execute(
+            "SELECT id, id_sei FROM assunto_sei WHERE id_sei IS NOT NULL AND id_sei <> ''"
+        )
+    }
+    atualizar = []
+    inserir = []
     for nome, id_sei, codigo, descricao in registros:
-        existente = conexao.execute(
-            "SELECT id, nome FROM assunto_sei WHERE id_sei = ?",
-            (id_sei,),
-        ).fetchone()
-        if existente:
-            conexao.execute(
-                """
-                UPDATE assunto_sei
-                SET nome = ?, codigo = ?, descricao = ?
-                WHERE id = ?
-                """,
-                (nome, codigo, descricao, existente["id"]),
-            )
-            continue
-        conexao.execute(
+        if id_sei in existentes:
+            atualizar.append((nome, codigo, descricao, existentes[id_sei]))
+        else:
+            inserir.append((nome, id_sei, codigo, descricao))
+    if atualizar:
+        conexao.executemany(
+            """
+            UPDATE assunto_sei
+            SET nome = ?, codigo = ?, descricao = ?
+            WHERE id = ?
+            """,
+            atualizar,
+        )
+    if inserir:
+        conexao.executemany(
             """
             INSERT INTO assunto_sei (nome, id_sei, codigo, descricao)
             VALUES (?, ?, ?, ?)
@@ -396,7 +604,7 @@ def _semear_assuntos_sei(conexao):
                 codigo = excluded.codigo,
                 descricao = excluded.descricao
             """,
-            (nome, id_sei, codigo, descricao),
+            inserir,
         )
 
 
@@ -411,6 +619,8 @@ def _semear_tipo_processo_assunto(conexao):
         return
     if not isinstance(itens, list):
         return
+    tipos = []
+    relacoes = []
     for item in itens:
         if not isinstance(item, dict):
             continue
@@ -420,27 +630,26 @@ def _semear_tipo_processo_assunto(conexao):
         if not id_proc:
             continue
         if nome:
-            conexao.execute(
-                """
-                INSERT INTO tipo_processo_sei (nome, id_sei)
-                VALUES (?, ?)
-                ON CONFLICT(nome) DO UPDATE SET id_sei = excluded.id_sei
-                """,
-                (nome, id_proc),
-            )
-            # Garante id_sei mesmo se o nome já existia com outro id.
-            conexao.execute(
-                "UPDATE tipo_processo_sei SET id_sei = ? WHERE nome = ?",
-                (id_proc, nome),
-            )
-        conexao.execute(
+            tipos.append((nome, id_proc))
+        relacoes.append((id_proc, id_assunto))
+    if tipos:
+        conexao.executemany(
+            """
+            INSERT INTO tipo_processo_sei (nome, id_sei)
+            VALUES (?, ?)
+            ON CONFLICT(nome) DO UPDATE SET id_sei = excluded.id_sei
+            """,
+            tipos,
+        )
+    if relacoes:
+        conexao.executemany(
             """
             INSERT INTO tipo_processo_assunto (tipo_processo_id_sei, assunto_id_sei)
             VALUES (?, ?)
             ON CONFLICT(tipo_processo_id_sei) DO UPDATE SET
                 assunto_id_sei = excluded.assunto_id_sei
             """,
-            (id_proc, id_assunto),
+            relacoes,
         )
 
 
@@ -770,7 +979,7 @@ def criar_gerencia(sigla, descritivo):
                 "INSERT INTO gerencia (sigla, descritivo) VALUES (?, ?)",
                 (sigla, descritivo),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Essa sigla já está cadastrada.") from erro
         return cursor.lastrowid
 
@@ -789,7 +998,7 @@ def atualizar_gerencia(identificador, sigla, descritivo):
                 "UPDATE gerencia SET sigla = ?, descritivo = ? WHERE id = ?",
                 (sigla, descritivo, identificador),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Essa sigla já está cadastrada.") from erro
 
 
@@ -845,7 +1054,7 @@ def criar_tecnologia(nome):
     with conectar() as conexao:
         try:
             cursor = conexao.execute("INSERT INTO tecnologia (nome) VALUES (?)", (nome,))
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Essa tecnologia já está na lista.") from erro
         return cursor.lastrowid
 
@@ -860,7 +1069,7 @@ def criar_grupo(tecnologia_id, nome):
                 "INSERT INTO grupo (tecnologia_id, nome) VALUES (?, ?)",
                 (tecnologia_id, nome),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Esse grupo já existe nesta tecnologia.") from erro
         return cursor.lastrowid
 
@@ -875,7 +1084,7 @@ def criar_servico(grupo_id, nome):
                 "INSERT INTO servico (grupo_id, nome) VALUES (?, ?)",
                 (grupo_id, nome),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Esse serviço já existe neste grupo.") from erro
         return cursor.lastrowid
 
@@ -890,7 +1099,7 @@ def criar_perfil(tecnologia_id, nome):
                 "INSERT INTO perfil (tecnologia_id, nome) VALUES (?, ?)",
                 (tecnologia_id, nome),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Esse perfil já está na lista desta tecnologia.") from erro
         return cursor.lastrowid
 
@@ -932,7 +1141,7 @@ def criar_tipo_processo_sei(nome):
                 "INSERT INTO tipo_processo_sei (nome) VALUES (?)",
                 (nome,),
             )
-        except sqlite3.IntegrityError as erro:
+        except IntegrityError as erro:
             raise ValueError("Esse tipo de processo já está na lista.") from erro
         return cursor.lastrowid
 
@@ -1193,10 +1402,21 @@ def validar_documento_sei(processo_id, id_documento):
     obter_documento_sei(processo_id, id_documento)
 
 
-def _linha_documento_processo(linha):
+def _carregar_json(valor, padrao=None):
+    """Aceita str JSON, dict/list já desserializados (Postgres) ou vazio."""
+    if valor is None or valor == "":
+        return padrao
+    if isinstance(valor, (dict, list)):
+        return valor
     try:
-        metadados = json.loads(linha["metadados"] or "{}")
-    except json.JSONDecodeError:
+        return json.loads(valor)
+    except (TypeError, json.JSONDecodeError):
+        return padrao
+
+
+def _linha_documento_processo(linha):
+    metadados = _carregar_json(linha["metadados"], {})
+    if not isinstance(metadados, dict):
         metadados = {}
     return {
         "id": linha["id"],
@@ -1210,10 +1430,7 @@ def _linha_documento_processo(linha):
 
 
 def _linha_processo(linha, com_cadastro=False):
-    try:
-        cadastro = json.loads(linha["cadastro"] or "null")
-    except json.JSONDecodeError:
-        cadastro = None
+    cadastro = _carregar_json(linha["cadastro"], None)
     item = {
         "id": linha["id"],
         "codigo": linha["codigo"],

@@ -5,7 +5,6 @@ import os
 import re
 import secrets
 import shutil
-import sqlite3
 import threading
 import time
 import uuid
@@ -1138,10 +1137,10 @@ def _executar_criacao_processo_sei(processo_id, cadastro, dados_tipo, sessao_sei
             retorno["protocolo"],
             cadastro=cadastro,
         )
-    except (ValueError, sqlite3.Error) as erro:
+    except (ValueError, banco.ErroBanco) as erro:
         try:
             banco.falhar_criacao_sei(processo_id, resultado_incerto=True)
-        except sqlite3.Error:
+        except banco.ErroBanco:
             app.logger.exception(
                 "Não foi possível marcar como indeterminada a criação SEI do processo %s.",
                 processo_id,
@@ -1274,7 +1273,7 @@ def criar_documento_interno_no_sei(processo_id):
                 id_serie=tipo_documento["id"],
                 tipo_documento=tipo_documento["nome"],
             )
-        except (ValueError, sqlite3.Error):
+        except (ValueError, banco.ErroBanco):
             app.logger.exception(
                 "O SEI confirmou o documento %s, mas o GCPD não conseguiu associá-lo ao processo %s.",
                 documento["id_documento"],
@@ -2031,7 +2030,7 @@ def criar_processo_com_documento():
             retorno_processo["protocolo"],
             cadastro=cadastro,
         )
-    except (ValueError, sqlite3.Error):
+    except (ValueError, banco.ErroBanco):
         banco.falhar_criacao_sei(processo["id"], resultado_incerto=True)
         return jsonify({
             "ok": False,
@@ -2115,7 +2114,7 @@ def criar_processo_com_documento():
                     "id_procedimento": retorno_processo.get("id_procedimento"),
                 }), erro.status_http or 500
             falhas_docs.append(str(erro))
-        except (ValueError, sqlite3.Error) as erro:
+        except (ValueError, banco.ErroBanco) as erro:
             if not documentos_resultado:
                 return jsonify({
                     "ok": False,
